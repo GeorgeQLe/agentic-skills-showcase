@@ -4,15 +4,18 @@
 
 Build a Vercel-deployable static website for `agentic-skills` that promotes George "G" Le as an agentic engineering expert and makes the workflow library understandable through generated skill coverage, curated workflow walkthroughs, and browser-native animations.
 
-The site is both a marketing surface and a proof surface. It should show that G has built a repeatable agentic engineering operating system for Claude Code and Codex, and it should connect that system to the broader LexCorp build-in-public story. The primary CTA is to follow G's work, with secondary links to LexCorp, YouTube, X/Twitter, Discord, and the skill catalog.
+The site is both a marketing surface and a proof surface. It should show that G has built a repeatable agentic engineering operating system for Claude Code and Codex, and it should connect that system to the broader LexCorp build-in-public story. The primary CTA is to explore the workflow library, with follow/community links as secondary conversion paths to LexCorp, YouTube, X/Twitter, Discord, and G's ongoing work.
 
 V1 remains static and local-first:
 
 - No database.
 - No video assets.
 - No Remotion production.
-- No runtime API.
-- No telemetry.
+- No runtime API or first-party backend.
+- Multi-page static routing is in scope.
+- Newsletter/email capture is in scope through a static/provider-backed form integration, not a custom database.
+- GitHub/open-source proof telemetry is in scope as generated static data from public GitHub/local git evidence.
+- No first-party user-behavior analytics unless explicitly added later.
 - No dependency install or shared lockfile mutation unless later implementation explicitly chooses a frontend package.
 
 The site should be deployable on Vercel as static files and should work locally by opening the HTML entrypoint or serving the directory with a simple static server.
@@ -42,7 +45,9 @@ The site should be deployable on Vercel as static files and should work locally 
 - Building a dynamic app with Neon, Supabase, or any other database in V1.
 - Hosting or serving video content.
 - Using Remotion in V1.
-- Adding newsletter signup infrastructure, analytics, auth, admin UI, comments, or community membership flows.
+- Building a custom newsletter backend, auth, admin UI, comments, or community membership flows.
+- Embedding live LexCorp product metrics; LexCorp is a narrative/funnel destination in V1, not a runtime data source.
+- Adding visitor-tracking analytics by default.
 - Creating a hosted skill execution sandbox in the browser.
 - Running Claude Code, Codex, or local shell commands from the public website.
 - Replacing README, `docs/skills-reference.md`, or `docs/packs.md`.
@@ -58,16 +63,30 @@ Recommended V1 layout:
 ```text
 docs/skills-showcase/
 ├── index.html
+├── workflows/
+│   └── index.html
+├── packs/
+│   └── index.html
+├── catalog/
+│   └── index.html
+├── inspect/
+│   └── index.html
+├── follow/
+│   └── index.html
 ├── styles.css
 ├── app.js
 └── assets/
-    └── skills-data.js
+    ├── skills-data.js
+    └── github-proof-data.js
 scripts/
 ├── generate-skills-showcase-data.mjs
+├── generate-skills-showcase-github-data.mjs
 └── validate-skills-showcase-data.sh
 ```
 
 `docs/skills-showcase/` keeps the website near the public docs without introducing a root frontend app. Vercel can deploy this directory as a static project. If Vercel is configured from the repository root, the implementation may add minimal Vercel configuration, but V1 should not require a root `package.json`.
+
+The static routes are real pages, not only anchors. Shared JavaScript and CSS should keep duplicated markup low while preserving direct reload behavior for `/workflows/`, `/packs/`, `/catalog/`, `/inspect/`, and `/follow/`.
 
 ### Information Architecture
 
@@ -76,8 +95,8 @@ The first screen should feel like a working technical showcase, not a passive la
 1. **Hero / Command Blueprint**
    - Headline: George "G" Le and agentic engineering.
    - Subhead: `agentic-skills` turns raw Claude Code and Codex sessions into repeatable plan -> run -> ship workflows.
-   - Primary CTA: Follow G's work.
-   - Secondary CTAs: Explore skills, visit LexCorp.
+   - Primary CTA: Explore the library.
+   - Secondary CTAs: Follow G's work, visit LexCorp.
    - Animated blueprint panel showing a request moving through plan, run, validation, ship, and history.
 
 2. **Workflow Lab**
@@ -311,28 +330,31 @@ Ephemeral runtime state:
 - Animation step index.
 - Reduced-motion mode.
 
-No user data persists in V1.
+Newsletter/email capture state is submitted to the configured static form provider only. No email addresses, Discord handles, or visitor data should be stored in this repository or in a first-party database for V1.
 
 ### API And Contract Surface
 
-No runtime API exists in V1.
+No first-party runtime API exists in V1.
 
 Browser contract:
 
 - `window.SKILLS_SHOWCASE_DATA` must be loaded before `app.js` initializes catalog and workflow views.
+- `window.SKILLS_SHOWCASE_GITHUB_DATA` should load when GitHub/open-source proof metrics are available; the UI must degrade to static proof links if it is absent.
 - If data is missing or malformed, the site must render a visible fallback message instead of a blank page.
 
 Script contract:
 
 - `node scripts/generate-skills-showcase-data.mjs` writes `docs/skills-showcase/assets/skills-data.js`.
+- `node scripts/generate-skills-showcase-github-data.mjs` writes `docs/skills-showcase/assets/github-proof-data.js` from public GitHub API evidence when available and local git/repository evidence as a fallback.
 - `scripts/validate-skills-showcase-data.sh` exits zero when generated data is current and non-zero when stale.
 - Both scripts must run from any working directory by resolving the repository root from their own path.
 
 ### Security And Privacy
 
-- No telemetry in V1.
-- No forms collecting email, Discord handles, or other personal data.
-- Outbound links must be normal links; no third-party embed scripts are required.
+- No first-party visitor tracking in V1.
+- Newsletter/email capture must use an explicit static/provider-backed form endpoint and must not write personal data into repository files, generated assets, local logs, or a custom database.
+- GitHub/open-source proof telemetry must be based on public repository data or local git evidence only.
+- Outbound links must be normal links; third-party embed scripts are not required.
 - The site must not expose local absolute paths.
 - The generated data must use repository-relative paths only.
 - Do not include secrets, private repository data, local environment variables, or private session transcripts.
@@ -359,16 +381,20 @@ Script contract:
 - Discord invite expires.
 - A skill behavior changes without frontmatter changes, so generated metadata remains current but curated workflow copy may still be stale.
 - Vercel is configured from the repository root rather than `docs/skills-showcase`.
+- Newsletter provider endpoint is not configured yet.
+- GitHub API rate limits or token absence prevent live public metric refresh during generation.
 
 ## Test Plan
 
 ### Data Generation
 
 - Run `node scripts/generate-skills-showcase-data.mjs`.
+- Run `node scripts/generate-skills-showcase-github-data.mjs`.
 - Run `scripts/validate-skills-showcase-data.sh`.
 - Confirm generated data includes every `SKILL.md` from `global/` and `packs/`.
 - Confirm generated records use repository-relative paths only.
 - Confirm duplicate skill names group correctly by platform and pack.
+- Confirm GitHub proof data generation falls back gracefully when no GitHub token is available.
 
 ### Existing Repository Validation
 
@@ -387,6 +413,8 @@ Script contract:
 - Verify every curated workflow can be selected and animated.
 - Verify reduced-motion mode is respected.
 - Verify links to LexCorp, YouTube, X/Twitter, and Discord.
+- Verify newsletter/email capture renders with clear provider-missing and success/error states.
+- Verify static routes reload directly: `/`, `/workflows/`, `/packs/`, `/catalog/`, `/inspect/`, and `/follow/`.
 - Verify no section has overlapping text or layout shifts that break controls.
 - Verify catalog remains usable with the full generated skill set.
 
@@ -394,32 +422,35 @@ Script contract:
 
 - Deploy from `docs/skills-showcase` or the chosen Vercel configuration.
 - Verify static asset paths load on the deployed URL.
-- Verify direct reload works on the deployed root.
+- Verify direct reload works on every static route.
 - Verify no runtime API/database environment variables are required.
+- Verify newsletter/email capture uses the configured provider endpoint, or displays a non-collecting fallback if the endpoint is intentionally unset.
 
 ## Acceptance Criteria
 
-- `docs/skills-showcase/index.html`, `styles.css`, `app.js`, and `assets/skills-data.js` exist.
+- `docs/skills-showcase/index.html`, route entrypoints, `styles.css`, `app.js`, `assets/skills-data.js`, and `assets/github-proof-data.js` exist.
 - The site presents George "G" Le as the builder/expert and positions `agentic-skills` as proof of agentic engineering expertise.
-- The primary CTA is "Follow G's work" or equivalent, with secondary links to LexCorp, YouTube, X/Twitter, Discord, and skill exploration.
+- The primary CTA is "Explore the Library" or equivalent, with secondary links to follow G's work, LexCorp, YouTube, X/Twitter, Discord, and GitHub.
 - The visual design uses a Swiss grid and blueprint motif without generic decorative gradients or blob backgrounds.
 - The site includes browser-native workflow animations for the V1 curated workflows.
+- The site uses multi-page static routing for the main product surfaces and supports direct reload on each route.
 - The generated catalog includes every tracked `SKILL.md` under `global/` and `packs/`.
+- GitHub/open-source proof data is generated or falls back honestly when public metrics cannot be refreshed.
 - Catalog records include command syntax, platform, scope/pack, type, description, version, argument hint, and source path.
 - Search and filtering work across the generated catalog.
-- `scripts/generate-skills-showcase-data.mjs` and `scripts/validate-skills-showcase-data.sh` exist and work without third-party dependencies.
+- Newsletter/email capture is present through a static/provider-backed form integration with accessible success, error, and provider-missing states.
+- `scripts/generate-skills-showcase-data.mjs`, `scripts/generate-skills-showcase-github-data.mjs`, and `scripts/validate-skills-showcase-data.sh` exist and work without third-party dependencies.
 - Validation fails when generated site data is stale after a `SKILL.md` metadata/source change.
 - Skill-changing agent workflows are updated to regenerate site data and review curated site copy when relevant.
-- V1 does not require a database, video storage, telemetry, auth, or runtime API.
+- V1 does not require a database, video storage, auth, custom newsletter backend, visitor analytics, live LexCorp metrics, or runtime API.
 - Vercel deployment can serve the static site.
 
 ## Open Questions
 
 - What final domain or subdomain should Vercel use for the showcase?
-- Should the site link to a public GitHub repository URL if or when `agentic-skills` is public?
-- Should V2 add an email capture or newsletter signup once distribution infrastructure is chosen?
+- Which static newsletter/email provider should back the launch form?
 - Should the Discord invite be treated as permanent, or should the site link through a stable redirect controlled by LexCorp?
-- Should future versions embed live LexCorp War Room metrics, or keep the showcase purely static and proof-oriented?
+- Should future versions add a separate LexCorp proof page, or keep LexCorp as a narrative/funnel destination?
 
 ## Assumptions & Risks
 
@@ -433,7 +464,9 @@ Script contract:
 - Confirmed: `[from codebase]` Existing validation scripts are the right pattern for stale-data checks. Risk if wrong: adding another validation script may be ignored unless workflow skills reference it.
 - Confirmed: `[from research]` LexCorp is a build-in-public War Room and portfolio brand. Risk if wrong: cross-linking the showcase to LexCorp may confuse users who only want the skill library.
 - Confirmed: `[from spec]` Brand should promote George "G" Le, then use G in shorter UI copy. Risk if wrong: personal brand copy may feel too founder-led or not founder-led enough.
-- Confirmed: `[from spec]` The primary CTA is following G's work and building distribution for LexCorp. Risk if wrong: CTA placement may optimize audience growth over direct consulting or product conversion.
+- Corrected: `[from roadmap clarification]` The primary CTA is exploring the library, with follow/community conversion paths secondary. Risk if wrong: CTA placement may under-serve immediate audience growth, but proof-first visitors should be higher quality.
+- Corrected: `[from roadmap clarification]` MVP includes newsletter/email capture, GitHub/open-source proof telemetry, and multi-page routing. Risk if wrong: MVP scope is larger, but it matches the product seriousness expected for a top-of-funnel showcase.
+- Corrected: `[from roadmap clarification]` Live LexCorp metrics are not required for MVP. Risk if wrong later: LexCorp proof may need a separate data contract rather than being implied by this site.
 - Confirmed: `[from spec]` Use LexCorp, YouTube, X/Twitter, and Discord links. Risk if wrong: link rot, especially Discord invite expiry, can create a poor first impression.
 - Confirmed: `[from spec]` Use Swiss grid and blueprint theming. Risk if wrong: visual system may feel too architectural and not enough like a live agent workflow.
 - Confirmed: `[inferred]` Hard gate only generated metadata staleness; curated workflow copy is a review gate. Risk if wrong: behavior-only skill changes can still leave curated examples stale if agents make a bad judgment call.

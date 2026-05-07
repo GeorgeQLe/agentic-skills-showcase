@@ -2,7 +2,7 @@
 
 ## Scope And Source Evidence
 
-This UI specification defines the V1 interface for the `agentic-skills` showcase website: a static, Vercel-deployable, single-page site that promotes George "G" Le as an agentic engineering expert and helps visitors understand the open-source workflow library through animated workflow explanations, a pack map, a generated skill catalog, and inspectable proof artifacts.
+This UI specification defines the V1 interface for the `agentic-skills` showcase website: a static, Vercel-deployable, multi-page site that promotes George "G" Le as an agentic engineering expert and helps visitors understand the open-source workflow library through animated workflow explanations, a pack map, a generated skill catalog, newsletter/email capture, GitHub/open-source proof data, and inspectable proof artifacts.
 
 Source evidence:
 
@@ -23,8 +23,8 @@ Source evidence:
 ### Pages, Routes, And Entry Points
 
 - Confirmed: `[from spec]` V1 is a static Vercel site under `docs/skills-showcase/`.
-- Confirmed: `[inferred]` V1 should be one primary page with anchor sections instead of multiple static routes.
-- Confirmed: `[inferred]` Entry point is `/` or `/index.html`; sections are addressable anchors: `#workflows`, `#packs`, `#catalog`, `#inspect`, `#follow`.
+- Corrected: `[from roadmap clarification]` V1 should use multi-page static routes for the main product surfaces, not only anchor sections.
+- Confirmed: `[from roadmap clarification]` Entry points are `/`, `/workflows/`, `/packs/`, `/catalog/`, `/inspect/`, and `/follow/`, with anchors allowed inside those pages for subsection jumps.
 
 ### Primary Tasks Per Page
 
@@ -34,7 +34,7 @@ Source evidence:
 
 ### Navigation Model
 
-- Confirmed: `[inferred]` Desktop uses a slim sticky top nav with anchor links and a persistent follow-oriented secondary CTA.
+- Corrected: `[from roadmap clarification]` Desktop uses a slim sticky top nav with route links and a persistent follow-oriented secondary CTA.
 - Confirmed: `[inferred]` Mobile uses a compact header with an icon menu button and a full-width menu drawer.
 - Confirmed: `[from spec]` No account controls, notifications, auth, or settings exist in V1.
 
@@ -62,8 +62,9 @@ Source evidence:
 
 ### Forms, Validation, And Error Display
 
-- Confirmed: `[from spec]` No forms in V1.
+- Corrected: `[from roadmap clarification]` V1 includes newsletter/email capture through a static/provider-backed form integration.
 - Confirmed: `[inferred]` Search/filter inputs need empty-state messaging but no form submission.
+- Confirmed: `[inferred]` Newsletter capture needs success, error, pending, and provider-missing states without storing personal data in the repository or a first-party database.
 
 ### Empty, Loading, Disabled, Success, Warning, And Failure States
 
@@ -91,21 +92,21 @@ Source evidence:
 ### Implementation Constraints
 
 - Confirmed: `[from codebase]` No existing frontend scaffold or package manager at the root.
-- Confirmed: `[from spec]` Static HTML/CSS/JS, generated `skills-data.js`, no backend, no telemetry.
+- Corrected: `[from roadmap clarification]` Static HTML/CSS/JS, generated `skills-data.js`, generated GitHub/open-source proof data, no first-party backend, no visitor-tracking analytics, and no live LexCorp metrics.
 - Confirmed: `[from spec]` Implementation must add generated-data validation and website-update prompts for skill changes.
 
 ## Page Inventory And Route Map
 
-V1 is a single-page anchor site.
+V1 is a multi-page static site. Each page should be directly reloadable on Vercel and locally through a simple static server. The homepage can include preview bands for the other routes, but the full experiences live on their own static pages.
 
 | Route / Anchor | Purpose | Entry Points |
 | --- | --- | --- |
-| `/` or `/index.html` | Full showcase page | Direct Vercel root, GitHub README links, LexCorp links |
-| `#workflows` | Workflow Lab with selected animated walkthrough | Hero primary CTA, header nav |
-| `#packs` | Pack Map and project-type highlighter | Header nav, Workflow Lab cross-links |
-| `#catalog` | Searchable generated skill catalog | Header nav, Pack Map selected pack, catalog CTA |
-| `#inspect` | Receipts / proof artifacts | Header nav, proof links in hero and workflows |
-| `#follow` | Three-lane funnel: G, LexCorp, Discord | Header Follow CTA, hero secondary CTA, footer |
+| `/` or `/index.html` | Homepage with hero, product overview, top workflows, proof preview, and funnel preview | Direct Vercel root, GitHub README links, LexCorp links |
+| `/workflows/` | Workflow Lab with selected animated walkthroughs | Hero primary CTA, header nav, homepage preview |
+| `/packs/` | Pack Map and project-type highlighter | Header nav, Workflow Lab cross-links |
+| `/catalog/` | Searchable generated skill catalog | Header nav, Pack Map selected pack, catalog CTA |
+| `/inspect/` | Receipts, validation, GitHub/open-source proof data, and honest boundaries | Header nav, proof links in hero and workflows |
+| `/follow/` | Three-lane funnel: G, LexCorp, Discord, newsletter/email capture | Header Follow CTA, hero secondary CTA, footer |
 
 No modals are required except the mobile nav drawer and optional desktop follow-link popover. No separate detail pages exist in V1.
 
@@ -121,13 +122,13 @@ Layout:
   - Text label: `G / agentic-skills`
   - Optional small blueprint coordinate mark: `OSS-AGENTIC-01`
 - Center nav links:
-  - `Workflows` -> `#workflows`
-  - `Packs` -> `#packs`
-  - `Catalog` -> `#catalog`
-  - `Inspect` -> `#inspect`
+  - `Workflows` -> `/workflows/`
+  - `Packs` -> `/packs/`
+  - `Catalog` -> `/catalog/`
+  - `Inspect` -> `/inspect/`
 - Right action links:
   - `LexCorp` -> `https://leexperimental.com`
-  - `Follow` -> opens compact follow popover or scrolls to `#follow`
+  - `Follow` -> `/follow/` or opens compact follow popover with the same links
 
 Behavior:
 
@@ -147,7 +148,7 @@ Layout:
 Menu drawer:
 
 - Full-width panel under the header.
-- Contains the same anchor links and funnel links.
+- Contains the same route links and funnel links.
 - Each item is at least 44px high.
 - Closing behavior:
   - Tap outside closes.
@@ -169,8 +170,8 @@ Three columns on desktop, stacked on mobile:
    - Build-in-public positioning line
 3. **Open Source**
    - Repository
-   - Skills catalog anchor
-   - Inspect the System anchor
+   - Skills catalog route
+   - Inspect the System route
 
 Footer should also include a short note: `Open-source workflow library for Claude Code and Codex.`
 
@@ -193,8 +194,8 @@ Left content:
 - H1: `George "G" Le builds open-source agentic engineering systems.`
 - Supporting copy: `Explore the workflow library behind repeatable Claude Code and Codex planning, execution, validation, and shipping.`
 - CTA row:
-  - Primary button: `Explore the Library` -> scroll to `#workflows`
-  - Secondary button/link: `Follow G's Work` -> desktop follow popover or `#follow`
+  - Primary button: `Explore the Library` -> `/workflows/`
+  - Secondary button/link: `Follow G's Work` -> `/follow/` or desktop follow popover
 - Secondary inline links:
   - `GitHub`
   - `LexCorp`
@@ -231,7 +232,7 @@ Stats must be literal current repo facts. If counts become generated, the value 
 
 ### Workflow Lab
 
-Anchor: `#workflows`.
+Route: `/workflows/`.
 
 Purpose: demonstrate how the library works before visitors hit the catalog.
 
@@ -291,7 +292,7 @@ Mobile layout:
 
 ### Pack Map
 
-Anchor: `#packs`.
+Route: `/packs/`.
 
 Purpose: make global vs pack-local context hygiene understandable.
 
@@ -322,12 +323,12 @@ Behavior:
 
 Pack detail panel controls:
 
-- `View skills` -> scroll to `#catalog` with pack filter when implemented; otherwise anchors and sets filter through JS.
+- `View skills` -> `/catalog/` with pack filter applied through query string or hash state when implemented.
 - `Copy install command` is optional. If implemented, use a small icon button with `aria-label="Copy install command"` and a transient `Copied` success state.
 
 ### Skill Catalog
 
-Anchor: `#catalog`.
+Route: `/catalog/`.
 
 Purpose: complete generated reference for every skill.
 
@@ -388,7 +389,7 @@ States:
 
 ### Inspect The System
 
-Anchor: `#inspect`.
+Route: `/inspect/`.
 
 Purpose: give visitors receipts they can inspect now that the repo is public.
 
@@ -428,7 +429,7 @@ Tile anatomy:
 
 ### Follow / About
 
-Anchor: `#follow`.
+Route: `/follow/`.
 
 Purpose: convert proven interest into distribution.
 
@@ -450,14 +451,20 @@ Layout:
   - GitHub
   - Discord
 
-No email capture or contact form in V1.
+Newsletter/email capture:
+
+- Compact form headline: `Get the next workflow drop.`
+- Field label: `Email`
+- Submit label: `Join the list`
+- States: provider missing, pending, success, error, invalid email.
+- Provider-missing state should not collect input; it should route users to YouTube, X/Twitter, and Discord instead.
 
 ## Component Inventory And Reuse Guidance
 
 | Component | Used In | Notes |
 | --- | --- | --- |
 | `SiteHeader` | Global | Sticky desktop header, mobile drawer trigger |
-| `MobileNavDrawer` | Global mobile | Focus-managed drawer with anchor/external links |
+| `MobileNavDrawer` | Global mobile | Focus-managed drawer with route/external links |
 | `BlueprintPanel` | Hero, workflows | Bordered technical panel with grid/drafting lines |
 | `CTAButton` | Hero, follow, cards | Primary, secondary, tertiary variants |
 | `IconButton` | Animations, copy commands, drawer close | Must have `aria-label` |
@@ -472,6 +479,7 @@ No email capture or contact form in V1.
 | `Badge` | Catalog, workflows | Platform/type/status/version |
 | `ReceiptTile` | Inspect section | Links to GitHub proof artifacts |
 | `FollowCard` | Follow section | Three-lane funnel cards |
+| `NewsletterForm` | Follow section | Static/provider-backed email capture with non-collecting fallback |
 
 Avoid nested cards. Section backgrounds should be unframed bands or blueprint regions; cards are only for repeated items such as workflow choices, catalog rows, receipt tiles, and follow cards.
 
@@ -479,9 +487,9 @@ Avoid nested cards. Section backgrounds should be unframed bands or blueprint re
 
 | Control | Label | Location | Action | Disabled Rules | Confirmation |
 | --- | --- | --- | --- | --- | --- |
-| Primary CTA | `Explore the Library` | Hero | Scroll to `#workflows` | Never disabled | None |
-| Secondary CTA | `Follow G's Work` | Hero | Desktop: open follow popover; mobile: scroll to `#follow` | Never disabled | None |
-| Header nav links | `Workflows`, `Packs`, `Catalog`, `Inspect` | Header | Scroll to anchors | Never disabled | None |
+| Primary CTA | `Explore the Library` | Hero | Navigate to `/workflows/` | Never disabled | None |
+| Secondary CTA | `Follow G's Work` | Hero | Navigate to `/follow/` or open follow popover | Never disabled | None |
+| Header nav links | `Workflows`, `Packs`, `Catalog`, `Inspect` | Header | Navigate to static routes | Never disabled | None |
 | External link | `LexCorp` | Header/footer/follow | Open LexCorp URL | Never disabled | None |
 | Menu icon button | `Open navigation` | Mobile header | Opens drawer | Disabled only when drawer is already open | None |
 | Drawer close icon | `Close navigation` | Mobile drawer | Closes drawer | Never disabled | None |
@@ -492,7 +500,7 @@ Avoid nested cards. Section backgrounds should be unframed bands or blueprint re
 | Animation restart | `Restart workflow` | Workflow panel | Resets to first step | Disabled on first step only if implementation prefers | None |
 | Project type segmented control | `All`, `Business`, `Devtool`, `Game`, `Creator`, `Monorepo`, `Kanban` | Pack Map | Highlights pack group | Never disabled | None |
 | Pack item | Pack name | Pack Map | Selects pack and updates detail panel | Disabled only if data missing | None |
-| View skills | `View skills` | Pack detail panel | Scrolls to catalog and applies pack filter | Disabled when pack has no catalog records | None |
+| View skills | `View skills` | Pack detail panel | Navigates to catalog and applies pack filter | Disabled when pack has no catalog records | None |
 | Copy install command | icon button | Pack detail panel | Copies command to clipboard | Disabled if Clipboard API unavailable; fallback selects text | None |
 | Search input | `Search skills, packs, workflows` | Catalog | Filters results | Disabled when generated data missing | None |
 | Clear search | `Clear search` | Catalog | Clears query | Visible only when query exists | None |
@@ -502,6 +510,8 @@ Avoid nested cards. Section backgrounds should be unframed bands or blueprint re
 | Clear filters | `Clear filters` | Catalog | Resets filters | Visible only when filters active | None |
 | Expand row | `Show details for <skill>` | Catalog row | Expands row | Disabled when row has no extra details; normally never | None |
 | Receipt link | `Open receipt` | Inspect tiles | Opens GitHub artifact | Never disabled; if URL missing, render as path label | None |
+| Newsletter email | `Email` | Follow page | Captures email for configured provider only | Disabled when provider endpoint is missing | None |
+| Newsletter submit | `Join the list` | Follow page | Submits provider-backed form | Disabled while pending, invalid, or provider missing | None |
 | Funnel links | `Explore the open-source library`, `Enter the LexCorp War Room`, `Join the community` | Follow section | Open external destinations | Never disabled | None |
 
 ## Link Inventory
@@ -518,7 +528,7 @@ Avoid nested cards. Section backgrounds should be unframed bands or blueprint re
 | Skills reference | GitHub blob for `docs/skills-reference.md` | External | Receipt tile or footer |
 | Validation scripts | GitHub tree/blob under `scripts/` | External | Receipt tile |
 | Catalog source path | GitHub blob for each `SKILL.md` | External | Generated per skill from `repoBaseUrl` |
-| Section anchors | `#workflows`, `#packs`, `#catalog`, `#inspect`, `#follow` | Internal | Header/CTA navigation |
+| Static routes | `/workflows/`, `/packs/`, `/catalog/`, `/inspect/`, `/follow/` | Internal | Header/CTA navigation |
 
 External links should use accessible names that include the destination concept, not just "here."
 
@@ -666,6 +676,7 @@ All workflow illustrations should be built with HTML/CSS/JS: panels, lines, node
 
 - Build with static HTML/CSS/JS under `docs/skills-showcase/`.
 - Load `assets/skills-data.js` before `app.js`.
+- Load `assets/github-proof-data.js` where available; proof UI must degrade to static links when public metric generation is unavailable.
 - Store external links and `repoBaseUrl` in one config object.
 - Generate GitHub blob links from repository-relative paths:
   - Base: `https://github.com/GeorgeQLe/agentic-skills/blob/master/`
@@ -674,15 +685,16 @@ All workflow illustrations should be built with HTML/CSS/JS: panels, lines, node
 - Use generated data defensively. If `window.SKILLS_SHOWCASE_DATA` is missing or malformed, show the missing-data panel and keep static brand/CTA sections usable.
 - If Clipboard API is unavailable, copy controls should degrade gracefully or not render.
 - Consider `localStorage` only for harmless UI preferences such as reduced motion override or last selected workflow; V1 does not require persistence.
-- Do not add telemetry, auth, forms, or API routes.
+- Add newsletter/email capture as a static/provider-backed form with provider-missing, pending, success, and error states.
+- Do not add visitor-tracking analytics, auth, first-party API routes, or live LexCorp metrics.
 - Do not create or modify GitHub Actions workflows.
 
 ## Open Questions
 
 - Final production domain/subdomain for the Vercel deployment.
+- Newsletter/email provider and endpoint for the launch form.
 - Whether to route Discord through a durable LexCorp redirect later.
-- Whether future V2 should add newsletter/email capture after distribution infrastructure is selected.
-- Whether future V2 should embed live LexCorp War Room metrics or keep the showcase fully static.
+- Whether future V2 should add a separate LexCorp proof surface or keep LexCorp as a narrative/funnel destination.
 
 ## Risks
 
@@ -691,13 +703,15 @@ All workflow illustrations should be built with HTML/CSS/JS: panels, lines, node
 - If the blueprint motif becomes too decorative, it can reduce readability or make the site feel less credible.
 - If the page over-optimizes for following before proof, conversion quality may drop. This is mitigated by making `Explore the Library` primary.
 - If the Discord invite expires, the community CTA breaks. A durable redirect would mitigate this later.
+- If the newsletter endpoint is not configured before launch, the form must clearly degrade to a non-collecting follow/community CTA.
+- If GitHub public metrics cannot refresh because of rate limits or missing token, proof panels must show static receipts instead of stale-looking live claims.
 
 ## Explicit Non-Goals
 
 - No database-backed UI.
 - No video or Remotion.
-- No forms, auth, telemetry, newsletter capture, or admin UI.
+- No auth, admin UI, custom newsletter backend, visitor-tracking analytics, or live LexCorp metrics.
 - No hosted skill execution.
-- No multi-page app router.
+- No framework app router or runtime server; multi-page static routing is in scope.
 - No GitHub Actions.
 - No broad redesign of README or docs as part of the UI implementation.
