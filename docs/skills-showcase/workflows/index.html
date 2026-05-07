@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Workflow Lab / agentic-skills</title>
+    <link rel="stylesheet" href="../styles.css">
+  </head>
+  <body>
+    <header class="site-header"><div class="nav-shell"><a class="brand" href="../"><strong>G / agentic-skills</strong><span>OSS-AGENTIC-01</span></a><nav class="main-nav" aria-label="Primary navigation"><a href="../workflows/" aria-current="page">Workflows</a><a href="../packs/">Packs</a><a href="../catalog/">Catalog</a><a href="../inspect/">Inspect</a></nav><div class="nav-actions"><a href="https://leexperimental.com">LexCorp</a><a class="button secondary" href="../follow/">Follow</a></div><button class="menu-button" type="button" aria-label="Open navigation" aria-expanded="false" data-menu-button><span class="menu-icon" aria-hidden="true"></span></button></div></header>
+    <div class="mobile-panel" data-mobile-panel data-open="false"><nav aria-label="Mobile navigation"><a href="../workflows/">Workflows</a><a href="../packs/">Packs</a><a href="../catalog/">Catalog</a><a href="../inspect/">Inspect</a><a href="https://leexperimental.com">LexCorp</a><a href="../follow/">Follow</a></nav></div>
+    <main class="page">
+      <section class="section grid-12" aria-labelledby="workflow-title">
+        <div class="span-12">
+          <p class="eyebrow">Workflow Lab</p>
+          <h1 id="workflow-title">Watch the system move from intent to shipped work.</h1>
+          <p class="lede">The full animation layer lands in Phase 33. This foundation keeps the workflow selection, artifact notes, and reduced-motion-safe text structure ready for that pass.</p>
+        </div>
+        <div class="span-4 workflow-list" aria-label="Workflow selector">
+          <button class="workflow-item" type="button" data-workflow="first">First Successful Cycle</button>
+          <button class="workflow-item" type="button" data-workflow="packs">Pack Selection</button>
+          <button class="workflow-item" type="button" data-workflow="ship">Plan -&gt; Run -&gt; Ship</button>
+          <button class="workflow-item" type="button" data-workflow="spec">Spec -&gt; Roadmap -&gt; Implementation</button>
+        </div>
+        <article class="blueprint-panel span-8">
+          <div class="panel-header"><strong data-workflow-title>First Successful Cycle</strong><span class="coordinate">LAB-01</span></div>
+          <p class="lede" data-workflow-copy></p>
+          <div class="state-machine" aria-label="Workflow state machine">
+            <div class="state-node"><strong>Trigger</strong><span class="command">request</span></div>
+            <div class="state-node"><strong>Plan</strong><span class="command">tasks/todo.md</span></div>
+            <div class="state-node"><strong>Execute</strong><span class="command">$run</span></div>
+            <div class="state-node"><strong>Verify</strong><span class="command">scripts + tests</span></div>
+            <div class="state-node"><strong>Ship</strong><span class="command">commit + push</span></div>
+          </div>
+          <h3>Artifacts</h3>
+          <ul class="artifact-list" data-workflow-artifacts></ul>
+        </article>
+      </section>
+    </main>
+    <script src="../app.js"></script>
+  </body>
+</html>
