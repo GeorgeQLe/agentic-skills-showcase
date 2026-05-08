@@ -1015,8 +1015,89 @@
     });
   }
 
+  function initNewsletterForm() {
+    const form = document.querySelector("[data-newsletter-form]");
+    if (!(form instanceof HTMLFormElement)) return;
+
+    const input = form.querySelector('input[name="email"]');
+    const submit = form.querySelector('button[type="submit"]');
+    const status = form.querySelector("[data-newsletter-status]");
+    const stateTags = Array.from(form.querySelectorAll("[data-newsletter-state]"));
+    if (!(input instanceof HTMLInputElement) || !(submit instanceof HTMLButtonElement) || !status) return;
+
+    function endpoint() {
+      return text(form.dataset.providerEndpoint);
+    }
+
+    function setState(state, message) {
+      form.dataset.newsletterStatus = state;
+      status.dataset.status = state;
+      status.textContent = message;
+      input.setAttribute("aria-invalid", String(state === "invalid-email"));
+      submit.disabled = state === "pending";
+      submit.setAttribute("aria-busy", String(state === "pending"));
+      stateTags.forEach((tag) => {
+        tag.setAttribute("aria-current", String(tag.dataset.newsletterState === state));
+      });
+    }
+
+    function validEmail(value) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+    }
+
+    setState(
+      endpoint() ? "ready" : "provider-missing",
+      endpoint()
+        ? "Provider endpoint configured. Enter an email address to join the list."
+        : "Provider endpoint missing. This static page is not collecting email addresses yet."
+    );
+
+    input.addEventListener("input", () => {
+      if (input.getAttribute("aria-invalid") === "true" && validEmail(input.value.trim())) {
+        setState(
+          endpoint() ? "ready" : "provider-missing",
+          endpoint()
+            ? "Email format looks valid. Submit when ready."
+            : "Provider endpoint missing. This static page is not collecting email addresses yet."
+        );
+      }
+    });
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const email = input.value.trim();
+      if (!validEmail(email)) {
+        setState("invalid-email", "Enter a valid email address before joining the list.");
+        input.focus();
+        return;
+      }
+
+      const providerEndpoint = endpoint();
+      if (!providerEndpoint) {
+        setState("provider-missing", "Provider endpoint missing. No email was collected; use YouTube, X / Twitter, GitHub, or Discord for now.");
+        return;
+      }
+
+      setState("pending", "Submitting to the configured static provider...");
+      try {
+        const body = new URLSearchParams(new FormData(form));
+        const response = await fetch(providerEndpoint, {
+          method: "POST",
+          headers: { Accept: "application/json" },
+          body
+        });
+        if (!response.ok) throw new Error(`Provider returned ${response.status}`);
+        form.reset();
+        setState("success", "You're on the list. Watch the public channels for the next workflow drop.");
+      } catch (error) {
+        setState("error", "The provider submission failed. Try again later or follow through the public channels.");
+      }
+    });
+  }
+
   renderCatalog();
   renderPacks();
   renderProof();
   renderFollowProof();
+  initNewsletterForm();
 })();

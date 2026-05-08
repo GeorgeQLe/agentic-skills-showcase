@@ -82,17 +82,28 @@
       </section>
 
       <section class="section grid-12" aria-labelledby="newsletter-title">
-        <form class="form-panel span-12 newsletter-preview" aria-labelledby="newsletter-title">
+        <form class="form-panel span-12 newsletter-form" aria-labelledby="newsletter-title" data-newsletter-form data-provider-endpoint="">
           <div>
             <p class="eyebrow">Newsletter</p>
-            <h2 id="newsletter-title">Email capture is staged for the provider contract.</h2>
-            <p class="lede">Step 34.2 will add configured-provider submission states. Until then this static route does not collect addresses.</p>
+            <h2 id="newsletter-title">Get the next workflow drop.</h2>
+            <p class="lede">The form can submit to a configured static provider endpoint. With no endpoint configured, it stays non-collecting and routes visitors to public follow/community channels.</p>
           </div>
-          <div class="newsletter-controls">
-            <input type="email" placeholder="email@example.com" disabled aria-label="Email address">
-            <button class="button secondary" type="button" disabled>Provider pending</button>
+          <div class="newsletter-controls" data-newsletter-controls>
+            <label>
+              <span class="eyebrow">Email</span>
+              <input name="email" type="email" inputmode="email" autocomplete="email" placeholder="email@example.com" aria-describedby="newsletter-status">
+            </label>
+            <button class="button secondary" type="submit">Join the list</button>
           </div>
-          <p class="coordinate">Current state: provider missing, non-collecting fallback.</p>
+          <div class="newsletter-state-row" aria-label="Newsletter form states">
+            <span class="tag" data-newsletter-state="provider-missing">provider missing</span>
+            <span class="tag" data-newsletter-state="invalid-email">invalid email</span>
+            <span class="tag" data-newsletter-state="pending">pending</span>
+            <span class="tag" data-newsletter-state="success">success</span>
+            <span class="tag" data-newsletter-state="error">error</span>
+          </div>
+          <p class="notice newsletter-status" id="newsletter-status" role="status" aria-live="polite" data-newsletter-status>Provider endpoint missing. This static page is not collecting email addresses yet.</p>
+          <p class="coordinate">Configure by setting <code>data-provider-endpoint</code> on this form to the static form provider URL.</p>
         </form>
       </section>
     </main>
