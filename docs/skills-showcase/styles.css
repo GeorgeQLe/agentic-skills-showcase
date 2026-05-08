@@ -288,6 +288,7 @@ h3 {
 .route-card,
 .follow-card,
 .follow-proof-panel,
+.proof-summary-panel,
 .workflow-item,
 .proof-item,
 .catalog-row,
@@ -433,6 +434,7 @@ code {
 .route-card,
 .follow-card,
 .follow-proof-panel,
+.proof-summary-panel,
 .workflow-item,
 .proof-item,
 .catalog-row,
@@ -575,6 +577,35 @@ code {
 
 .newsletter-status[data-status="provider-missing"] {
   border-color: var(--amber);
+}
+
+.proof-summary-panel {
+  display: grid;
+  gap: 12px;
+  align-self: stretch;
+}
+
+.proof-summary-panel h2 {
+  margin-bottom: 0;
+  font-size: clamp(1.8rem, 4vw, 3.2rem);
+}
+
+.proof-summary-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.proof-summary-list li {
+  border-left: 3px solid var(--blue);
+  padding-left: 10px;
+}
+
+.proof-funnel-note a {
+  display: inline-flex;
+  margin-left: 8px;
 }
 
 .workflow-list {
@@ -1105,6 +1136,7 @@ code {
   .route-card,
   .follow-card,
   .follow-proof-panel,
+  .proof-summary-panel,
   .workflow-item,
   .proof-item,
   .catalog-row,

@@ -11,12 +11,21 @@
     <div class="mobile-panel" data-mobile-panel data-open="false"><nav aria-label="Mobile navigation"><a href="../workflows/">Workflows</a><a href="../packs/">Packs</a><a href="../catalog/">Catalog</a><a href="../inspect/">Inspect</a><a href="https://leexperimental.com">LexCorp</a><a href="../follow/">Follow</a></nav></div>
     <main class="page">
       <section class="section grid-12" aria-labelledby="inspect-title">
-        <div class="span-12">
+        <div class="span-8">
           <p class="eyebrow">Proof Surface</p>
           <h1 id="inspect-title">Receipts first, claims second.</h1>
-          <p class="lede">Proof data is generated into a committed static file. This route shows repository receipts, validation commands, GitHub fallback status, and explicit claim boundaries.</p>
+          <p class="lede">Proof data is generated into a committed static file. This route shows public repository receipts, local validation commands, GitHub fallback status, route freshness, and explicit claim boundaries.</p>
+          <div class="cta-row">
+            <a class="button secondary" href="../follow/">Follow from proof</a>
+            <a class="button secondary" href="https://github.com/GeorgeQLe/agentic-skills">Open GitHub</a>
+          </div>
         </div>
+        <aside class="span-4 proof-summary-panel" aria-label="Generated proof telemetry summary" data-proof-summary></aside>
         <div class="notice span-12" data-proof-missing hidden>Generated proof data is missing or malformed. Run `node scripts/generate-skills-showcase-github-data.mjs` and `scripts/validate-skills-showcase-data.sh`.</div>
+        <div class="notice span-12 proof-funnel-note">
+          Static telemetry can prove repository artifacts, validation commands, generated-data freshness, and fallback behavior. It does not prove live LexCorp product adoption, community membership, visitor analytics, or newsletter performance.
+          <a href="../follow/">Choose a follow/community path</a>.
+        </div>
         <div class="span-12 proof-grid" data-proof-artifacts></div>
         <div class="span-12 proof-grid" data-proof-validation></div>
         <div class="span-12 proof-grid" data-proof-history></div>

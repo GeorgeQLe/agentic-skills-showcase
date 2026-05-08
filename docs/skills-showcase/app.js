@@ -822,6 +822,7 @@
     const historyTarget = document.querySelector("[data-proof-history]");
     const boundaryTarget = document.querySelector("[data-proof-boundaries]");
     const missingData = document.querySelector("[data-proof-missing]");
+    const summaryTarget = document.querySelector("[data-proof-summary]");
 
     const artifacts = Array.isArray(proofData.proofArtifacts) ? proofData.proofArtifacts : [];
     const validationScripts = Array.isArray(proofData.validationScripts) ? proofData.validationScripts : [];
@@ -884,6 +885,30 @@
       return card;
     }
 
+    if (summaryTarget) {
+      summaryTarget.innerHTML = "";
+      const label = document.createElement("span");
+      label.className = "coordinate";
+      label.textContent = "generated static telemetry";
+      const heading = document.createElement("h2");
+      heading.textContent = `${artifacts.length} artifacts / ${validationScripts.length} checks`;
+      const copy = document.createElement("p");
+      const publicStatus = proofData.publicGithub && proofData.publicGithub.status ? proofData.publicGithub.status : "static";
+      copy.textContent = `Repository evidence uses ${proofData.repository && proofData.repository.revisionPolicy ? proofData.repository.revisionPolicy.status : "tracked"} freshness with ${publicStatus} public GitHub enrichment.`;
+      const list = document.createElement("ul");
+      list.className = "proof-summary-list";
+      [
+        "Static route evidence only",
+        "Public GitHub or local git fallback",
+        "No LexCorp live metrics or visitor analytics"
+      ].forEach((item) => {
+        const row = document.createElement("li");
+        row.textContent = item;
+        list.appendChild(row);
+      });
+      summaryTarget.append(label, heading, copy, list);
+    }
+
     artifactTarget.innerHTML = "";
     if (proofData.repository && proofData.repository.url) {
       const revisionStatus = proofData.repository.revisionPolicy ? proofData.repository.revisionPolicy.status : "repository";
@@ -929,6 +954,14 @@
       boundaryTarget.innerHTML = "<strong>Boundary:</strong>";
       const list = document.createElement("ul");
       boundaries.forEach((boundary) => {
+        const item = document.createElement("li");
+        item.textContent = boundary;
+        list.appendChild(item);
+      });
+      [
+        "Follow, Discord, LexCorp, and newsletter actions are conversion paths, not measured outcomes in this static proof file.",
+        "Newsletter provider behavior is configured outside this repository and is not counted here."
+      ].forEach((boundary) => {
         const item = document.createElement("li");
         item.textContent = boundary;
         list.appendChild(item);
@@ -980,6 +1013,12 @@
         body: text(script.command, script.path),
         href: sourceLink(script.path)
       })),
+      {
+        status: publicStatus,
+        title: "GitHub enrichment boundary",
+        body: proofData.publicGithub && proofData.publicGithub.reason ? proofData.publicGithub.reason : "Public GitHub metadata is optional; local git evidence remains the fallback.",
+        href: proofData.publicGithub && proofData.publicGithub.url ? proofData.publicGithub.url : null
+      },
       ...historyEntries.slice(0, 1).map((entry) => ({
         status: "history",
         title: entry,
