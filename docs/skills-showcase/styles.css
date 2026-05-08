@@ -377,12 +377,18 @@ code {
   border-bottom: 0;
 }
 
-.metrics {
+.metrics,
+.pack-summary {
   display: grid;
   grid-column: 1 / -1;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
   margin-top: 24px;
+}
+
+.pack-summary {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 24px 0;
 }
 
 .metric {
@@ -470,6 +476,7 @@ code {
   padding-left: 12px;
 }
 
+.proof-grid,
 .pack-map {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -492,17 +499,23 @@ code {
 
 .catalog-tools {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 180px 180px;
+  grid-template-columns: minmax(0, 1fr) repeat(3, minmax(140px, 180px));
   gap: 10px;
   margin-bottom: 14px;
 }
 
 .catalog-tools input,
 .catalog-tools select {
+  width: 100%;
   min-height: 44px;
   border: 1px solid var(--line);
   padding: 10px 12px;
   background: var(--panel);
+}
+
+.catalog-list {
+  display: grid;
+  gap: 10px;
 }
 
 .catalog-row {
@@ -510,7 +523,22 @@ code {
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 14px;
   align-items: start;
-  margin-bottom: 10px;
+}
+
+.catalog-row details {
+  margin-top: 12px;
+}
+
+.catalog-row summary {
+  cursor: pointer;
+  color: var(--blue-strong);
+  font-weight: 750;
+}
+
+.catalog-row p,
+.pack-node p,
+.proof-item p {
+  overflow-wrap: anywhere;
 }
 
 .tag {
@@ -630,6 +658,8 @@ code {
 
   .state-machine,
   .metrics,
+  .pack-summary,
+  .proof-grid,
   .pack-map,
   .footer-grid {
     grid-template-columns: 1fr;
@@ -644,6 +674,10 @@ code {
   }
 
   .catalog-tools {
+    grid-template-columns: 1fr;
+  }
+
+  .catalog-row {
     grid-template-columns: 1fr;
   }
 }

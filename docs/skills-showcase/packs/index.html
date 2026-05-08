@@ -13,17 +13,13 @@
       <section class="section" aria-labelledby="packs-title">
         <p class="eyebrow">Pack Map</p>
         <h1 id="packs-title">Load the workflows a project actually needs.</h1>
-        <p class="lede">Packs keep context focused by separating global foundations, domain workflows, and overlays. Generated counts arrive with the Phase 32 data step.</p>
-        <div class="pack-map" aria-label="Static pack foundation">
-          <div class="pack-node core"><span class="tag">global core</span><h3>Planning + shipping</h3><p>Roadmap, run, ship, hygiene, review, debug, and release workflows.</p></div>
-          <div class="pack-node"><span class="tag">domain pack</span><h3>Devtool / business / game</h3><p>Project-shape workflows install locally instead of globally crowding every session.</p></div>
-          <div class="pack-node overlay"><span class="tag">overlay</span><h3>Kanban + monorepo</h3><p>Overlays adapt execution and task flow without replacing the core operating model.</p></div>
-          <div class="pack-node"><span class="tag">creator</span><h3>Creator media</h3><p>Research, platform evidence, and media workflows remain scoped to creator projects.</p></div>
-          <div class="pack-node"><span class="tag">build</span><h3>Remotion</h3><p>Video production skills stay separate from general creator research lanes.</p></div>
-          <div class="pack-node"><span class="tag">quality</span><h3>Code quality</h3><p>Adversarial review and validation lanes support safer mutation and shipping.</p></div>
-        </div>
+        <p class="lede">Packs keep context focused by separating global foundations, domain workflows, and overlays. Pack names, platform coverage, and skill counts are generated from repository metadata.</p>
+        <div class="pack-summary" data-pack-summary></div>
+        <div class="notice" data-pack-missing hidden>Generated pack data is missing or malformed. Run `node scripts/generate-skills-showcase-data.mjs` and `scripts/validate-skills-showcase-data.sh`.</div>
+        <div class="pack-map" data-pack-map aria-label="Generated pack map"></div>
       </section>
     </main>
+    <script src="../assets/skills-data.js"></script>
     <script src="../app.js"></script>
   </body>
 </html>

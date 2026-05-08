@@ -13,18 +13,19 @@
       <section class="section" aria-labelledby="catalog-title">
         <p class="eyebrow">Generated Catalog</p>
         <h1 id="catalog-title">Every source skill gets an inspectable row.</h1>
-        <p class="lede">This route is wired for the generated data step. The current rows prove the compact search and row foundation before `skills-data.js` exists.</p>
+        <p class="lede">Search the committed static catalog generated from every source skill. Counts, commands, platform labels, and source paths come from `skills-data.js`.</p>
         <div class="catalog-tools" role="search">
-          <label><span class="eyebrow">Search</span><input type="search" data-catalog-search placeholder="Search sample rows"></label>
-          <label><span class="eyebrow">Platform</span><select><option>All platforms</option><option>Claude</option><option>Codex</option></select></label>
-          <label><span class="eyebrow">Scope</span><select><option>All scopes</option><option>Global</option><option>Packs</option></select></label>
+          <label><span class="eyebrow">Search</span><input type="search" data-catalog-search placeholder="Search skills, commands, paths"></label>
+          <label><span class="eyebrow">Platform</span><select data-catalog-platform><option value="all">All platforms</option><option value="claude">Claude</option><option value="codex">Codex</option></select></label>
+          <label><span class="eyebrow">Type</span><select data-catalog-type><option value="all">All types</option></select></label>
+          <label><span class="eyebrow">Scope</span><select data-catalog-scope><option value="all">All scopes</option><option value="global">Global</option><option value="pack">Packs</option></select></label>
         </div>
-        <p class="coordinate"><span data-catalog-count>0</span> visible sample rows</p>
-        <article class="catalog-row" data-catalog-row><div><h3>run</h3><p>Execute the next incomplete step, validate, document, and ship.</p><div class="chip-row"><span class="tag">codex</span><span class="tag">execution</span><span class="tag">$run</span></div></div><span class="status-warn">generated soon</span></article>
-        <article class="catalog-row" data-catalog-row><div><h3>feature-interview</h3><p>Interview a feature idea into an evidence-backed direction.</p><div class="chip-row"><span class="tag">global</span><span class="tag">planning</span><span class="tag">$feature-interview</span></div></div><span class="status-warn">generated soon</span></article>
-        <article class="catalog-row" data-catalog-row><div><h3>ship</h3><p>Package finished work with validation, history, commit, and push.</p><div class="chip-row"><span class="tag">codex</span><span class="tag">shipping</span><span class="tag">$ship</span></div></div><span class="status-warn">generated soon</span></article>
+        <p class="coordinate" aria-live="polite"><span data-catalog-count>0</span> of <span data-catalog-total>0</span> generated rows visible</p>
+        <div class="notice" data-catalog-missing hidden>Generated catalog data is missing or malformed. Run `node scripts/generate-skills-showcase-data.mjs` and `scripts/validate-skills-showcase-data.sh`.</div>
+        <div class="catalog-list" data-catalog-list></div>
       </section>
     </main>
+    <script src="../assets/skills-data.js"></script>
     <script src="../app.js"></script>
   </body>
 </html>
