@@ -937,7 +937,86 @@
     }
   }
 
+  function renderFollowProof() {
+    const statsTarget = document.querySelector("[data-follow-proof-stats]");
+    const receiptTarget = document.querySelector("[data-follow-receipts]");
+    if (!statsTarget && !receiptTarget) return;
+
+    const proofData = window.SKILLS_SHOWCASE_GITHUB_PROOF_DATA || {};
+    const artifacts = Array.isArray(proofData.proofArtifacts) ? proofData.proofArtifacts : [];
+    const validationScripts = Array.isArray(proofData.validationScripts) ? proofData.validationScripts : [];
+    const historyEntries = Array.isArray(proofData.recentHistoryEntries) ? proofData.recentHistoryEntries : [];
+    const publicStatus = proofData.publicGithub && proofData.publicGithub.status ? proofData.publicGithub.status : "static";
+
+    if (statsTarget) {
+      statsTarget.innerHTML = "";
+      [
+        [String(artifacts.length || "static"), "proof artifacts"],
+        [String(validationScripts.length || "tracked"), "validation scripts"],
+        [publicStatus, "GitHub metadata"]
+      ].forEach(([value, label]) => {
+        const item = document.createElement("div");
+        const valueNode = document.createElement("strong");
+        valueNode.textContent = value;
+        const labelNode = document.createElement("span");
+        labelNode.textContent = label;
+        item.append(valueNode, labelNode);
+        statsTarget.appendChild(item);
+      });
+    }
+
+    if (!receiptTarget) return;
+    receiptTarget.innerHTML = "";
+    const receiptRows = [
+      ...artifacts.slice(0, 2).map((artifact) => ({
+        status: artifact.tracked ? "tracked" : "available",
+        title: text(artifact.title, toTitle(artifact.id)),
+        body: text(artifact.path, "Static repository proof."),
+        href: sourceLink(artifact.path)
+      })),
+      ...validationScripts.slice(0, 1).map((script) => ({
+        status: "validation",
+        title: text(script.title, toTitle(script.id)),
+        body: text(script.command, script.path),
+        href: sourceLink(script.path)
+      })),
+      ...historyEntries.slice(0, 1).map((entry) => ({
+        status: "history",
+        title: entry,
+        body: "Recent shipped work from generated static proof data.",
+        href: sourceLink("tasks/history.md")
+      }))
+    ];
+
+    if (!receiptRows.length) {
+      renderEmpty(receiptTarget, "Static proof preview is unavailable. Inspect route links remain available.");
+      return;
+    }
+
+    receiptRows.forEach((row) => {
+      const card = document.createElement("article");
+      card.className = "proof-item";
+      const status = document.createElement("span");
+      status.className = row.status === "fallback" ? "status-warn" : "status-ok";
+      status.textContent = row.status;
+      const heading = document.createElement("h3");
+      heading.textContent = row.title;
+      const copy = document.createElement("p");
+      if (row.href) {
+        const anchor = document.createElement("a");
+        anchor.href = row.href;
+        anchor.textContent = row.body;
+        copy.appendChild(anchor);
+      } else {
+        copy.textContent = row.body;
+      }
+      card.append(status, heading, copy);
+      receiptTarget.appendChild(card);
+    });
+  }
+
   renderCatalog();
   renderPacks();
   renderProof();
+  renderFollowProof();
 })();

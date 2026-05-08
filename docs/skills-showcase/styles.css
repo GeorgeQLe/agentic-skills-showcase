@@ -286,6 +286,8 @@ h3 {
 .blueprint-panel,
 .metric,
 .route-card,
+.follow-card,
+.follow-proof-panel,
 .workflow-item,
 .proof-item,
 .catalog-row,
@@ -429,6 +431,8 @@ code {
 }
 
 .route-card,
+.follow-card,
+.follow-proof-panel,
 .workflow-item,
 .proof-item,
 .catalog-row,
@@ -445,6 +449,83 @@ code {
 .route-card:hover {
   border-color: var(--blue);
   color: var(--ink);
+}
+
+.follow-hero {
+  align-items: center;
+  padding-bottom: 36px;
+}
+
+.follow-proof-panel {
+  min-height: 360px;
+}
+
+.follow-proof-panel h2 {
+  max-width: 10ch;
+  font-size: clamp(2.2rem, 5vw, 4.5rem);
+}
+
+.follow-proof-stats,
+.newsletter-controls {
+  display: grid;
+  gap: 10px;
+}
+
+.follow-proof-stats {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 24px;
+}
+
+.follow-proof-stats div {
+  border: 1px solid var(--line);
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.follow-proof-stats strong,
+.follow-proof-stats span {
+  display: block;
+}
+
+.follow-proof-stats strong {
+  font-size: 1.1rem;
+}
+
+.follow-proof-stats span {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+}
+
+.follow-card {
+  min-height: 250px;
+}
+
+.follow-card .link-row {
+  display: flex;
+  width: fit-content;
+}
+
+.follow-receipt-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.newsletter-preview {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.6fr);
+  gap: 20px;
+  align-items: center;
+}
+
+.newsletter-controls input {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  padding: 10px 12px;
+  background: var(--panel);
 }
 
 .workflow-list {
@@ -876,6 +957,9 @@ code {
   .metrics,
   .pack-summary,
   .proof-grid,
+  .follow-proof-stats,
+  .follow-receipt-grid,
+  .newsletter-preview,
   .pack-map,
   .pack-layout,
   .workflow-progress,
@@ -968,12 +1052,15 @@ code {
   }
 
   .route-card,
+  .follow-card,
+  .follow-proof-panel,
   .workflow-item,
   .proof-item,
   .catalog-row,
   .pack-node,
   .pack-detail,
   .pack-band,
+  .form-panel,
   .notice {
     padding: 14px;
   }
