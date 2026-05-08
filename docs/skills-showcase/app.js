@@ -623,7 +623,12 @@
     if (!packMap) return;
 
     const summary = document.querySelector("[data-pack-summary]");
+    const controls = Array.from(document.querySelectorAll("[data-pack-filter]"));
+    const overlayToggle = document.querySelector("[data-pack-overlays]");
+    const detail = document.querySelector("[data-pack-detail]");
     const missingData = document.querySelector("[data-pack-missing]");
+    let activeFilter = "all";
+    let activePackName = "";
 
     if (!packs.length) {
       if (missingData) missingData.hidden = false;
@@ -645,22 +650,116 @@
       });
     }
 
-    packMap.innerHTML = "";
-    packs.forEach((pack) => {
-      const node = document.createElement("article");
+    const packAnnotations = {
+      "alignment-loop": ["domain", "business", "planning"],
+      "business-app-kanban": ["overlay", "business", "kanban"],
+      "business-discovery": ["domain", "business"],
+      "business-growth": ["domain", "business"],
+      "business-ops": ["domain", "business"],
+      "code-quality": ["overlay", "quality"],
+      "creator-foundation": ["domain", "creator"],
+      devtool: ["domain", "devtool", "alias"],
+      "devtool-kanban": ["overlay", "devtool", "kanban"],
+      game: ["domain", "game", "alias"],
+      "game-kanban": ["overlay", "game", "kanban"],
+      monorepo: ["overlay", "monorepo"],
+      "poketowork-kanban": ["overlay", "kanban", "alias"],
+      "project-fleet": ["domain", "business"],
+      remotion: ["domain", "creator"],
+      "youtube-ops": ["domain", "creator"]
+    };
+
+    const packPurpose = {
+      "alignment-loop": "Keeps decision loops explicit when strategy, research, and implementation need repeated alignment.",
+      "business-app-kanban": "Kanban execution overlay for business application projects.",
+      "business-discovery": "Researches market, user, ICP, and product direction before build work.",
+      "business-growth": "Supports acquisition, monetization, launch, and growth-system work.",
+      "business-ops": "Covers operating workflows for internal business systems and repeatable delivery.",
+      "code-quality": "Adds adversarial review and quality gates around risky source changes.",
+      "creator-foundation": "Builds creator research foundations, evidence schemas, and platform dossiers.",
+      devtool: "Compatibility alias for devtool workflow coverage.",
+      "devtool-kanban": "Kanban execution overlay for developer-tool product work.",
+      game: "Compatibility alias for game workflow coverage.",
+      "game-kanban": "Kanban execution overlay for game development work.",
+      monorepo: "Adds package-boundary planning, lane specs, and monorepo validation guardrails.",
+      "poketowork-kanban": "Compatibility kanban overlay for Poketowork-style project boards.",
+      "project-fleet": "Coordinates portfolio and multi-project fleet operations.",
+      remotion: "Scopes video-production workflows away from general creator research.",
+      "youtube-ops": "Handles YouTube-specific research, operations, and evidence workflows."
+    };
+
+    function annotatedPack(pack) {
       const name = text(pack.name);
-      const isOverlay = name.includes("kanban") || name === "monorepo";
-      node.className = `pack-node${isOverlay ? " overlay" : ""}`;
+      const tags = packAnnotations[name] || ["domain"];
+      const overlay = tags.includes("overlay") || name.includes("kanban") || name === "monorepo";
+      const alias = tags.includes("alias") || !pack.path;
+      return { name, tags, overlay, alias, purpose: packPurpose[name] || text(pack.description, `${pack.skillCount || 0} generated skills are available for this pack.`) };
+    }
+
+    function packMatches(annotation) {
+      const showOverlays = !overlayToggle || overlayToggle.checked;
+      if (annotation.overlay && !showOverlays) return false;
+      return activeFilter === "all" || annotation.tags.includes(activeFilter);
+    }
+
+    function setActivePack(pack, annotation) {
+      activePackName = annotation.name;
+      Array.from(packMap.querySelectorAll(".pack-node")).forEach((node) => {
+        node.setAttribute("aria-selected", String(node.dataset.packName === activePackName));
+      });
+      if (!detail) return;
+      const install = pack.path ? `./scripts/pack.sh enable ${annotation.name}` : `./scripts/pack.sh enable ${annotation.name} (compatibility alias)`;
+      const relatedSkills = skills
+        .filter((skill) => skill.pack === annotation.name || skill.path.includes(`/${annotation.name}/`))
+        .slice(0, 5);
+      detail.innerHTML = "";
+      const title = document.createElement("h3");
+      title.textContent = text(pack.title, toTitle(annotation.name));
+      const purpose = document.createElement("p");
+      purpose.textContent = annotation.purpose;
+      const command = document.createElement("p");
+      command.className = "command";
+      command.textContent = install;
+      const skillsList = document.createElement("ul");
+      skillsList.className = "artifact-list";
+      relatedSkills.forEach((skill) => {
+        const item = document.createElement("li");
+        item.textContent = `${skill.command}: ${skill.description}`;
+        skillsList.appendChild(item);
+      });
+      if (!relatedSkills.length) {
+        const item = document.createElement("li");
+        item.textContent = "Generated skill rows are available through alias or pack metadata.";
+        skillsList.appendChild(item);
+      }
+      const link = document.createElement("a");
+      link.className = "button secondary";
+      link.href = `../catalog/#pack-${encodeURIComponent(annotation.name)}`;
+      link.textContent = "View skills";
+      detail.append(makeTag(annotation.overlay ? "overlay" : "domain pack"), title, purpose, command, skillsList, link);
+    }
+
+    function createPackNode(pack) {
+      const annotation = annotatedPack(pack);
+      const node = document.createElement("article");
+      node.className = `pack-node${annotation.overlay ? " overlay" : ""}${annotation.alias ? " alias" : ""}`;
+      node.dataset.packName = annotation.name;
+      node.dataset.packTags = annotation.tags.join(" ");
+      node.tabIndex = 0;
+      node.setAttribute("role", "button");
+      node.setAttribute("aria-selected", "false");
 
       const chips = document.createElement("div");
       chips.className = "chip-row";
-      chips.appendChild(makeTag(isOverlay ? "overlay" : "domain pack"));
+      chips.appendChild(makeTag(annotation.overlay ? "overlay" : "domain pack"));
+      if (annotation.alias) chips.appendChild(makeTag("alias"));
+      annotation.tags.filter((tag) => !["overlay", "domain", "alias"].includes(tag)).forEach((tag) => chips.appendChild(makeTag(tag)));
       (Array.isArray(pack.platforms) ? pack.platforms : []).forEach((platform) => chips.appendChild(makeTag(platform)));
 
       const heading = document.createElement("h3");
-      heading.textContent = text(pack.title, toTitle(name));
+      heading.textContent = text(pack.title, toTitle(annotation.name));
       const copy = document.createElement("p");
-      copy.textContent = text(pack.description, `${pack.skillCount || 0} generated skills are available for this pack.`);
+      copy.textContent = annotation.purpose;
 
       const path = document.createElement("p");
       path.className = "coordinate";
@@ -675,8 +774,43 @@
       }
 
       node.append(chips, heading, copy, path);
-      packMap.appendChild(node);
+      node.addEventListener("click", () => setActivePack(pack, annotation));
+      node.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          setActivePack(pack, annotation);
+        }
+      });
+      return node;
+    }
+
+    function renderPackMap() {
+      packMap.innerHTML = "";
+      const visiblePacks = packs.filter((pack) => packMatches(annotatedPack(pack)));
+      visiblePacks.forEach((pack) => {
+        packMap.appendChild(createPackNode(pack));
+      });
+      if (!visiblePacks.length) {
+        renderEmpty(packMap, "No packs match the selected project type and overlay setting.");
+        if (detail) detail.innerHTML = "";
+        return;
+      }
+      const selected = visiblePacks.find((pack) => annotatedPack(pack).name === activePackName) || visiblePacks[0];
+      setActivePack(selected, annotatedPack(selected));
+    }
+
+    controls.forEach((control) => {
+      control.addEventListener("click", () => {
+        activeFilter = control.dataset.packFilter || "all";
+        controls.forEach((button) => button.setAttribute("aria-pressed", String(button === control)));
+        renderPackMap();
+      });
     });
+    if (overlayToggle) {
+      overlayToggle.addEventListener("change", renderPackMap);
+    }
+
+    renderPackMap();
   }
 
   function renderProof() {
