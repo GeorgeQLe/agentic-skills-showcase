@@ -14,26 +14,43 @@
         <div class="span-12">
           <p class="eyebrow">Workflow Lab</p>
           <h1 id="workflow-title">Watch the system move from intent to shipped work.</h1>
-          <p class="lede">The full animation layer lands in Phase 33. This foundation keeps the workflow selection, artifact notes, and reduced-motion-safe text structure ready for that pass.</p>
+          <p class="lede">Eight curated walkthroughs show when to use each workflow, what changes in the repo, what artifacts you get, and how recovery works when validation catches drift.</p>
         </div>
-        <div class="span-4 workflow-list" aria-label="Workflow selector">
-          <button class="workflow-item" type="button" data-workflow="first">First Successful Cycle</button>
-          <button class="workflow-item" type="button" data-workflow="packs">Pack Selection</button>
-          <button class="workflow-item" type="button" data-workflow="ship">Plan -&gt; Run -&gt; Ship</button>
-          <button class="workflow-item" type="button" data-workflow="spec">Spec -&gt; Roadmap -&gt; Implementation</button>
+        <div class="span-4 workflow-list" aria-label="Workflow selector" data-workflow-list>
+          <button class="workflow-item" type="button" data-workflow="first"><span class="tag">setup</span><strong>First Successful Cycle</strong><span>Install, select, validate, ship.</span></button>
+          <button class="workflow-item" type="button" data-workflow="packs"><span class="tag">planning</span><strong>Pack Selection</strong><span>Load only the workflows a project needs.</span></button>
+          <button class="workflow-item" type="button" data-workflow="ship"><span class="tag">shipping</span><strong>Plan -&gt; Run -&gt; Ship</strong><span>Turn one roadmap step into committed work.</span></button>
+          <button class="workflow-item" type="button" data-workflow="spec"><span class="tag">planning</span><strong>Spec -&gt; Roadmap -&gt; Implementation</strong><span>Move from idea to executable tasks.</span></button>
         </div>
-        <article class="blueprint-panel span-8">
-          <div class="panel-header"><strong data-workflow-title>First Successful Cycle</strong><span class="coordinate">LAB-01</span></div>
+        <article class="blueprint-panel workflow-panel span-8">
+          <div class="panel-header"><strong data-workflow-title>First Successful Cycle</strong><span class="coordinate" data-workflow-coordinate>LAB-01</span></div>
           <p class="lede" data-workflow-copy></p>
-          <div class="state-machine" aria-label="Workflow state machine">
-            <div class="state-node"><strong>Trigger</strong><span class="command">request</span></div>
-            <div class="state-node"><strong>Plan</strong><span class="command">tasks/todo.md</span></div>
-            <div class="state-node"><strong>Execute</strong><span class="command">$run</span></div>
-            <div class="state-node"><strong>Verify</strong><span class="command">scripts + tests</span></div>
-            <div class="state-node"><strong>Ship</strong><span class="command">commit + push</span></div>
+          <div class="workflow-stage" data-workflow-stage aria-live="polite"></div>
+          <div class="workflow-progress" data-workflow-progress aria-label="Workflow progress"></div>
+          <div class="workflow-controls" aria-label="Animation controls">
+            <button class="icon-button" type="button" data-workflow-prev aria-label="Previous step">Prev</button>
+            <button class="icon-button" type="button" data-workflow-toggle aria-label="Pause animation">Pause</button>
+            <button class="icon-button" type="button" data-workflow-next aria-label="Next step">Next</button>
+            <button class="icon-button" type="button" data-workflow-restart aria-label="Restart workflow">Reset</button>
           </div>
-          <h3>Artifacts</h3>
-          <ul class="artifact-list" data-workflow-artifacts></ul>
+          <div class="workflow-columns">
+            <section>
+              <h3>When to use this</h3>
+              <p data-workflow-when></p>
+            </section>
+            <section>
+              <h3>What changes</h3>
+              <ul class="artifact-list" data-workflow-changes></ul>
+            </section>
+            <section>
+              <h3>What you get</h3>
+              <ul class="artifact-list" data-workflow-artifacts></ul>
+            </section>
+            <section>
+              <h3>Failure / recovery path</h3>
+              <p data-workflow-failure></p>
+            </section>
+          </div>
         </article>
       </section>
     </main>

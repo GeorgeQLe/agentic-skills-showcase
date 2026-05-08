@@ -453,14 +453,131 @@ code {
 }
 
 .workflow-item {
+  display: grid;
+  gap: 6px;
   width: 100%;
   min-height: 72px;
   text-align: left;
+  border: 1px solid var(--line);
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.workflow-item strong {
+  display: block;
+  font-size: 0.98rem;
+}
+
+.workflow-item span:not(.tag):not(.command) {
+  color: var(--muted);
+  font-size: 0.88rem;
 }
 
 .workflow-item[aria-pressed="true"] {
   border-color: var(--blue);
   box-shadow: inset 4px 0 0 var(--blue);
+}
+
+.workflow-panel {
+  min-height: 640px;
+}
+
+.workflow-stage {
+  display: grid;
+  min-height: 210px;
+  align-items: stretch;
+  margin: 22px 0;
+}
+
+.stage-node {
+  position: relative;
+  display: grid;
+  gap: 12px;
+  align-content: center;
+  border: 1px solid var(--blue);
+  padding: 22px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: inset 4px 0 0 var(--green);
+}
+
+.stage-node strong {
+  font-size: clamp(1.6rem, 4vw, 3.3rem);
+  line-height: 0.98;
+}
+
+.stage-node p {
+  max-width: 44rem;
+  margin-bottom: 0;
+  color: var(--muted);
+}
+
+.workflow-progress {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin: 18px 0;
+}
+
+.progress-step {
+  min-height: 44px;
+  border: 1px solid var(--line);
+  padding: 8px;
+  background: var(--panel);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.progress-step[aria-current="true"] {
+  border-color: var(--blue);
+  color: var(--blue-strong);
+  box-shadow: inset 0 -3px 0 var(--blue);
+}
+
+.workflow-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 24px;
+}
+
+.icon-button {
+  min-height: 44px;
+  min-width: 64px;
+  border: 1px solid var(--line);
+  padding: 8px 12px;
+  background: var(--panel);
+  color: var(--ink);
+  cursor: pointer;
+  font-weight: 750;
+}
+
+.icon-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.workflow-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.workflow-columns section {
+  min-width: 0;
+}
+
+.workflow-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.workflow-preview-card {
+  min-height: 190px;
 }
 
 .artifact-list {
@@ -592,6 +709,10 @@ code {
     animation: node-pulse 8s ease-in-out infinite;
   }
 
+  .stage-node.active {
+    animation: stage-enter 0.46s ease-out;
+  }
+
   .state-node:nth-child(2) {
     animation-delay: 0.8s;
   }
@@ -606,6 +727,18 @@ code {
 
   .state-node:nth-child(5) {
     animation-delay: 3.2s;
+  }
+}
+
+@keyframes stage-enter {
+  from {
+    opacity: 0.62;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -661,8 +794,22 @@ code {
   .pack-summary,
   .proof-grid,
   .pack-map,
+  .workflow-progress,
+  .workflow-preview-grid,
+  .workflow-columns,
   .footer-grid {
     grid-template-columns: 1fr;
+  }
+
+  .workflow-panel {
+    min-height: 0;
+  }
+
+  .workflow-list {
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(230px, 1fr);
+    overflow-x: auto;
+    padding-bottom: 4px;
   }
 
   .state-node::after {

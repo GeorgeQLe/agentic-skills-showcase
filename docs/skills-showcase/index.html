@@ -81,9 +81,18 @@
         <div class="metrics" aria-label="Showcase facts">
           <div class="metric"><span class="metric-value">global + packs</span><span class="metric-label">skill scopes</span></div>
           <div class="metric"><span class="metric-value">Claude + Codex</span><span class="metric-label">agent surfaces</span></div>
-          <div class="metric"><span class="metric-value">static catalog</span><span class="metric-label">generated next</span></div>
+          <div class="metric"><span class="metric-value" data-skill-count>static catalog</span><span class="metric-label">generated skills</span></div>
           <div class="metric"><span class="metric-value">GitHub proof</span><span class="metric-label">open source</span></div>
         </div>
+      </section>
+
+      <section class="section grid-12" aria-labelledby="workflow-preview-title">
+        <div class="span-12">
+          <p class="eyebrow">Workflow proof</p>
+          <h2 id="workflow-preview-title">Eight ways work becomes inspectable.</h2>
+          <p class="lede">The workflow lab turns agent sessions into visible state changes: commands, task files, validation gates, handoffs, and shipped history.</p>
+        </div>
+        <div class="span-12 workflow-preview-grid" data-workflow-preview></div>
       </section>
 
       <section class="section grid-12" aria-labelledby="routes-title">
@@ -116,6 +125,7 @@
         <div><h3>Open Source</h3><a href="./catalog/">Skills catalog</a><a href="./inspect/">Inspect the system</a><p>Open-source workflow library for Claude Code and Codex.</p></div>
       </div>
     </footer>
+    <script src="./assets/skills-data.js"></script>
     <script src="./app.js"></script>
   </body>
 </html>
