@@ -899,6 +899,42 @@ code {
   font-weight: 750;
 }
 
+.benchmark-panel {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+  border-left: 3px solid var(--green);
+  padding: 10px 12px;
+  background: rgba(15, 138, 95, 0.06);
+}
+
+.benchmark-panel strong {
+  color: var(--green);
+}
+
+.benchmark-panel p {
+  margin: 0;
+}
+
+.benchmark-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(90px, auto));
+  gap: 4px 12px;
+  margin: 0;
+}
+
+.benchmark-metrics dt {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+}
+
+.benchmark-metrics dd {
+  margin: 0;
+  font-weight: 750;
+}
+
 .catalog-row p,
 .pack-node p,
 .pack-band p,

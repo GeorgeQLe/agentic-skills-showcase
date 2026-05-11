@@ -28,6 +28,47 @@
     return tag;
   }
 
+  function makeBenchmarkPanel(evidence) {
+    if (!evidence || !Array.isArray(evidence.agents) || !evidence.agents.length) return null;
+
+    const panel = document.createElement("div");
+    panel.className = "benchmark-panel";
+    const heading = document.createElement("strong");
+    heading.textContent = `Benchmark passed ${text(evidence.date)}`;
+    const summary = document.createElement("p");
+    const agents = evidence.agents.map((agent) => `${agent.agent} ${agent.passRate}`).join(" / ");
+    const quality = Array.isArray(evidence.quality) && evidence.quality.length
+      ? ` Quality: ${evidence.quality.map((row) => `${row.agent} ${row.averageQualityScore}`).join(" / ")}.`
+      : "";
+    summary.textContent = `${agents}.${quality}`;
+
+    const metrics = document.createElement("dl");
+    metrics.className = "benchmark-metrics";
+    evidence.agents.forEach((agent) => {
+      [
+        [`${agent.agent} p50`, agent.latencyP50],
+        [`${agent.agent} cost`, agent.totalCost]
+      ].forEach(([label, value]) => {
+        const term = document.createElement("dt");
+        term.textContent = label;
+        const detail = document.createElement("dd");
+        detail.textContent = text(value, "--");
+        metrics.append(term, detail);
+      });
+    });
+
+    const link = sourceLink(evidence.reportPath);
+    if (link) {
+      const anchor = document.createElement("a");
+      anchor.href = link;
+      anchor.textContent = text(evidence.reportPath);
+      panel.append(heading, summary, metrics, anchor);
+    } else {
+      panel.append(heading, summary, metrics);
+    }
+    return panel;
+  }
+
   function platformCountByMirrorKey() {
     const counts = new Map();
     skills.forEach((skill) => {
@@ -533,6 +574,10 @@
         skill.scope,
         skill.pack,
         skill.path,
+        skill.benchmarkEvidence ? skill.benchmarkEvidence.reportPath : "",
+        skill.benchmarkEvidence && Array.isArray(skill.benchmarkEvidence.agents)
+          ? skill.benchmarkEvidence.agents.map((agent) => `${agent.agent} ${agent.passRate}`).join(" ")
+          : "",
         Array.isArray(skill.tags) ? skill.tags.join(" ") : ""
       ]
         .map(text)
@@ -574,6 +619,9 @@
       if ((mirrorPlatformCounts.get(mirrorKey) || new Set()).size === 1) {
         chips.appendChild(makeTag("one-platform"));
       }
+      if (skill.benchmarkEvidence) {
+        chips.appendChild(makeTag("benchmark-passed"));
+      }
 
       const details = document.createElement("details");
       const summary = document.createElement("summary");
@@ -590,7 +638,10 @@
       }
       details.append(summary, path);
 
-      body.append(heading, description, chips, details);
+      const benchmarkPanel = makeBenchmarkPanel(skill.benchmarkEvidence);
+      body.append(heading, description, chips);
+      if (benchmarkPanel) body.appendChild(benchmarkPanel);
+      body.appendChild(details);
 
       const status = document.createElement("span");
       status.className = "status-ok";
