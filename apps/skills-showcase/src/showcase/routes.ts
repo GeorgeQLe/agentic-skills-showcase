@@ -1,0 +1,38 @@
+export type ShowcaseRoute = {
+  href: string;
+  label: string;
+  description: string;
+};
+
+export const showcaseRoutes = [
+  {
+    href: "/",
+    label: "Overview",
+    description: "Showcase landing surface migrated from the static index page."
+  },
+  {
+    href: "/workflows",
+    label: "Workflows",
+    description: "Workflow-oriented browsing surface for available skills."
+  },
+  {
+    href: "/packs",
+    label: "Packs",
+    description: "Pack-level grouping and distribution surface."
+  },
+  {
+    href: "/catalog",
+    label: "Catalog",
+    description: "Searchable skill catalog backed by generated metadata."
+  },
+  {
+    href: "/inspect",
+    label: "Inspect",
+    description: "Proof and metadata inspection surface."
+  },
+  {
+    href: "/follow",
+    label: "Follow",
+    description: "Non-persistent newsletter interest surface for Phase 37."
+  }
+] as const satisfies readonly ShowcaseRoute[];

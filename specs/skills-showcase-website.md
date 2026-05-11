@@ -339,7 +339,7 @@ No first-party runtime API exists in V1.
 Browser contract:
 
 - `window.SKILLS_SHOWCASE_DATA` must be loaded before `app.js` initializes catalog and workflow views.
-- `window.SKILLS_SHOWCASE_GITHUB_DATA` should load when GitHub/open-source proof metrics are available; the UI must degrade to static proof links if it is absent.
+- `window.SKILLS_SHOWCASE_GITHUB_PROOF_DATA` should load when GitHub/open-source proof metrics are available; the UI must degrade to static proof links if it is absent.
 - If data is missing or malformed, the site must render a visible fallback message instead of a blank page.
 
 Script contract:

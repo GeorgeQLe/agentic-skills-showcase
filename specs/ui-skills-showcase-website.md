@@ -214,21 +214,20 @@ Right blueprint panel:
 - Each node has a short command or artifact label:
   - `$spec-interview`
   - `specs/*.md`
-  - `$roadmap`
+  - `tasks/*.md`
   - `$run`
-  - `tasks/history.md + commit`
+  - `history + commit`
 - Animation should loop slowly only when reduced motion is not enabled.
 - Reduced-motion fallback shows all nodes in completed order.
 
 Stats strip:
 
-- `312 skill files`
-- `global + project-local packs`
-- `Claude Code + Codex`
+- Dynamic skill count from `skills-data.js` via `data-skill-count` (labeled as "source skills")
+- `global + packs` (labeled as "skill scopes")
+- `Claude Code + Codex` (labeled as "agent surfaces")
 - `generated static catalog`
-- `open-source on GitHub`
 
-Stats must be literal current repo facts. If counts become generated, the value should come from `skills-data.js`; otherwise the implementation must keep it visually separate from generated claims.
+Stats are populated dynamically from generated data. The skill count updates automatically when `skills-data.js` is regenerated.
 
 ### Workflow Lab
 
@@ -336,8 +335,8 @@ Layout:
 
 - Header:
   - Eyebrow: `CATALOG`
-  - H2: `Browse every skill in the open-source library.`
-  - Short copy: `Generated from SKILL.md metadata so the catalog stays tied to the source.`
+  - H1: `Every source skill gets an inspectable row.`
+  - Short copy: `Search the committed static catalog generated from every source skill. Counts, commands, platform labels, and source paths come from skills-data.js.`
 - Search/filter toolbar.
 - Results summary.
 - Compact expandable list.
@@ -395,9 +394,9 @@ Purpose: give visitors receipts they can inspect now that the repo is public.
 
 Header:
 
-- Eyebrow: `RECEIPTS`
-- H2: `Inspect the system.`
-- Supporting copy: `The workflow is public: specs, research, history, and validation scripts are visible in the repository.`
+- Eyebrow: `Proof Surface`
+- H1: `Receipts first, claims second.`
+- Supporting copy: proof-oriented description of public repository artifacts.
 
 Receipt tiles:
 
@@ -435,7 +434,7 @@ Purpose: convert proven interest into distribution.
 
 Layout:
 
-- Large section heading: `Follow G building the agentic engineering stack behind LexCorp.`
+- Large section heading: `Track the operating system behind the builds.`
 - Short bio paragraph:
   - G builds open-source workflow systems for AI coding agents and uses them to operate LexCorp's build-in-public product portfolio.
 - Three-lane funnel:
