@@ -1075,7 +1075,7 @@ code {
   }
 
   h1 {
-    max-width: min(100%, 8.5ch);
+    max-width: none;
     font-size: clamp(3rem, 7.5vw, 4.75rem);
   }
 }
@@ -1166,7 +1166,7 @@ code {
   }
 
   h1 {
-    max-width: min(100%, 7.8ch);
+    max-width: none;
     font-size: clamp(2.45rem, 11vw, 3.25rem);
   }
 
