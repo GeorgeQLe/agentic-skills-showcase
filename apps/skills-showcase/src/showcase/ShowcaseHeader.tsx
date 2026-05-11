@@ -1,10 +1,11 @@
-import Link from "next/link";
+"use client";
 
-export default function ShowcaseHeader({
-  currentPath
-}: {
-  currentPath: string;
-}) {
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+export default function ShowcaseHeader() {
+  const currentPath = usePathname();
+
   return (
     <header className="site-header">
       <div className="nav-shell">

@@ -1,4 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+
+import ShowcaseHeader from "@/showcase/ShowcaseHeader";
+import MobilePanel from "@/showcase/MobilePanel";
 
 import "./globals.css";
 
@@ -8,6 +11,11 @@ export const metadata: Metadata = {
     "A browsable showcase of agentic-skills workflows, packs, proof data, and follow updates."
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1
+};
+
 export default function RootLayout({
   children
 }: Readonly<{
@@ -15,7 +23,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <ShowcaseHeader />
+        <MobilePanel />
+        {children}
+      </body>
     </html>
   );
 }

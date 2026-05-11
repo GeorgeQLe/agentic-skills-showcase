@@ -1,14 +1,16 @@
+import type { Metadata } from "next";
 import Link from "next/link";
-import ShowcaseHeader from "../src/showcase/ShowcaseHeader";
-import MobilePanel from "../src/showcase/MobilePanel";
-import ShowcaseFooter from "../src/showcase/ShowcaseFooter";
+import ShowcaseFooter from "@/showcase/ShowcaseFooter";
+
+export const metadata: Metadata = {
+  title: "G / agentic-skills",
+  description:
+    "Open-source agentic engineering systems by George Le. Explore the workflow library behind repeatable Claude Code and Codex planning, execution, validation, and shipping."
+};
 
 export default function HomePage() {
   return (
     <>
-      <ShowcaseHeader currentPath="/" />
-      <MobilePanel />
-
       <main className="page">
         <section className="hero" aria-labelledby="home-title">
           <div className="hero-copy">
