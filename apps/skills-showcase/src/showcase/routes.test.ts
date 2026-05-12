@@ -5,8 +5,8 @@ import { showcaseRoutes } from "./routes";
 import type { ShowcaseRoute } from "./routes";
 
 describe("showcaseRoutes", () => {
-  it("exports exactly 7 public routes", () => {
-    expect(showcaseRoutes).toHaveLength(7);
+  it("exports exactly 8 public routes", () => {
+    expect(showcaseRoutes).toHaveLength(8);
   });
 
   it("every route has href, label, and description", () => {
@@ -39,6 +39,7 @@ describe("showcaseRoutes", () => {
     expect(hrefs).toContain("/workflows");
     expect(hrefs).toContain("/packs");
     expect(hrefs).toContain("/catalog");
+    expect(hrefs).toContain("/benchmarks");
     expect(hrefs).toContain("/inspect");
     expect(hrefs).toContain("/follow");
     expect(hrefs).toContain("/admin/newsletter");
@@ -50,6 +51,7 @@ describe("showcaseRoutes", () => {
     expect(labels).toContain("Workflows");
     expect(labels).toContain("Packs");
     expect(labels).toContain("Catalog");
+    expect(labels).toContain("Benchmarks");
     expect(labels).toContain("Inspect");
     expect(labels).toContain("Follow");
     expect(labels).toContain("Admin");

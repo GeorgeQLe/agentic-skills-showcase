@@ -7,6 +7,7 @@ export default function MobilePanel() {
         <Link href="/workflows">Workflows</Link>
         <Link href="/packs">Packs</Link>
         <Link href="/catalog">Catalog</Link>
+        <Link href="/benchmarks">Benchmarks</Link>
         <Link href="/inspect">Inspect</Link>
         <a href="https://leexperimental.com">LexCorp</a>
         <Link href="/follow">Follow</Link>

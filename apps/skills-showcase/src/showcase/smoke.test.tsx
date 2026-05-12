@@ -3,6 +3,7 @@ import { render, cleanup, screen } from "@testing-library/react";
 import HomePage from "../../app/page";
 import WorkflowsPage from "../../app/workflows/page";
 import CatalogPage from "../../app/catalog/page";
+import BenchmarksPage from "../../app/benchmarks/page";
 import PacksPage from "../../app/packs/page";
 import InspectPage from "../../app/inspect/page";
 import FollowPage from "../../app/follow/page";
@@ -55,6 +56,12 @@ describe("smoke rendering", () => {
     expect(screen.getByText("Business")).toBeInTheDocument();
     expect(screen.getByText("Devtool")).toBeInTheDocument();
     expect(screen.getByText("Game")).toBeInTheDocument();
+  });
+
+  it("BenchmarksPage renders title and matrix link", () => {
+    render(<BenchmarksPage />);
+    expect(screen.getByText(/Evaluated benchmark evidence/i)).toBeInTheDocument();
+    expect(screen.getByText(/benchmark results matrix/i)).toBeInTheDocument();
   });
 
   it("InspectPage renders proof surface heading", () => {

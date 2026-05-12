@@ -33,6 +33,12 @@ export default function ShowcaseHeader() {
             Catalog
           </Link>
           <Link
+            href="/benchmarks"
+            aria-current={currentPath === "/benchmarks" ? "page" : undefined}
+          >
+            Benchmarks
+          </Link>
+          <Link
             href="/inspect"
             aria-current={currentPath === "/inspect" ? "page" : undefined}
           >

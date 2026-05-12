@@ -26,6 +26,11 @@ export const showcaseRoutes = [
     description: "Searchable skill catalog backed by generated metadata."
   },
   {
+    href: "/benchmarks",
+    label: "Benchmarks",
+    description: "Aggregated benchmark results from persisted evaluated runs."
+  },
+  {
     href: "/inspect",
     label: "Inspect",
     description: "Proof and metadata inspection surface."

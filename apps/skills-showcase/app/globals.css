@@ -986,6 +986,67 @@ code {
   font-size: 0.72rem;
 }
 
+a.tag-link {
+  cursor: pointer;
+  text-decoration: none;
+  border-color: var(--green);
+  color: var(--green);
+}
+
+a.tag-link:hover {
+  background: rgba(15, 138, 95, 0.08);
+}
+
+.benchmarks-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.benchmarks-table th {
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 2px solid var(--line);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.benchmarks-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.benchmarks-table .mono {
+  font-family: var(--mono);
+  font-size: 0.82rem;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-weight: 750;
+  text-transform: uppercase;
+  border-radius: 3px;
+}
+
+.badge-graded {
+  background: rgba(15, 138, 95, 0.1);
+  color: var(--green);
+  border: 1px solid rgba(15, 138, 95, 0.3);
+}
+
+.badge-partial {
+  background: rgba(168, 103, 0, 0.08);
+  color: var(--amber);
+  border: 1px solid rgba(168, 103, 0, 0.25);
+}
+
 .status-ok {
   color: var(--green);
 }

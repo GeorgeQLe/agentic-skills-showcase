@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import type { Skill, Pack, ShowcaseData, BenchmarkEvidence } from "./types";
 
 const repoBaseUrl = "https://github.com/GeorgeQLe/agentic-skills/blob/master/";
 
@@ -24,7 +25,14 @@ function sourceLink(path: unknown): string | null {
   return repoBaseUrl + cleanPath.split("/").map(encodeURIComponent).join("/");
 }
 
-function makeTag(label: string): HTMLSpanElement {
+function makeTag(label: string, href?: string): HTMLElement {
+  if (href) {
+    const tag = document.createElement("a");
+    tag.className = "tag tag-link";
+    tag.textContent = label;
+    tag.href = href;
+    return tag;
+  }
   const tag = document.createElement("span");
   tag.className = "tag";
   tag.textContent = label;
@@ -37,67 +45,6 @@ function renderEmpty(target: Element, message: string) {
   notice.className = "notice";
   notice.textContent = message;
   target.appendChild(notice);
-}
-
-interface BenchmarkAgent {
-  agent: string;
-  passRate: string;
-  latencyP50?: string;
-  totalCost?: string;
-}
-
-interface BenchmarkQuality {
-  agent: string;
-  averageQualityScore: string;
-}
-
-interface BenchmarkDemo {
-  agent: string;
-  runIndex: number;
-  prompt: string;
-  output: string;
-  runPath: string;
-  reportPath: string;
-}
-
-interface BenchmarkEvidence {
-  date?: string;
-  agents: BenchmarkAgent[];
-  quality?: BenchmarkQuality[];
-  reportPath?: string;
-  demo?: BenchmarkDemo;
-}
-
-interface Skill {
-  name: string;
-  title?: string;
-  description?: string;
-  type?: string;
-  platform: string;
-  command?: string;
-  scope?: string;
-  pack?: string;
-  path: string;
-  mirrorKey?: string;
-  tags?: string[];
-  benchmarkEvidence?: BenchmarkEvidence;
-}
-
-interface Pack {
-  name: string;
-  title?: string;
-  description?: string;
-  path?: string;
-  skillCount?: number;
-  platforms?: string[];
-}
-
-interface ShowcaseData {
-  skills?: Skill[];
-  packs?: Pack[];
-  skillCount?: number;
-  packCount?: number;
-  sourceCount?: number;
 }
 
 interface ProofArtifact {
@@ -306,7 +253,7 @@ export default function CatalogClient() {
           chips.appendChild(makeTag("one-platform"));
         }
         if (skill.benchmarkEvidence) {
-          chips.appendChild(makeTag("benchmark-passed"));
+          chips.appendChild(makeTag("benchmark-passed", "/benchmarks"));
         }
 
         const details = document.createElement("details");
