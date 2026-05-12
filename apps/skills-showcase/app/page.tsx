@@ -4,9 +4,9 @@ import ShowcaseFooter from "@/showcase/ShowcaseFooter";
 import WorkflowsClient from "@/showcase/workflows";
 
 export const metadata: Metadata = {
-  title: "G / agentic-skills",
+  title: "G Skillmap",
   description:
-    "Open-source agentic engineering systems by George Le. Explore the workflow library behind repeatable Claude Code and Codex planning, execution, validation, and shipping."
+    "Map the agentic-skills workflow library behind repeatable Claude Code and Codex planning, execution, validation, and shipping."
 };
 
 export default function HomePage() {
@@ -15,18 +15,18 @@ export default function HomePage() {
       <main className="page">
         <section className="hero" aria-labelledby="home-title">
           <div className="hero-copy">
-            <p className="eyebrow">Open-source agentic engineering</p>
+            <p className="eyebrow">G Skillmap / gskillmap.com</p>
             <h1 id="home-title">
-              George &ldquo;G&rdquo; Le builds open-source agentic engineering
-              systems.
+              Map the skills behind repeatable agentic engineering.
             </h1>
             <p className="lede">
-              Explore the workflow library behind repeatable Claude Code and
-              Codex planning, execution, validation, and shipping.
+              G Skillmap is the public map for George &ldquo;G&rdquo; Le&rsquo;s
+              open-source agentic-skills system: workflows, packs, proof data,
+              and shipping loops for Claude Code and Codex.
             </p>
             <div className="cta-row">
               <Link className="button" href="/workflows">
-                Explore the Library
+                Explore the Map
               </Link>
               <Link className="button secondary" href="/follow">
                 Follow G&rsquo;s Work

@@ -9,9 +9,9 @@ export default function ShowcaseHeader() {
   return (
     <header className="site-header">
       <div className="nav-shell">
-        <Link className="brand" href="/" aria-label="agentic-skills home">
-          <strong>G / agentic-skills</strong>
-          <span>OSS-AGENTIC-01</span>
+        <Link className="brand" href="/" aria-label="G Skillmap home">
+          <strong>G Skillmap</strong>
+          <span>gskillmap.com</span>
         </Link>
         <nav className="main-nav" aria-label="Primary navigation">
           <Link

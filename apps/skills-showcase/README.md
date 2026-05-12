@@ -1,6 +1,13 @@
-# Skills Showcase (Next.js)
+# G Skillmap (Next.js)
 
-Interactive showcase for agentic skills — catalog, workflows, packs, and GitHub proof data.
+Public site for `gskillmap.com`: an interactive skill map for `agentic-skills` catalogs, workflows, packs, and GitHub proof data.
+
+## Brand
+
+- Public brand: **G Skillmap**
+- Domain: `gskillmap.com`
+- Product meaning: the map of skills, packs, workflows, and proof surfaces for the `agentic-skills` library.
+- Naming rule: use **G Skillmap** in public UI and documentation. Use `agentic-skills` only when referring to the underlying open-source repository or package family.
 
 ## Local Development
 
@@ -14,7 +21,7 @@ pnpm --dir apps/skills-showcase dev
 pnpm --dir apps/skills-showcase build
 ```
 
-Produces a static export to `apps/skills-showcase/out/` with 6 routes.
+Produces the G Skillmap site build for the configured deployment target.
 
 ## Data Freshness
 
@@ -30,6 +37,17 @@ scripts/validate-skills-showcase-data.sh
 
 Generator scripts dual-write to both `docs/skills-showcase/assets/` and `apps/skills-showcase/public/assets/`. The validator fingerprints all four assets.
 
+## Environment Variables
+
+| Variable | Purpose |
+|---|---|
+| `DATABASE_URL` | Neon PostgreSQL connection string for newsletter storage. |
+| `NEWSLETTER_ADMIN_SECRET` | Shared secret for the `/admin/newsletter` auth gate. |
+
+## Database
+
+Newsletter subscribers are stored in Neon PostgreSQL. Migration SQL lives at `src/db/migrate.sql`.
+
 ## Relationship to `docs/skills-showcase/`
 
-The static site HTML/CSS/JS files were removed in Step 37.6. `docs/skills-showcase/assets/` is kept for dual-write. This Next.js app is the sole showcase surface.
+The static site HTML/CSS/JS files were removed in Step 37.6. `docs/skills-showcase/assets/` is kept for dual-write. This Next.js app is the sole G Skillmap surface.

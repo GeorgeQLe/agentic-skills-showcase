@@ -9,9 +9,9 @@ import { TRPCProvider } from "@/trpc/provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Agentic Skills Showcase",
+  title: "G Skillmap",
   description:
-    "A browsable showcase of agentic-skills workflows, packs, proof data, and follow updates."
+    "The skill map for agentic-skills workflows, packs, proof data, and follow updates."
 };
 
 export const viewport: Viewport = {

@@ -19,11 +19,11 @@ export default function ShowcaseFooter() {
           </p>
         </div>
         <div>
-          <h3>Open Source</h3>
+          <h3>G Skillmap</h3>
           <Link href="/catalog">Skills catalog</Link>
           <Link href="/inspect">Inspect the system</Link>
           <p>
-            Open-source workflow library for Claude Code and Codex.
+            Skill map for the open-source Claude Code and Codex workflow library.
           </p>
         </div>
       </div>
