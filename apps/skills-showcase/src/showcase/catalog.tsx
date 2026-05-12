@@ -51,11 +51,21 @@ interface BenchmarkQuality {
   averageQualityScore: string;
 }
 
+interface BenchmarkDemo {
+  agent: string;
+  runIndex: number;
+  prompt: string;
+  output: string;
+  runPath: string;
+  reportPath: string;
+}
+
 interface BenchmarkEvidence {
   date?: string;
   agents: BenchmarkAgent[];
   quality?: BenchmarkQuality[];
   reportPath?: string;
+  demo?: BenchmarkDemo;
 }
 
 interface Skill {
@@ -149,6 +159,39 @@ function makeBenchmarkPanel(evidence: BenchmarkEvidence | undefined): HTMLDivEle
   } else {
     panel.append(heading, summary, metrics);
   }
+
+  if (evidence.demo) {
+    const demo = document.createElement("div");
+    demo.className = "benchmark-demo";
+
+    const demoHeading = document.createElement("strong");
+    demoHeading.textContent = `${toTitle(evidence.demo.agent)} benchmark demo`;
+
+    const promptLabel = document.createElement("span");
+    promptLabel.className = "demo-label";
+    promptLabel.textContent = "Prompt";
+    const prompt = document.createElement("pre");
+    prompt.textContent = evidence.demo.prompt;
+
+    const outputLabel = document.createElement("span");
+    outputLabel.className = "demo-label";
+    outputLabel.textContent = "Output";
+    const output = document.createElement("pre");
+    output.textContent = evidence.demo.output;
+
+    const runLink = sourceLink(evidence.demo.runPath);
+    if (runLink) {
+      const artifact = document.createElement("a");
+      artifact.href = runLink;
+      artifact.textContent = `run-${String(evidence.demo.runIndex).padStart(3, "0")}.json`;
+      demo.append(demoHeading, promptLabel, prompt, outputLabel, output, artifact);
+    } else {
+      demo.append(demoHeading, promptLabel, prompt, outputLabel, output);
+    }
+
+    panel.appendChild(demo);
+  }
+
   return panel;
 }
 
@@ -215,6 +258,9 @@ export default function CatalogClient() {
           skill.pack,
           skill.path,
           skill.benchmarkEvidence ? skill.benchmarkEvidence.reportPath : "",
+          skill.benchmarkEvidence?.demo
+            ? `${skill.benchmarkEvidence.demo.prompt} ${skill.benchmarkEvidence.demo.output}`
+            : "",
           skill.benchmarkEvidence && Array.isArray(skill.benchmarkEvidence.agents)
             ? skill.benchmarkEvidence.agents.map((a) => `${a.agent} ${a.passRate}`).join(" ")
             : "",
