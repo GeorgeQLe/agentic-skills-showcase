@@ -32,4 +32,4 @@ Generator scripts dual-write to both `docs/skills-showcase/assets/` and `apps/sk
 
 ## Relationship to `docs/skills-showcase/`
 
-The legacy static site at `docs/skills-showcase/` is retained for compatibility. This Next.js app is the primary showcase surface. The static site will be removed in Step 37.6.
+The static site HTML/CSS/JS files were removed in Step 37.6. `docs/skills-showcase/assets/` is kept for dual-write. This Next.js app is the sole showcase surface.
