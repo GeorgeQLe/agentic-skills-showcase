@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 
 import ShowcaseHeader from "@/showcase/ShowcaseHeader";
 import MobilePanel from "@/showcase/MobilePanel";
@@ -24,6 +25,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <Script src="/assets/skills-data.js" strategy="beforeInteractive" />
+        <Script
+          src="/assets/github-proof-data.js"
+          strategy="beforeInteractive"
+        />
+      </head>
       <body>
         <ShowcaseHeader />
         <MobilePanel />
