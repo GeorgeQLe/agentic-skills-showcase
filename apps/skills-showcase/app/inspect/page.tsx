@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import CatalogClient from "@/showcase/catalog";
 
 export const metadata: Metadata = {
   title: "Inspect / agentic-skills",
@@ -66,6 +67,7 @@ export default function InspectPage() {
           data-proof-boundaries=""
         ></div>
       </section>
+      <CatalogClient />
     </main>
   );
 }

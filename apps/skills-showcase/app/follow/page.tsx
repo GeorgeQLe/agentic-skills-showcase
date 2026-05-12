@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import CatalogClient from "@/showcase/catalog";
+import NewsletterFormClient from "@/showcase/newsletter-form";
 
 export const metadata: Metadata = {
   title: "Follow / agentic-skills",
@@ -223,6 +225,8 @@ export default function FollowPage() {
           </p>
         </form>
       </section>
+      <CatalogClient />
+      <NewsletterFormClient />
     </main>
   );
 }

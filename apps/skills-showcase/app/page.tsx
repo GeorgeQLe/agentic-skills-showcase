@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import ShowcaseFooter from "@/showcase/ShowcaseFooter";
+import WorkflowsClient from "@/showcase/workflows";
 
 export const metadata: Metadata = {
   title: "G / agentic-skills",
@@ -157,6 +158,7 @@ export default function HomePage() {
       </main>
 
       <ShowcaseFooter />
+      <WorkflowsClient />
     </>
   );
 }

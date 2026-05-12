@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 
 import ShowcaseHeader from "@/showcase/ShowcaseHeader";
 import MobilePanel from "@/showcase/MobilePanel";
+import ShowcaseShell from "@/showcase/ShowcaseShell";
 
 import "./globals.css";
 
@@ -26,6 +27,7 @@ export default function RootLayout({
       <body>
         <ShowcaseHeader />
         <MobilePanel />
+        <ShowcaseShell />
         {children}
       </body>
     </html>

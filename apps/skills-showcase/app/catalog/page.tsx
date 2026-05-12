@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import CatalogClient from "@/showcase/catalog";
 
 export const metadata: Metadata = {
   title: "Catalog / agentic-skills",
@@ -62,6 +63,7 @@ export default function CatalogPage() {
         </div>
         <div className="catalog-list" data-catalog-list=""></div>
       </section>
+      <CatalogClient />
     </main>
   );
 }

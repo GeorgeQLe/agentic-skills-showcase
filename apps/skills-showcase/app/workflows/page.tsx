@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import WorkflowsClient from "@/showcase/workflows";
 
 export const metadata: Metadata = {
   title: "Workflow Lab / agentic-skills",
@@ -135,6 +136,7 @@ export default function WorkflowsPage() {
           </div>
         </article>
       </section>
+      <WorkflowsClient />
     </main>
   );
 }
