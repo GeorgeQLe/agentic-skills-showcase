@@ -935,6 +935,39 @@ code {
   font-weight: 750;
 }
 
+.benchmark-demo {
+  display: grid;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.benchmark-demo strong {
+  color: var(--ink);
+}
+
+.demo-label {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 750;
+  text-transform: uppercase;
+}
+
+.benchmark-demo pre {
+  max-height: 150px;
+  overflow: auto;
+  margin: 0;
+  border: 1px solid var(--line);
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 .catalog-row p,
 .pack-node p,
 .pack-band p,

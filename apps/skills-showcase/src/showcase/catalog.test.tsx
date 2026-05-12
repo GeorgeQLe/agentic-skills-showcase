@@ -14,7 +14,21 @@ const MOCK_SKILLS = [
     pack: "",
     path: "global/claude/run/SKILL.md",
     mirrorKey: "run",
-    tags: ["planning"]
+    tags: ["planning"],
+    benchmarkEvidence: {
+      date: "2026-05-11",
+      reportPath: "benchmark/test-run-2026-05-11.md",
+      agents: [{ agent: "Codex", passRate: "100.0% (3/3)", latencyP50: "42.6s", totalCost: "$3.00" }],
+      quality: [{ agent: "Codex", averageQualityScore: "100.0%" }],
+      demo: {
+        agent: "Codex",
+        runIndex: 0,
+        prompt: "You have the run skill installed. Write run-plan.md.",
+        output: "Created run-plan.md with validation guidance.",
+        runPath: "tests/benchmarks/runs/run-codex-47e0dd54/run-000.json",
+        reportPath: "benchmark/test-run-2026-05-11.md"
+      }
+    }
   },
   {
     name: "ship",
@@ -143,6 +157,24 @@ describe("CatalogClient", () => {
       const list = document.querySelector("[data-catalog-list]")!;
       expect(list.querySelectorAll(".catalog-row")).toHaveLength(1);
       expect(document.querySelector("[data-catalog-count]")!.textContent).toBe("1");
+    });
+
+    it("renders benchmark prompt and output demo evidence", () => {
+      document.body.innerHTML = `
+        <input data-catalog-search />
+        <select data-catalog-platform><option value="all">All</option></select>
+        <select data-catalog-type><option value="all">All</option></select>
+        <select data-catalog-scope><option value="all">All</option></select>
+        <span data-catalog-count></span>
+        <div data-catalog-list></div>
+      `;
+      render(<CatalogClient />);
+
+      const list = document.querySelector("[data-catalog-list]")!;
+      expect(list.textContent).toContain("Codex benchmark demo");
+      expect(list.textContent).toContain("You have the run skill installed");
+      expect(list.textContent).toContain("Created run-plan.md");
+      expect(list.textContent).toContain("run-000.json");
     });
 
     it("filters by platform", () => {
