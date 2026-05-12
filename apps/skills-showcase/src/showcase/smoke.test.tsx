@@ -25,7 +25,7 @@ describe("smoke rendering", () => {
   it("HomePage renders hero and navigation links", () => {
     render(<HomePage />);
     expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
-    expect(screen.getByText("Explore the Library")).toBeInTheDocument();
+    expect(screen.getByText("Explore the Map")).toBeInTheDocument();
     expect(screen.getByText("Follow G’s Work")).toBeInTheDocument();
   });
 

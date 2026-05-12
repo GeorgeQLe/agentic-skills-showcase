@@ -33,6 +33,11 @@ export const showcaseRoutes = [
   {
     href: "/follow",
     label: "Follow",
-    description: "Non-persistent newsletter interest surface for Phase 37."
+    description: "Newsletter subscription and mailing list capture."
+  },
+  {
+    href: "/admin/newsletter",
+    label: "Admin",
+    description: "Protected newsletter subscriber admin panel."
   }
 ] as const satisfies readonly ShowcaseRoute[];
