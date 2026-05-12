@@ -4,6 +4,7 @@ import Script from "next/script";
 import ShowcaseHeader from "@/showcase/ShowcaseHeader";
 import MobilePanel from "@/showcase/MobilePanel";
 import ShowcaseShell from "@/showcase/ShowcaseShell";
+import { TRPCProvider } from "@/trpc/provider";
 
 import "./globals.css";
 
@@ -33,10 +34,12 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <ShowcaseHeader />
-        <MobilePanel />
-        <ShowcaseShell />
-        {children}
+        <TRPCProvider>
+          <ShowcaseHeader />
+          <MobilePanel />
+          <ShowcaseShell />
+          {children}
+        </TRPCProvider>
       </body>
     </html>
   );
