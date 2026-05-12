@@ -1,107 +1,127 @@
 "use client";
 
-import { useEffect } from "react";
+import { useState, useRef } from "react";
+import { trpc } from "@/trpc/client";
 
-function text(value: unknown, fallback?: string): string {
-  if (typeof value === "string" && value.trim()) return value.trim();
-  if (typeof value === "number") return String(value);
-  return fallback || "";
-}
+type FormState = "ready" | "invalid-email" | "pending" | "success" | "error";
+
+const STATE_MESSAGES: Record<FormState, string> = {
+  ready: "Enter an email address to join the list.",
+  "invalid-email": "Enter a valid email address before joining the list.",
+  pending: "Submitting...",
+  success:
+    "You're on the list. Watch the public channels for the next workflow drop.",
+  error:
+    "The submission failed. Try again later or follow through the public channels.",
+};
+
+const VISIBLE_STATES = ["invalid-email", "pending", "success", "error"] as const;
 
 function validEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
 export default function NewsletterFormClient() {
-  useEffect(() => {
-    const form = document.querySelector("[data-newsletter-form]");
-    if (!(form instanceof HTMLFormElement)) return;
+  const [email, setEmail] = useState("");
+  const [formState, setFormState] = useState<FormState>("ready");
+  const inputRef = useRef<HTMLInputElement>(null);
 
-    const input = form.querySelector('input[name="email"]') as HTMLInputElement | null;
-    const submit = form.querySelector('button[type="submit"]') as HTMLButtonElement | null;
-    const status = form.querySelector("[data-newsletter-status]") as HTMLElement | null;
-    const stateTags = Array.from(form.querySelectorAll("[data-newsletter-state]"));
-    if (!input || !submit || !status) return;
+  const subscribe = trpc.newsletter.subscribe.useMutation({
+    onSuccess: () => {
+      setEmail("");
+      setFormState("success");
+    },
+    onError: () => {
+      setFormState("error");
+    },
+  });
 
-    function endpoint(): string {
-      return text((form as HTMLFormElement).dataset.providerEndpoint);
+  function handleInput(value: string) {
+    setEmail(value);
+    if (formState === "invalid-email" && validEmail(value.trim())) {
+      setFormState("ready");
     }
+  }
 
-    function setState(state: string, message: string) {
-      (form as HTMLFormElement).dataset.newsletterStatus = state;
-      status!.dataset.status = state;
-      status!.textContent = message;
-      input!.setAttribute("aria-invalid", String(state === "invalid-email"));
-      submit!.disabled = state === "pending";
-      submit!.setAttribute("aria-busy", String(state === "pending"));
-      stateTags.forEach((tag) => {
-        tag.setAttribute(
-          "aria-current",
-          String((tag as HTMLElement).dataset.newsletterState === state)
-        );
-      });
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const trimmed = email.trim();
+    if (!validEmail(trimmed)) {
+      setFormState("invalid-email");
+      inputRef.current?.focus();
+      return;
     }
+    setFormState("pending");
+    subscribe.mutate({
+      email: trimmed,
+      sourcePage: window.location.pathname,
+      consentTextVersion: "1.0",
+    });
+  }
 
-    setState(
-      endpoint() ? "ready" : "provider-missing",
-      endpoint()
-        ? "Provider endpoint configured. Enter an email address to join the list."
-        : "Provider endpoint missing. This static page is not collecting email addresses yet."
-    );
-
-    function handleInput() {
-      if (input!.getAttribute("aria-invalid") === "true" && validEmail(input!.value.trim())) {
-        setState(
-          endpoint() ? "ready" : "provider-missing",
-          endpoint()
-            ? "Email format looks valid. Submit when ready."
-            : "Provider endpoint missing. This static page is not collecting email addresses yet."
-        );
-      }
-    }
-
-    async function handleSubmit(event: Event) {
-      event.preventDefault();
-      const email = input!.value.trim();
-      if (!validEmail(email)) {
-        setState("invalid-email", "Enter a valid email address before joining the list.");
-        input!.focus();
-        return;
-      }
-
-      const providerEndpoint = endpoint();
-      if (!providerEndpoint) {
-        setState(
-          "provider-missing",
-          "Provider endpoint missing. No email was collected; use YouTube, X / Twitter, GitHub, or Discord for now."
-        );
-        return;
-      }
-
-      setState("pending", "Submitting to the configured static provider...");
-      try {
-        const body = new URLSearchParams(new FormData(form as HTMLFormElement) as unknown as Record<string, string>);
-        const response = await fetch(providerEndpoint, {
-          method: "POST",
-          headers: { Accept: "application/json" },
-          body
-        });
-        if (!response.ok) throw new Error(`Provider returned ${response.status}`);
-        (form as HTMLFormElement).reset();
-        setState("success", "You're on the list. Watch the public channels for the next workflow drop.");
-      } catch {
-        setState("error", "The provider submission failed. Try again later or follow through the public channels.");
-      }
-    }
-
-    input.addEventListener("input", handleInput);
-    form.addEventListener("submit", handleSubmit);
-
-    return () => {
-      input.removeEventListener("input", handleInput);
-      form.removeEventListener("submit", handleSubmit);
-    };
-  }, []);
-
-  return null;
+  return (
+    <form
+      className="form-panel span-12 newsletter-form"
+      aria-labelledby="newsletter-title"
+      data-newsletter-form=""
+      data-newsletter-status={formState}
+      onSubmit={handleSubmit}
+    >
+      <div>
+        <p className="eyebrow">Newsletter</p>
+        <h2 id="newsletter-title">Get the next workflow drop.</h2>
+        <p className="lede">
+          Join the mailing list for workflow drops, build notes, and community
+          routes.
+        </p>
+      </div>
+      <div className="newsletter-controls" data-newsletter-controls="">
+        <label>
+          <span className="eyebrow">Email</span>
+          <input
+            ref={inputRef}
+            name="email"
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            placeholder="email@example.com"
+            aria-describedby="newsletter-status"
+            aria-invalid={formState === "invalid-email"}
+            value={email}
+            onChange={(e) => handleInput(e.target.value)}
+          />
+        </label>
+        <button
+          className="button secondary"
+          type="submit"
+          disabled={formState === "pending"}
+          aria-busy={formState === "pending"}
+        >
+          Join the list
+        </button>
+      </div>
+      <div className="newsletter-state-row" aria-label="Newsletter form states">
+        {VISIBLE_STATES.map((state) => (
+          <span
+            key={state}
+            className="tag"
+            data-newsletter-state={state}
+            aria-current={formState === state}
+          >
+            {state.replace("-", " ")}
+          </span>
+        ))}
+      </div>
+      <p
+        className="notice newsletter-status"
+        id="newsletter-status"
+        role="status"
+        aria-live="polite"
+        data-newsletter-status=""
+        data-status={formState}
+      >
+        {STATE_MESSAGES[formState]}
+      </p>
+    </form>
+  );
 }

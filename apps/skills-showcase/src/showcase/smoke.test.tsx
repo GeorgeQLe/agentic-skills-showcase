@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach } from "vitest";
+import { describe, it, expect, afterEach, vi } from "vitest";
 import { render, cleanup, screen } from "@testing-library/react";
 import HomePage from "../../app/page";
 import WorkflowsPage from "../../app/workflows/page";
@@ -6,6 +6,16 @@ import CatalogPage from "../../app/catalog/page";
 import PacksPage from "../../app/packs/page";
 import InspectPage from "../../app/inspect/page";
 import FollowPage from "../../app/follow/page";
+
+vi.mock("@/trpc/client", () => ({
+  trpc: {
+    newsletter: {
+      subscribe: {
+        useMutation: () => ({ mutate: vi.fn() }),
+      },
+    },
+  },
+}));
 
 describe("smoke rendering", () => {
   afterEach(() => {

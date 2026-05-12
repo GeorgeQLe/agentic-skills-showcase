@@ -1,195 +1,158 @@
 import { describe, it, expect, afterEach, vi, beforeEach } from "vitest";
-import { render, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { trpc } from "@/trpc/client";
 import NewsletterFormClient from "./newsletter-form";
 
-function newsletterFormDOM(endpoint = "") {
-  document.body.innerHTML = `
-    <form data-newsletter-form data-provider-endpoint="${endpoint}">
-      <input name="email" type="email" />
-      <button type="submit">Join</button>
-      <span data-newsletter-state="provider-missing">provider missing</span>
-      <span data-newsletter-state="invalid-email">invalid email</span>
-      <span data-newsletter-state="pending">pending</span>
-      <span data-newsletter-state="success">success</span>
-      <span data-newsletter-state="error">error</span>
-      <p data-newsletter-status></p>
-    </form>
-  `;
+let mockMutate: ReturnType<typeof vi.fn>;
+let capturedCallbacks: { onSuccess?: (...args: unknown[]) => void; onError?: (...args: unknown[]) => void };
+
+vi.mock("@/trpc/client", () => ({
+  trpc: {
+    newsletter: {
+      subscribe: {
+        useMutation: vi.fn(),
+      },
+    },
+  },
+}));
+
+function setupMutation() {
+  mockMutate = vi.fn();
+  capturedCallbacks = {};
+  vi.mocked(trpc.newsletter.subscribe.useMutation).mockImplementation(
+    ((opts?: Record<string, unknown>) => {
+      if (opts) capturedCallbacks = opts as typeof capturedCallbacks;
+      return { mutate: mockMutate };
+    }) as unknown as typeof trpc.newsletter.subscribe.useMutation
+  );
+}
+
+function renderForm() {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <NewsletterFormClient />
+    </QueryClientProvider>
+  );
 }
 
 describe("NewsletterFormClient", () => {
+  beforeEach(() => {
+    setupMutation();
+  });
+
   afterEach(() => {
     cleanup();
     vi.restoreAllMocks();
   });
 
-  describe("initial state without endpoint", () => {
-    it("sets provider-missing state when no endpoint configured", () => {
-      newsletterFormDOM();
-      render(<NewsletterFormClient />);
-
-      const form = document.querySelector("[data-newsletter-form]") as HTMLElement;
-      expect(form.dataset.newsletterStatus).toBe("provider-missing");
-
-      const status = document.querySelector("[data-newsletter-status]")!;
-      expect(status.textContent).toMatch(/endpoint missing/i);
-    });
-
-    it("marks provider-missing tag as current", () => {
-      newsletterFormDOM();
-      render(<NewsletterFormClient />);
-
-      const providerTag = document.querySelector('[data-newsletter-state="provider-missing"]')!;
-      expect(providerTag.getAttribute("aria-current")).toBe("true");
-
-      const successTag = document.querySelector('[data-newsletter-state="success"]')!;
-      expect(successTag.getAttribute("aria-current")).toBe("false");
-    });
-  });
-
-  describe("initial state with endpoint", () => {
-    it("sets ready state when endpoint is configured", () => {
-      newsletterFormDOM("https://example.com/subscribe");
-      render(<NewsletterFormClient />);
-
+  describe("initial state", () => {
+    it("sets ready state on mount", () => {
+      renderForm();
       const form = document.querySelector("[data-newsletter-form]") as HTMLElement;
       expect(form.dataset.newsletterStatus).toBe("ready");
+    });
+
+    it("displays ready message", () => {
+      renderForm();
+      expect(screen.getByRole("status").textContent).toMatch(/enter an email/i);
     });
   });
 
   describe("email validation", () => {
     it("shows invalid-email state on submit with bad email", () => {
-      newsletterFormDOM("https://example.com/subscribe");
-      render(<NewsletterFormClient />);
-
-      const input = document.querySelector('input[name="email"]') as HTMLInputElement;
-      input.value = "not-an-email";
-
-      const form = document.querySelector("[data-newsletter-form]") as HTMLFormElement;
-      form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+      renderForm();
+      const input = screen.getByPlaceholderText("email@example.com");
+      fireEvent.change(input, { target: { value: "not-an-email" } });
+      fireEvent.submit(screen.getByRole("form", { hidden: true }) || document.querySelector("form")!);
 
       expect(input.getAttribute("aria-invalid")).toBe("true");
-      const status = document.querySelector("[data-newsletter-status]")!;
-      expect(status.textContent).toMatch(/valid email/i);
+      expect(screen.getByRole("status").textContent).toMatch(/valid email/i);
     });
 
     it("clears invalid state when input becomes valid", () => {
-      newsletterFormDOM("https://example.com/subscribe");
-      render(<NewsletterFormClient />);
+      renderForm();
+      const input = screen.getByPlaceholderText("email@example.com");
 
-      const input = document.querySelector('input[name="email"]') as HTMLInputElement;
-      input.value = "bad";
-      const form = document.querySelector("[data-newsletter-form]") as HTMLFormElement;
-      form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
-
+      fireEvent.change(input, { target: { value: "bad" } });
+      fireEvent.submit(document.querySelector("form")!);
       expect(input.getAttribute("aria-invalid")).toBe("true");
 
-      input.value = "valid@example.com";
-      input.dispatchEvent(new Event("input", { bubbles: true }));
-
+      fireEvent.change(input, { target: { value: "valid@example.com" } });
       expect(input.getAttribute("aria-invalid")).toBe("false");
     });
   });
 
   describe("submission flow", () => {
-    beforeEach(() => {
-      newsletterFormDOM("https://example.com/subscribe");
-    });
+    it("enters pending state and calls mutate on valid submit", () => {
+      renderForm();
+      const input = screen.getByPlaceholderText("email@example.com");
+      fireEvent.change(input, { target: { value: "test@example.com" } });
+      fireEvent.submit(document.querySelector("form")!);
 
-    it("enters pending state during submission", async () => {
-      let resolveResponse!: (value: Response) => void;
-      const fetchPromise = new Promise<Response>((resolve) => {
-        resolveResponse = resolve;
-      });
-      vi.spyOn(globalThis, "fetch").mockReturnValue(fetchPromise);
+      const submit = screen.getByRole("button", { name: /join the list/i });
+      expect(submit).toBeDisabled();
+      expect(submit.getAttribute("aria-busy")).toBe("true");
 
-      render(<NewsletterFormClient />);
-
-      const input = document.querySelector('input[name="email"]') as HTMLInputElement;
-      input.value = "test@example.com";
-
-      const form = document.querySelector("[data-newsletter-form]") as HTMLFormElement;
-      form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
-
-      await vi.waitFor(() => {
-        const submit = document.querySelector('button[type="submit"]') as HTMLButtonElement;
-        expect(submit.disabled).toBe(true);
-        expect(submit.getAttribute("aria-busy")).toBe("true");
-      });
-
-      resolveResponse(new Response(null, { status: 200 }));
-    });
-
-    it("enters success state after successful submission", async () => {
-      vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(null, { status: 200 }));
-
-      render(<NewsletterFormClient />);
-
-      const input = document.querySelector('input[name="email"]') as HTMLInputElement;
-      input.value = "test@example.com";
-
-      const form = document.querySelector("[data-newsletter-form]") as HTMLFormElement;
-      form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
-
-      await vi.waitFor(() => {
-        const formEl = document.querySelector("[data-newsletter-form]") as HTMLElement;
-        expect(formEl.dataset.newsletterStatus).toBe("success");
-      });
-
-      const status = document.querySelector("[data-newsletter-status]")!;
-      expect(status.textContent).toMatch(/on the list/i);
-    });
-
-    it("enters error state after failed submission", async () => {
-      vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(null, { status: 500 }));
-
-      render(<NewsletterFormClient />);
-
-      const input = document.querySelector('input[name="email"]') as HTMLInputElement;
-      input.value = "test@example.com";
-
-      const form = document.querySelector("[data-newsletter-form]") as HTMLFormElement;
-      form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
-
-      await vi.waitFor(() => {
-        const formEl = document.querySelector("[data-newsletter-form]") as HTMLElement;
-        expect(formEl.dataset.newsletterStatus).toBe("error");
-      });
-
-      const status = document.querySelector("[data-newsletter-status]")!;
-      expect(status.textContent).toMatch(/failed/i);
-    });
-
-    it("enters error state on network failure", async () => {
-      vi.spyOn(globalThis, "fetch").mockRejectedValue(new Error("Network error"));
-
-      render(<NewsletterFormClient />);
-
-      const input = document.querySelector('input[name="email"]') as HTMLInputElement;
-      input.value = "test@example.com";
-
-      const form = document.querySelector("[data-newsletter-form]") as HTMLFormElement;
-      form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
-
-      await vi.waitFor(() => {
-        const formEl = document.querySelector("[data-newsletter-form]") as HTMLElement;
-        expect(formEl.dataset.newsletterStatus).toBe("error");
+      expect(mockMutate).toHaveBeenCalledWith({
+        email: "test@example.com",
+        sourcePage: "/",
+        consentTextVersion: "1.0",
       });
     });
 
-    it("stays provider-missing when no endpoint on submit", () => {
-      cleanup();
-      newsletterFormDOM();
-      render(<NewsletterFormClient />);
+    it("enters success state after mutation succeeds", async () => {
+      mockMutate.mockImplementation(() => {
+        capturedCallbacks.onSuccess?.();
+      });
 
-      const input = document.querySelector('input[name="email"]') as HTMLInputElement;
-      input.value = "valid@example.com";
+      renderForm();
+      const input = screen.getByPlaceholderText("email@example.com");
+      fireEvent.change(input, { target: { value: "test@example.com" } });
+      fireEvent.submit(document.querySelector("form")!);
 
-      const form = document.querySelector("[data-newsletter-form]") as HTMLFormElement;
-      form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+      await waitFor(() => {
+        const form = document.querySelector("[data-newsletter-form]") as HTMLElement;
+        expect(form.dataset.newsletterStatus).toBe("success");
+      });
 
-      const formEl = document.querySelector("[data-newsletter-form]") as HTMLElement;
-      expect(formEl.dataset.newsletterStatus).toBe("provider-missing");
+      expect(screen.getByRole("status").textContent).toMatch(/on the list/i);
+    });
+
+    it("enters error state after mutation fails", async () => {
+      mockMutate.mockImplementation(() => {
+        capturedCallbacks.onError?.();
+      });
+
+      renderForm();
+      const input = screen.getByPlaceholderText("email@example.com");
+      fireEvent.change(input, { target: { value: "test@example.com" } });
+      fireEvent.submit(document.querySelector("form")!);
+
+      await waitFor(() => {
+        const form = document.querySelector("[data-newsletter-form]") as HTMLElement;
+        expect(form.dataset.newsletterStatus).toBe("error");
+      });
+
+      expect(screen.getByRole("status").textContent).toMatch(/failed/i);
+    });
+
+    it("clears email on success", async () => {
+      mockMutate.mockImplementation(() => {
+        capturedCallbacks.onSuccess?.();
+      });
+
+      renderForm();
+      const input = screen.getByPlaceholderText("email@example.com") as HTMLInputElement;
+      fireEvent.change(input, { target: { value: "test@example.com" } });
+      fireEvent.submit(document.querySelector("form")!);
+
+      await waitFor(() => {
+        expect(input.value).toBe("");
+      });
     });
   });
 });

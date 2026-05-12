@@ -158,75 +158,9 @@ export default function FollowPage() {
         className="section grid-12"
         aria-labelledby="newsletter-title"
       >
-        <form
-          className="form-panel span-12 newsletter-form"
-          aria-labelledby="newsletter-title"
-          data-newsletter-form=""
-          data-provider-endpoint=""
-        >
-          <div>
-            <p className="eyebrow">Newsletter</p>
-            <h2 id="newsletter-title">Get the next workflow drop.</h2>
-            <p className="lede">
-              The form can submit to a configured static provider endpoint.
-              With no endpoint configured, it stays non-collecting and routes
-              visitors to public follow/community channels.
-            </p>
-          </div>
-          <div className="newsletter-controls" data-newsletter-controls="">
-            <label>
-              <span className="eyebrow">Email</span>
-              <input
-                name="email"
-                type="email"
-                inputMode="email"
-                autoComplete="email"
-                placeholder="email@example.com"
-                aria-describedby="newsletter-status"
-              />
-            </label>
-            <button className="button secondary" type="submit">
-              Join the list
-            </button>
-          </div>
-          <div
-            className="newsletter-state-row"
-            aria-label="Newsletter form states"
-          >
-            <span className="tag" data-newsletter-state="provider-missing">
-              provider missing
-            </span>
-            <span className="tag" data-newsletter-state="invalid-email">
-              invalid email
-            </span>
-            <span className="tag" data-newsletter-state="pending">
-              pending
-            </span>
-            <span className="tag" data-newsletter-state="success">
-              success
-            </span>
-            <span className="tag" data-newsletter-state="error">
-              error
-            </span>
-          </div>
-          <p
-            className="notice newsletter-status"
-            id="newsletter-status"
-            role="status"
-            aria-live="polite"
-            data-newsletter-status=""
-          >
-            Provider endpoint missing. This static page is not collecting
-            email addresses yet.
-          </p>
-          <p className="coordinate">
-            Configure by setting <code>data-provider-endpoint</code> on this
-            form to the static form provider URL.
-          </p>
-        </form>
+        <NewsletterFormClient />
       </section>
       <CatalogClient />
-      <NewsletterFormClient />
     </main>
   );
 }
