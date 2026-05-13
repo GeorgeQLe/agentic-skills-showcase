@@ -1,17 +1,17 @@
-# UI Spec: G Skillmap Website
+# UI Spec: G Skillpacks Website
 
 ## Scope And Source Evidence
 
-This UI specification defines the V1 interface for **G Skillmap** at `gskillmap.com`: a Vercel-deployable, multi-page site that promotes George "G" Le as an agentic engineering expert and helps visitors understand the `agentic-skills` open-source workflow library through animated workflow explanations, a pack map, a generated skill catalog, newsletter/email capture, GitHub/open-source proof data, and inspectable proof artifacts.
+This UI specification defines the V1 interface for **G Skillpacks** at `gskillpacks.com`: a Vercel-deployable, multi-page site that promotes George "G" Le as an agentic engineering expert and helps visitors understand the `agentic-skills` open-source workflow library through animated workflow explanations, a pack map, a generated skill catalog, newsletter/email capture, GitHub/open-source proof data, and inspectable proof artifacts.
 
 ## Brand And Domain
 
-- Public brand: **G Skillmap**.
-- Domain: `gskillmap.com`.
-- Brand promise: map, test, and organize agentic skills.
-- Use **G Skillmap** in the global header, metadata, footer, hero, and primary route framing.
+- Public brand: **G Skillpacks**.
+- Domain: `gskillpacks.com`.
+- Brand promise: pack, test, and organize agentic skills.
+- Use **G Skillpacks** in the global header, metadata, footer, hero, and primary route framing.
 - Use `agentic-skills` only for the underlying open-source library/repository.
-- Preserve skill map consistency through the layout vocabulary: map, routes, coordinates, nodes, pack map, catalog, proof surfaces, and inspection paths.
+- Preserve skill packs consistency through the layout vocabulary: packs, routes, coordinates, nodes, pack map, catalog, proof surfaces, and inspection paths.
 
 Source evidence:
 
@@ -128,8 +128,8 @@ Height: 56px to 64px.
 Layout:
 
 - Left, fixed-width identity group:
-  - Text label: `G Skillmap`
-  - Optional small domain mark: `gskillmap.com`
+  - Text label: `G Skillpacks`
+  - Optional small domain mark: `gskillpacks.com`
 - Center nav links:
   - `Workflows` -> `/workflows/`
   - `Packs` -> `/packs/`
@@ -151,7 +151,7 @@ Height: 56px.
 
 Layout:
 
-- Left: `G Skillmap`
+- Left: `G Skillpacks`
 - Right: icon button with `aria-label="Open navigation"`
 
 Menu drawer:
@@ -699,7 +699,7 @@ All workflow illustrations should be built with HTML/CSS/JS: panels, lines, node
 
 ## Open Questions
 
-- Final production domain for the Vercel deployment is `gskillmap.com`.
+- Final production domain for the Vercel deployment is `gskillpacks.com`.
 - Newsletter/email provider and endpoint for the launch form.
 - Whether to route Discord through a durable LexCorp redirect later.
 - Whether future V2 should add a separate LexCorp proof surface or keep LexCorp as a narrative/funnel destination.

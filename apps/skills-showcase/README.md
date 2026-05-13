@@ -1,13 +1,13 @@
-# G Skillmap (Next.js)
+# G Skillpacks (Next.js)
 
-Public site for `gskillmap.com`: an interactive skill map for `agentic-skills` catalogs, workflows, packs, and GitHub proof data.
+Public site for `gskillpacks.com`: an interactive skill packs catalog for `agentic-skills` workflows, packs, and GitHub proof data.
 
 ## Brand
 
-- Public brand: **G Skillmap**
-- Domain: `gskillmap.com`
-- Product meaning: the map of skills, packs, workflows, and proof surfaces for the `agentic-skills` library.
-- Naming rule: use **G Skillmap** in public UI and documentation. Use `agentic-skills` only when referring to the underlying open-source repository or package family.
+- Public brand: **G Skillpacks**
+- Domain: `gskillpacks.com`
+- Product meaning: the packs of skills, workflows, and proof surfaces for the `agentic-skills` library.
+- Naming rule: use **G Skillpacks** in public UI and documentation. Use `agentic-skills` only when referring to the underlying open-source repository or package family.
 
 ## Local Development
 
@@ -21,7 +21,7 @@ pnpm --dir apps/skills-showcase dev
 pnpm --dir apps/skills-showcase build
 ```
 
-Produces the G Skillmap site build for the configured deployment target.
+Produces the G Skillpacks site build for the configured deployment target.
 
 ## Data Freshness
 
@@ -50,4 +50,4 @@ Newsletter subscribers are stored in Neon PostgreSQL. Migration SQL lives at `sr
 
 ## Relationship to `docs/skills-showcase/`
 
-The static site HTML/CSS/JS files were removed in Step 37.6. `docs/skills-showcase/assets/` is kept for dual-write. This Next.js app is the sole G Skillmap surface.
+The static site HTML/CSS/JS files were removed in Step 37.6. `docs/skills-showcase/assets/` is kept for dual-write. This Next.js app is the sole G Skillpacks surface.

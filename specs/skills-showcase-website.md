@@ -1,17 +1,17 @@
-# G Skillmap Website
+# G Skillpacks Website
 
 ## Overview
 
-Build the `gskillmap.com` website for **G Skillmap**, the public brand for mapping the `agentic-skills` workflow library. The site promotes George "G" Le as an agentic engineering expert and makes the workflow library understandable through generated skill coverage, curated workflow walkthroughs, and browser-native animations.
+Build the `gskillpacks.com` website for **G Skillpacks**, the public brand for mapping the `agentic-skills` workflow library. The site promotes George "G" Le as an agentic engineering expert and makes the workflow library understandable through generated skill coverage, curated workflow walkthroughs, and browser-native animations.
 
-The site is both a marketing surface and a proof surface. It should show that G has built a repeatable agentic engineering operating system for Claude Code and Codex, and it should connect that system to the broader LexCorp build-in-public story. The primary CTA is to explore the skill map, with follow/community links as secondary conversion paths to LexCorp, YouTube, X/Twitter, Discord, and G's ongoing work.
+The site is both a marketing surface and a proof surface. It should show that G has built a repeatable agentic engineering operating system for Claude Code and Codex, and it should connect that system to the broader LexCorp build-in-public story. The primary CTA is to explore the skill packs, with follow/community links as secondary conversion paths to LexCorp, YouTube, X/Twitter, Discord, and G's ongoing work.
 
 ## Brand And Domain
 
-- Public brand: **G Skillmap**.
-- Production domain: `gskillmap.com`.
-- Product meaning: a map of skills, packs, workflows, proof surfaces, and agent operating patterns.
-- Public UI should say **G Skillmap** rather than `agentic-skills` except when referring to the open-source repository/library.
+- Public brand: **G Skillpacks**.
+- Production domain: `gskillpacks.com`.
+- Product meaning: a curated collection of skill packs, workflows, proof surfaces, and agent operating patterns.
+- Public UI should say **G Skillpacks** rather than `agentic-skills` except when referring to the open-source repository/library.
 - Layout language should reinforce the brand with map terms: routes, coordinates, workflow nodes, pack map, catalog, and proof surfaces.
 
 V1 remains static and local-first:
@@ -455,7 +455,7 @@ Script contract:
 
 ## Open Questions
 
-- Final domain is `gskillmap.com`.
+- Final domain is `gskillpacks.com`.
 - Which static newsletter/email provider should back the launch form?
 - Should the Discord invite be treated as permanent, or should the site link through a stable redirect controlled by LexCorp?
 - Should future versions add a separate LexCorp proof page, or keep LexCorp as a narrative/funnel destination?
@@ -471,7 +471,7 @@ Script contract:
 - Confirmed: `[from codebase]` Source skill data lives in `SKILL.md` frontmatter and paths. Risk if wrong: generated catalog may miss behavior details that only appear deep in the body.
 - Confirmed: `[from codebase]` Existing validation scripts are the right pattern for stale-data checks. Risk if wrong: adding another validation script may be ignored unless workflow skills reference it.
 - Confirmed: `[from research]` LexCorp is a build-in-public War Room and portfolio brand. Risk if wrong: cross-linking the showcase to LexCorp may confuse users who only want the skill library.
-- Confirmed: `[from brand decision]` The public site brand is **G Skillmap** at `gskillmap.com`; `agentic-skills` remains the open-source library proof surface. Risk if wrong: public naming may feel less direct than the repository name, but it creates a more ownable G-branded product surface.
+- Confirmed: `[from brand decision]` The public site brand is **G Skillpacks** at `gskillpacks.com`; `agentic-skills` remains the open-source library proof surface. Risk if wrong: public naming may feel less direct than the repository name, but it creates a more ownable G-branded product surface.
 - Corrected: `[from roadmap clarification]` The primary CTA is exploring the library, with follow/community conversion paths secondary. Risk if wrong: CTA placement may under-serve immediate audience growth, but proof-first visitors should be higher quality.
 - Corrected: `[from roadmap clarification]` MVP includes newsletter/email capture, GitHub/open-source proof telemetry, and multi-page routing. Risk if wrong: MVP scope is larger, but it matches the product seriousness expected for a top-of-funnel showcase.
 - Corrected: `[from roadmap clarification]` Live LexCorp metrics are not required for MVP. Risk if wrong later: LexCorp proof may need a separate data contract rather than being implied by this site.

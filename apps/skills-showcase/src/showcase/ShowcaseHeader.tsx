@@ -9,9 +9,9 @@ export default function ShowcaseHeader() {
   return (
     <header className="site-header">
       <div className="nav-shell">
-        <Link className="brand" href="/" aria-label="G Skillmap home">
-          <strong>G Skillmap</strong>
-          <span>gskillmap.com</span>
+        <Link className="brand" href="/" aria-label="G Skillpacks home">
+          <strong>G Skillpacks</strong>
+          <span>gskillpacks.com</span>
         </Link>
         <nav className="main-nav" aria-label="Primary navigation">
           <Link

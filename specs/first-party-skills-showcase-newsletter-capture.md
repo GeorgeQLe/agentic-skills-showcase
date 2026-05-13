@@ -1,8 +1,8 @@
-# First-Party G Skillmap Newsletter Capture
+# First-Party G Skillpacks Newsletter Capture
 
 ## Overview
 
-Extend the existing G Skillmap website from a mostly static proof surface into a minimal first-party capture app for newsletter interest.
+Extend the existing G Skillpacks website from a mostly static proof surface into a minimal first-party capture app for newsletter interest.
 
 The current site already exists under `docs/skills-showcase/` with static routes, shared styling, generated skill/proof data, and a newsletter form shell on `/follow/`. The implementation should preserve that visual/content system and refactor only as needed to support first-party persistence, admin access, and clean Vercel deployment.
 
@@ -10,7 +10,7 @@ Because the current showcase is not a Next.js project, the preferred implementat
 
 ## Goals
 
-- Capture newsletter-interest emails through a first-party form on the G Skillmap follow page.
+- Capture newsletter-interest emails through a first-party form on the G Skillpacks follow page.
 - Store subscriber records in Neon Postgres.
 - Use tRPC for typed capture/admin contracts.
 - Use TanStack Query for public mutation state and admin list/export state.
@@ -26,7 +26,7 @@ Because the current showcase is not a Next.js project, the preferred implementat
 - Adding a full auth provider or user accounts.
 - Adding visitor-tracking analytics.
 - Storing raw IP addresses or raw user-agent strings in V1.
-- Replacing the G Skillmap visual design or information architecture.
+- Replacing the G Skillpacks visual design or information architecture.
 - Replacing generated skill/proof data with database-backed catalog data.
 - Creating or modifying GitHub Actions workflows.
 
@@ -314,14 +314,14 @@ Do not store raw IP address, raw user-agent, Discord handle, or behavioral analy
 
 ## Open Questions
 
-- Production domain is `gskillmap.com`.
+- Production domain is `gskillpacks.com`.
 - Should the old `docs/skills-showcase/` static path remain as a redirect/stub after migration, or be replaced by documentation pointing to the app?
 - Which migration tool or ORM should manage Neon schema changes, if any, during implementation?
 - Should admin status management, such as marking unsubscribed, be added in V1 or deferred?
 
 ## Assumptions & Risks
 
-- Corrected: `[from codebase]` The G Skillmap website already exists under `docs/skills-showcase/`. Risk if wrong: implementation could waste time rebuilding proven static surfaces instead of porting them.
+- Corrected: `[from codebase]` The G Skillpacks website already exists under `docs/skills-showcase/`. Risk if wrong: implementation could waste time rebuilding proven static surfaces instead of porting them.
 - Corrected: `[from user]` Because the existing site is not Next.js, the user wants the implementation to push the refactor toward a Next.js app. Risk if wrong: a Next migration adds dependency and deployment surface that a smaller endpoint-only solution might avoid.
 - Confirmed: `[from user]` First-party capture should use Neon, tRPC, and TanStack Query. Risk if wrong: simpler Vercel Function or managed-provider approaches would be less complex.
 - Confirmed: `[from user]` Admin export exists so the user can email subscribers from another newsletter app or email client. Risk if wrong: V1 may underbuild newsletter operations such as templates, unsubscribe links, and delivery compliance.

@@ -9,9 +9,9 @@ import { TRPCProvider } from "@/trpc/provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "G Skillmap",
+  title: "G Skillpacks",
   description:
-    "The skill map for agentic-skills workflows, packs, proof data, and follow updates.",
+    "The skill packs for agentic-skills workflows, packs, proof data, and follow updates.",
   icons: {
     icon: "/icon.png",
     apple: "/apple-icon.png"
