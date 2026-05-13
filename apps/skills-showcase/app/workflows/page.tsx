@@ -137,6 +137,41 @@ export default function WorkflowsPage() {
         </article>
       </section>
       <WorkflowsClient />
+
+      <section className="section grid-12" aria-labelledby="variations-title">
+        <div className="span-12">
+          <h2 id="variations-title">TUI Variations</h2>
+          <p className="lede">
+            Five visual takes on the same workflow data — compare layouts, color
+            schemes, and interaction models.
+          </p>
+        </div>
+        <a href="/workflows/v1" className="span-4 route-card">
+          <span className="tag">dark</span>
+          <h3>V1: Hacker Terminal</h3>
+          <p>Green-on-black phosphor. Monospace. Scanlines.</p>
+        </a>
+        <a href="/workflows/v2" className="span-4 route-card">
+          <span className="tag">light</span>
+          <h3>V2: Clean Minimal</h3>
+          <p>Spacious dev-docs feel. Teal accent only.</p>
+        </a>
+        <a href="/workflows/v3" className="span-4 route-card">
+          <span className="tag">retro</span>
+          <h3>V3: Retro CRT</h3>
+          <p>Amber-on-navy. CRT bezel and scanlines.</p>
+        </a>
+        <a href="/workflows/v4" className="span-4 route-card">
+          <span className="tag">fun</span>
+          <h3>V4: Playful Lab</h3>
+          <p>Lavender, coral chips, sticky-note metadata.</p>
+        </a>
+        <a href="/workflows/v5" className="span-4 route-card">
+          <span className="tag">dashboard</span>
+          <h3>V5: Professional</h3>
+          <p>Dark monitoring dashboard. Timeline + context panel.</p>
+        </a>
+      </section>
     </main>
   );
 }

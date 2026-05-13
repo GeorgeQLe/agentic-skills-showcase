@@ -1,0 +1,331 @@
+/* ── Playful Lab ── scoped under .tui-playful ── */
+
+.tui-playful {
+  min-height: 100vh;
+  background: #f3f0ff;
+  color: #2d1b69;
+  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Chip row ── */
+
+.tui-playful__chips {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.tui-playful__chips::-webkit-scrollbar {
+  display: none;
+}
+
+.tui-playful__chip {
+  flex-shrink: 0;
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  border: 2px solid #2d1b69;
+  background: transparent;
+  color: #2d1b69;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, transform 0.15s;
+  white-space: nowrap;
+}
+
+.tui-playful__chip:hover {
+  background: #ede5ff;
+  transform: scale(1.04);
+}
+
+.tui-playful__chip--active {
+  background: #ff6b6b;
+  border-color: #ff6b6b;
+  color: #fff;
+}
+
+.tui-playful__chip--active:hover {
+  background: #ff5252;
+}
+
+/* ── Main layout ── */
+
+.tui-playful__body {
+  display: flex;
+  flex: 1;
+  gap: 1.5rem;
+  padding: 0 1.25rem 1.25rem;
+  align-items: flex-start;
+}
+
+/* ── Left: step area (55%) ── */
+
+.tui-playful__step-area {
+  flex: 0 0 55%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* ── Step card ── */
+
+.tui-playful__step-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 2rem 2.25rem;
+  box-shadow: 0 4px 20px rgba(45, 27, 105, 0.08);
+  animation: playful-bounce-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.tui-playful__step-name {
+  margin: 0 0 0.25rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #2d1b69;
+}
+
+.tui-playful__step-command {
+  display: inline-block;
+  margin: 0.5rem 0;
+  padding: 0.3rem 0.75rem;
+  background: #ede5ff;
+  border-radius: 8px;
+  font-family: "Fira Code", "Cascadia Code", monospace;
+  font-size: 0.85rem;
+  color: #5a3ec8;
+}
+
+.tui-playful__step-desc {
+  margin: 0.75rem 0 0;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: #4a3a6a;
+}
+
+/* ── Dot indicators with connecting lines ── */
+
+.tui-playful__dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 0.5rem 0;
+}
+
+.tui-playful__dot-group {
+  display: flex;
+  align-items: center;
+}
+
+.tui-playful__dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid #2d1b69;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  padding: 0;
+  transition: background 0.2s, transform 0.2s;
+  flex-shrink: 0;
+}
+
+.tui-playful__dot:hover {
+  transform: scale(1.2);
+}
+
+.tui-playful__dot--active {
+  background: #00d4aa;
+  border-color: #00d4aa;
+}
+
+/* Progress ring around active dot */
+.tui-playful__dot--active::after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-top-color: #ffd93d;
+  animation: playful-ring-spin 1.2s linear infinite;
+}
+
+.tui-playful__dot-line {
+  width: 24px;
+  height: 2px;
+  background: #c4b8e0;
+  flex-shrink: 0;
+}
+
+/* ── Controls ── */
+
+.tui-playful__controls {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.tui-playful__btn {
+  padding: 0.45rem 1.1rem;
+  border-radius: 12px;
+  border: 2px solid #2d1b69;
+  background: #fff;
+  color: #2d1b69;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.15s;
+}
+
+.tui-playful__btn:hover {
+  background: #ede5ff;
+  transform: translateY(-1px);
+}
+
+.tui-playful__btn--play {
+  background: #00d4aa;
+  border-color: #00d4aa;
+  color: #fff;
+}
+
+.tui-playful__btn--play:hover {
+  background: #00c09a;
+}
+
+/* ── Counter ── */
+
+.tui-playful__counter {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #8070a8;
+  margin: 0;
+}
+
+/* ── Right: sticky note (45%) ── */
+
+.tui-playful__sticky {
+  flex: 0 0 42%;
+  background: #fff8dc;
+  border-radius: 4px 4px 12px 12px;
+  padding: 1.5rem 1.75rem;
+  box-shadow:
+    2px 4px 16px rgba(45, 27, 105, 0.1),
+    0 1px 3px rgba(0, 0, 0, 0.06);
+  position: sticky;
+  top: 1.25rem;
+  transition: transform 0.3s ease;
+}
+
+/* Slight tilt variation per workflow */
+.tui-playful__sticky--tilt-0 { transform: rotate(-2deg); }
+.tui-playful__sticky--tilt-1 { transform: rotate(-1deg); }
+.tui-playful__sticky--tilt-2 { transform: rotate(0deg); }
+.tui-playful__sticky--tilt-3 { transform: rotate(1deg); }
+.tui-playful__sticky--tilt-4 { transform: rotate(2deg); }
+.tui-playful__sticky--tilt-5 { transform: rotate(-1.5deg); }
+.tui-playful__sticky--tilt-6 { transform: rotate(1.5deg); }
+
+.tui-playful__sticky-title {
+  margin: 0 0 0.25rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #2d1b69;
+}
+
+.tui-playful__sticky-subtitle {
+  margin: 0 0 1rem;
+  font-size: 0.8rem;
+  color: #7a6a9a;
+  font-style: italic;
+}
+
+.tui-playful__sticky-section {
+  margin-bottom: 1rem;
+}
+
+.tui-playful__sticky-section:last-child {
+  margin-bottom: 0;
+}
+
+.tui-playful__sticky-label {
+  display: inline-block;
+  margin-bottom: 0.3rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #ff6b6b;
+}
+
+.tui-playful__sticky-text {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: #4a3a6a;
+}
+
+.tui-playful__sticky-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: #4a3a6a;
+}
+
+/* ── Keyframes ── */
+
+@keyframes playful-bounce-in {
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes playful-ring-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── Reduced motion ── */
+
+@media (prefers-reduced-motion: reduce) {
+  .tui-playful__step-card {
+    animation: none;
+  }
+
+  .tui-playful__dot--active::after {
+    animation: none;
+    border-color: #ffd93d;
+  }
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 768px) {
+  .tui-playful__body {
+    flex-direction: column;
+  }
+
+  .tui-playful__step-area {
+    flex: 1 1 auto;
+  }
+
+  .tui-playful__sticky {
+    flex: 1 1 auto;
+    position: static;
+    transform: rotate(0deg) !important;
+  }
+}
