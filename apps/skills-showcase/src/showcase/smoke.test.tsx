@@ -7,6 +7,7 @@ import BenchmarksPage from "../../app/benchmarks/page";
 import PacksPage from "../../app/packs/page";
 import InspectPage from "../../app/inspect/page";
 import FollowPage from "../../app/follow/page";
+import ShowcaseHeader from "./ShowcaseHeader";
 
 vi.mock("@/trpc/client", () => ({
   trpc: {
@@ -26,8 +27,15 @@ describe("smoke rendering", () => {
   it("HomePage renders hero and navigation links", () => {
     render(<HomePage />);
     expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
-    expect(screen.getByText("Explore the Map")).toBeInTheDocument();
+    expect(screen.getByText("Explore Packs")).toBeInTheDocument();
     expect(screen.getByText("Follow G’s Work")).toBeInTheDocument();
+  });
+
+  it("ShowcaseHeader renders the G Skillpacks icon", () => {
+    render(<ShowcaseHeader />);
+    const icon = document.querySelector(".brand-mark") as HTMLImageElement;
+    expect(icon).toBeInTheDocument();
+    expect(icon.getAttribute("src")).toBe("/icon.png");
   });
 
   it("HomePage renders route cards", () => {

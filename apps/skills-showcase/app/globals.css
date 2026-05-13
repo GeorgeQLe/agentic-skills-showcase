@@ -76,9 +76,24 @@ select {
 
 .brand {
   display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.brand-mark {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  border: 1px solid rgba(29, 44, 49, 0.18);
+  background: #020404;
+  object-fit: cover;
+}
+
+.brand-copy {
+  display: inline-flex;
   flex-direction: column;
   gap: 1px;
-  text-decoration: none;
 }
 
 .brand strong {
@@ -86,7 +101,7 @@ select {
   letter-spacing: 0;
 }
 
-.brand span,
+.brand-copy > span,
 .coordinate,
 .eyebrow,
 .metric-label {

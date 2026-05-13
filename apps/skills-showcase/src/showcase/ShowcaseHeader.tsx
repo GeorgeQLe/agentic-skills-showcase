@@ -10,8 +10,18 @@ export default function ShowcaseHeader() {
     <header className="site-header">
       <div className="nav-shell">
         <Link className="brand" href="/" aria-label="G Skillpacks home">
-          <strong>G Skillpacks</strong>
-          <span>gskillpacks.com</span>
+          <img
+            className="brand-mark"
+            src="/icon.png"
+            alt=""
+            width={40}
+            height={40}
+            aria-hidden="true"
+          />
+          <span className="brand-copy">
+            <strong>G Skillpacks</strong>
+            <span>gskillpacks.com</span>
+          </span>
         </Link>
         <nav className="main-nav" aria-label="Primary navigation">
           <Link

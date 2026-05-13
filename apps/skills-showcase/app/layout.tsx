@@ -9,13 +9,10 @@ import { TRPCProvider } from "@/trpc/provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://gskillpacks.com"),
   title: "G Skillpacks",
   description:
     "The skill packs for agentic-skills workflows, packs, proof data, and follow updates.",
-  icons: {
-    icon: "/icon.png",
-    apple: "/apple-icon.png"
-  },
   openGraph: {
     images: [{ url: "/opengraph-image.png", width: 1254, height: 1254 }]
   }

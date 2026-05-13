@@ -194,8 +194,12 @@ describe("BenchmarksClient", () => {
       description: "Pull latest",
       type: "utility",
       platform: "claude",
+      command: "$sync",
+      scope: "global",
+      pack: "",
       path: "global/claude/sync/SKILL.md",
-      mirrorKey: "sync"
+      mirrorKey: "sync",
+      tags: []
     }]);
     setupDOM();
     render(<BenchmarksClient />);
