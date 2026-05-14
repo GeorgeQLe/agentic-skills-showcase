@@ -13,6 +13,15 @@ export const metadata: Metadata = {
   title: "G Skillpacks",
   description:
     "The skill packs for agentic-skills workflows, packs, proof data, and follow updates.",
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/icon.png", type: "image/png" },
+      { url: "/app-icon.png", type: "image/png" }
+    ],
+    apple: [{ url: "/apple-touch-icon.png", type: "image/png" }]
+  },
   openGraph: {
     images: [{ url: "/opengraph-image.png", width: 1254, height: 1254 }]
   }
