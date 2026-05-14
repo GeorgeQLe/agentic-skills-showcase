@@ -29,6 +29,15 @@ function isGraded(evidence: BenchmarkEvidence): boolean {
   return Array.isArray(evidence.quality) && evidence.quality.length > 0;
 }
 
+function reviewLabel(evidence: BenchmarkEvidence): string {
+  const review = evidence.subjectiveReview;
+  if (!review) return "--";
+  const score = text(review.medianScore);
+  const range = text(review.scoreRange);
+  if (!score) return "reviewed";
+  return `median ${score}${range ? ` (${range})` : ""}`;
+}
+
 export default function BenchmarksClient() {
   useEffect(() => {
     const win = window as unknown as Record<string, unknown>;
@@ -70,7 +79,7 @@ export default function BenchmarksClient() {
 
     const thead = document.createElement("thead");
     const headerRow = document.createElement("tr");
-    ["Skill", "Status", "Agent", "Pass Rate", "Quality", "Date", "Report"].forEach((col) => {
+    ["Skill", "Status", "Agent", "Pass Rate", "Quality", "Review", "Date", "Report"].forEach((col) => {
       const th = document.createElement("th");
       th.textContent = col;
       headerRow.appendChild(th);
@@ -123,6 +132,20 @@ export default function BenchmarksClient() {
         tr.appendChild(tdQuality);
 
         if (agentIdx === 0) {
+          const tdReview = document.createElement("td");
+          tdReview.rowSpan = evidence.agents.length;
+          const review = evidence.subjectiveReview;
+          const reviewPath = sourceLink(review?.reportPath);
+          if (reviewPath) {
+            const anchor = document.createElement("a");
+            anchor.href = reviewPath;
+            anchor.textContent = reviewLabel(evidence);
+            tdReview.appendChild(anchor);
+          } else {
+            tdReview.textContent = reviewLabel(evidence);
+          }
+          tr.appendChild(tdReview);
+
           const tdDate = document.createElement("td");
           tdDate.rowSpan = evidence.agents.length;
           tdDate.textContent = text(evidence.date, "--");

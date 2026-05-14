@@ -20,6 +20,13 @@ const MOCK_SKILLS = [
       reportPath: "benchmark/test-run-2026-05-11.md",
       agents: [{ agent: "Codex", passRate: "100.0% (3/3)", latencyP50: "42.6s", totalCost: "$3.00" }],
       quality: [{ agent: "Codex", averageQualityScore: "100.0%" }],
+      subjectiveReview: {
+        reportPath: "benchmark/review-run-2026-05-11.md",
+        medianScore: "92.0",
+        scoreRange: "90-94",
+        verdict: "The reviewed outputs are excellent overall.",
+        nextCommand: "$ship"
+      },
       demo: {
         agent: "Codex",
         runIndex: 0,
@@ -175,6 +182,26 @@ describe("CatalogClient", () => {
       expect(list.textContent).toContain("You have the run skill installed");
       expect(list.textContent).toContain("Created run-plan.md");
       expect(list.textContent).toContain("run-000.json");
+    });
+
+    it("renders subjective benchmark review evidence", () => {
+      document.body.innerHTML = `
+        <input data-catalog-search />
+        <select data-catalog-platform><option value="all">All</option></select>
+        <select data-catalog-type><option value="all">All</option></select>
+        <select data-catalog-scope><option value="all">All</option></select>
+        <span data-catalog-count></span>
+        <div data-catalog-list></div>
+      `;
+      render(<CatalogClient />);
+
+      const list = document.querySelector("[data-catalog-list]")!;
+      expect(list.textContent).toContain("Agent review");
+      expect(list.textContent).toContain("Median 92.0, range 90-94");
+      expect(list.textContent).toContain("excellent overall");
+      expect((list.querySelector("a[href*='review-run-2026-05-11.md']") as HTMLAnchorElement | null)?.href).toContain(
+        "github.com",
+      );
     });
 
     it("filters by platform", () => {

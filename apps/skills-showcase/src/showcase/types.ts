@@ -19,12 +19,22 @@ export interface BenchmarkDemo {
   reportPath: string;
 }
 
+export interface BenchmarkSubjectiveReview {
+  date?: string;
+  reportPath?: string;
+  medianScore?: string;
+  scoreRange?: string;
+  verdict?: string;
+  nextCommand?: string;
+}
+
 export interface BenchmarkEvidence {
   date?: string;
   agents: BenchmarkAgent[];
   quality?: BenchmarkQuality[];
   reportPath?: string;
   demo?: BenchmarkDemo;
+  subjectiveReview?: BenchmarkSubjectiveReview;
 }
 
 export interface Skill {

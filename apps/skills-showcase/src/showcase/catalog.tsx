@@ -107,6 +107,33 @@ function makeBenchmarkPanel(evidence: BenchmarkEvidence | undefined): HTMLDivEle
     panel.append(heading, summary, metrics);
   }
 
+  if (evidence.subjectiveReview) {
+    const review = document.createElement("div");
+    review.className = "benchmark-review";
+
+    const label = document.createElement("span");
+    label.className = "demo-label";
+    label.textContent = "Agent review";
+
+    const reviewSummary = document.createElement("p");
+    const score = text(evidence.subjectiveReview.medianScore);
+    const range = text(evidence.subjectiveReview.scoreRange);
+    const scoreText = score ? `Median ${score}${range ? `, range ${range}` : ""}.` : "";
+    reviewSummary.textContent = [scoreText, text(evidence.subjectiveReview.verdict)].filter(Boolean).join(" ");
+
+    const reviewLink = sourceLink(evidence.subjectiveReview.reportPath);
+    if (reviewLink) {
+      const anchor = document.createElement("a");
+      anchor.href = reviewLink;
+      anchor.textContent = text(evidence.subjectiveReview.reportPath);
+      review.append(label, reviewSummary, anchor);
+    } else {
+      review.append(label, reviewSummary);
+    }
+
+    panel.appendChild(review);
+  }
+
   if (evidence.demo) {
     const demo = document.createElement("div");
     demo.className = "benchmark-demo";

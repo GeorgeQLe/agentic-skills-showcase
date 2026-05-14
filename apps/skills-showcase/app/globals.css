@@ -993,6 +993,16 @@ code {
   margin-top: 4px;
 }
 
+.benchmark-review {
+  display: grid;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.benchmark-review p {
+  color: var(--ink);
+}
+
 .benchmark-demo strong {
   color: var(--ink);
 }

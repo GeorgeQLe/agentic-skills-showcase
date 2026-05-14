@@ -25,7 +25,14 @@ const MOCK_SKILLS = [
       quality: [
         { agent: "Codex", averageQualityScore: "100.0%" },
         { agent: "Claude", averageQualityScore: "72.9%" }
-      ]
+      ],
+      subjectiveReview: {
+        reportPath: "benchmark/review-run-2026-05-11.md",
+        medianScore: "92.0",
+        scoreRange: "90-94",
+        verdict: "Excellent overall.",
+        nextCommand: "$ship"
+      }
     }
   },
   {
@@ -175,6 +182,17 @@ describe("BenchmarksClient", () => {
     const table = document.querySelector(".benchmarks-table")!;
     expect(table.textContent).toContain("100.0%");
     expect(table.textContent).toContain("72.9%");
+  });
+
+  it("shows subjective review scores and links review reports", () => {
+    setWindowData();
+    setupDOM();
+    render(<BenchmarksClient />);
+
+    const table = document.querySelector(".benchmarks-table")!;
+    expect(table.textContent).toContain("median 92.0 (90-94)");
+    const reviewLink = table.querySelector("a[href*='review-run-2026-05-11.md']");
+    expect(reviewLink).toBeTruthy();
   });
 
   it("shows -- for agents without quality data", () => {
