@@ -5,8 +5,8 @@ import { showcaseRoutes } from "./routes";
 import type { ShowcaseRoute } from "./routes";
 
 describe("showcaseRoutes", () => {
-  it("exports exactly 13 public routes", () => {
-    expect(showcaseRoutes).toHaveLength(13);
+  it("exports exactly 8 public routes", () => {
+    expect(showcaseRoutes).toHaveLength(8);
   });
 
   it("every route has href, label, and description", () => {
@@ -43,11 +43,6 @@ describe("showcaseRoutes", () => {
     expect(hrefs).toContain("/inspect");
     expect(hrefs).toContain("/follow");
     expect(hrefs).toContain("/admin/newsletter");
-    expect(hrefs).toContain("/workflows/v1");
-    expect(hrefs).toContain("/workflows/v2");
-    expect(hrefs).toContain("/workflows/v3");
-    expect(hrefs).toContain("/workflows/v4");
-    expect(hrefs).toContain("/workflows/v5");
   });
 
   it("includes the expected labels", () => {
@@ -60,11 +55,6 @@ describe("showcaseRoutes", () => {
     expect(labels).toContain("Inspect");
     expect(labels).toContain("Follow");
     expect(labels).toContain("Admin");
-    expect(labels).toContain("V1: Hacker");
-    expect(labels).toContain("V2: Clean");
-    expect(labels).toContain("V3: Retro");
-    expect(labels).toContain("V4: Playful");
-    expect(labels).toContain("V5: Pro");
   });
 });
 

@@ -54,7 +54,7 @@ Source evidence:
 
 ### Layout Grid And Spatial Density
 
-- Confirmed: `[from spec]` Use a Swiss grid and blueprint motif.
+- Confirmed: `[from spec]` Use a Swiss grid and playful blueprint motif with progressive corner rounding and coral accents.
 - Confirmed: `[inferred]` Use a 12-column desktop grid, 8-column tablet grid, and 4-column mobile grid.
 - Confirmed: `[inferred]` Density should be technical and scan-friendly, not airy SaaS landing-page style.
 
@@ -94,9 +94,9 @@ Source evidence:
 
 ### Visual Language, Typography, Color, Iconography, And Assets
 
-- Confirmed: `[from spec]` Swiss grid + blueprint motif; no blobs, generic gradients, video, or Remotion assets.
-- Confirmed: `[inferred]` Palette uses neutral base, blueprint blue accents, green success, amber warning, and red failure.
-- Confirmed: `[inferred]` Use precise sans-serif typography and monospace for commands/terminal playback.
+- Confirmed: `[from spec]` Swiss grid + playful blueprint hybrid motif; no blobs, generic gradients, video, or Remotion assets.
+- Updated: `[from consolidation]` Palette uses neutral paper base, teal structural accents (reduced usage), coral warmth accents for interactive elements, green success, amber warning, and red failure. Progressive corner rounding by component scale (0/4/8/12/999px). Bounce-in animations on step cards, hover scale/lift on interactive elements.
+- Confirmed: `[inferred]` Use precise sans-serif typography and monospace (Fira Code primary, SFMono fallback) for commands/terminal playback.
 
 ### Implementation Constraints
 
