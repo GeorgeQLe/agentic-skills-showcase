@@ -797,6 +797,53 @@ code {
   min-height: 190px;
 }
 
+.workflow-lab {
+  display: grid;
+  gap: 22px;
+}
+
+.workflow-lab__header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.38fr);
+  gap: 24px;
+  align-items: end;
+}
+
+.workflow-lab__manifest,
+.workflow-lab__console {
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(90deg, rgba(0, 212, 170, 0.08) 1px, transparent 1px),
+    linear-gradient(rgba(0, 212, 170, 0.08) 1px, transparent 1px),
+    var(--panel);
+  background-size: 24px 24px;
+}
+
+.workflow-lab__manifest {
+  display: grid;
+  gap: 10px;
+  border-left: 3px solid var(--coral);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  padding: 18px;
+  background-color: #f8f0ff;
+  box-shadow: 2px 4px 16px rgba(17, 24, 39, 0.06);
+  transform: rotate(0.35deg);
+}
+
+.workflow-lab__manifest strong {
+  font-size: 1.05rem;
+}
+
+.workflow-lab__manifest p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.workflow-lab__console {
+  padding: 22px;
+  box-shadow: var(--shadow);
+}
+
 .artifact-list {
   display: grid;
   gap: 10px;
@@ -1283,6 +1330,7 @@ a.tag-link:hover {
   .state-machine,
   .metrics,
   .pack-summary,
+  .workflow-lab__header,
   .proof-grid,
   .follow-proof-stats,
   .follow-receipt-grid,
@@ -1310,6 +1358,10 @@ a.tag-link:hover {
 
   .workflow-panel {
     min-height: 0;
+  }
+
+  .workflow-lab__manifest {
+    transform: none;
   }
 
   .workflow-list {
@@ -1385,6 +1437,7 @@ a.tag-link:hover {
   .follow-card,
   .follow-proof-panel,
   .proof-summary-panel,
+  .workflow-lab__console,
   .workflow-item,
   .proof-item,
   .catalog-row,

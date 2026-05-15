@@ -74,20 +74,32 @@ export function TuiWorkflow() {
 
           {/* Controls */}
           <div className="tui-workflow__controls">
-            <button className="tui-workflow__btn" onClick={prevStep}>
+            <button
+              className="tui-workflow__btn"
+              onClick={prevStep}
+              aria-label="Previous step"
+            >
               Prev
             </button>
             <button
               className="tui-workflow__btn tui-workflow__btn--play"
               onClick={togglePlay}
-              aria-label={playing ? "Pause" : "Play"}
+              aria-label={playing ? "Pause animation" : "Play animation"}
             >
               {playing ? "Pause" : "Play"}
             </button>
-            <button className="tui-workflow__btn" onClick={nextStep}>
+            <button
+              className="tui-workflow__btn"
+              onClick={nextStep}
+              aria-label="Next step"
+            >
               Next
             </button>
-            <button className="tui-workflow__btn" onClick={restart}>
+            <button
+              className="tui-workflow__btn"
+              onClick={restart}
+              aria-label="Restart workflow"
+            >
               Restart
             </button>
           </div>
