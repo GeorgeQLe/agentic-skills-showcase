@@ -1,4 +1,4 @@
-export type WorkflowStep = [string, string, string];
+export type WorkflowStep = [string, string, string, string?];
 
 export interface Workflow {
   key: string;
@@ -31,8 +31,8 @@ export const workflows: Workflow[] = [
     steps: [
       ["Install", "./install.sh", "Global skill links refresh."],
       ["Select pack", "./scripts/pack.sh", "Project context narrows loaded workflows."],
-      ["Plan", "$roadmap", "Task docs describe the next phase."],
-      ["Run", "$run", "One step executes with validation."],
+      ["Plan", "$roadmap", "Task docs describe the next phase.", "roadmap"],
+      ["Run", "$run", "One step executes with validation.", "run"],
       ["Ship", "git push", "History and commit land on primary."]
     ]
   },
@@ -73,7 +73,7 @@ export const workflows: Workflow[] = [
       ["Plan", "update_plan", "Files, trade-offs, and tests are explicit."],
       ["Execute", "source diff", "Only the scoped change lands."],
       ["Validate", "tests/checks", "Warnings are fixed or recorded."],
-      ["Ship", "commit + push", "History and next work are ready."]
+      ["Ship", "commit + push", "History and next work are ready.", "ship"]
     ]
   },
   {
@@ -90,10 +90,10 @@ export const workflows: Workflow[] = [
     failure: "If evidence contradicts the idea, update assumptions before writing roadmap tasks; do not encode speculative work as accepted scope.",
     steps: [
       ["Idea", "user brief", "Intent and unknowns are separated."],
-      ["Interview", "$spec-interview", "Assumptions become explicit."],
+      ["Interview", "$spec-interview", "Assumptions become explicit.", "spec-interview"],
       ["Spec", "specs/*.md", "Behavior and constraints are written."],
-      ["Roadmap", "$roadmap", "The work becomes phases."],
-      ["Implement", "$run", "A single phase step executes."]
+      ["Roadmap", "$roadmap", "The work becomes phases.", "roadmap"],
+      ["Implement", "$run", "A single phase step executes.", "run"]
     ]
   },
   {
@@ -113,7 +113,7 @@ export const workflows: Workflow[] = [
       ["Collect", "sources", "Evidence gets archived."],
       ["Synthesize", "analysis", "Claims cite artifacts."],
       ["Prioritize", "queue", "Next research or build step is ranked."],
-      ["Route", "$feature-interview", "Good candidates become product work."]
+      ["Route", "$feature-interview", "Good candidates become product work.", "feature-interview"]
     ]
   },
   {
@@ -131,9 +131,9 @@ export const workflows: Workflow[] = [
     steps: [
       ["Plan", "Claude", "Scope is approved elsewhere."],
       ["Packet", "approved-plan.json", "One step becomes executable."],
-      ["Consume", "$run --execute-approved", "Codex records the handoff."],
+      ["Consume", "$run --execute-approved", "Codex records the handoff.", "run"],
       ["Integrate", "main agent", "Conflicts and docs stay owned here."],
-      ["Ship", "primary branch", "The result lands with evidence."]
+      ["Ship", "primary branch", "The result lands with evidence.", "ship"]
     ]
   },
   {
@@ -170,7 +170,7 @@ export const workflows: Workflow[] = [
     failure: "If the failure cannot be fixed confidently, stop before commit and report the exact command output and next decision.",
     steps: [
       ["Fail", "check output", "The problem is reproduced."],
-      ["Trace", "$debug", "Root cause is found."],
+      ["Trace", "$debug", "Root cause is found.", "debug"],
       ["Fix", "minimal diff", "The behavior changes at the source."],
       ["Rerun", "failing command", "The proof is executable."],
       ["Record", "history/lessons", "The pattern is not lost."]

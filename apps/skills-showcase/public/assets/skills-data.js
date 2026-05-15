@@ -8692,5 +8692,156 @@ window.SKILLS_SHOWCASE_DATA = {
       "path": "packs/youtube-ops/PACK.md"
     }
   ],
-  "workflows": []
+  "workflows": [],
+  "workflowBenchmarks": {
+    "first": {
+      "workflowKey": "first",
+      "stepsTotal": 2,
+      "stepsBenchmarked": 1,
+      "aggregatePassRate": "100%",
+      "aggregateQuality": "100.0%",
+      "stepBenchmarks": {
+        "2": {
+          "skill": "roadmap",
+          "passRate": null,
+          "qualityScore": null,
+          "demo": null
+        },
+        "3": {
+          "skill": "run",
+          "passRate": "100.0% (3/3)",
+          "qualityScore": "100.0%",
+          "demo": {
+            "agent": "codex",
+            "runIndex": 1,
+            "prompt": "You have the run skill installed. Using the local task files, write run-plan.md with the selected next step, files you would inspect or modify, validation commands, shipping note, and Next command. Do not modify task docs or run git.",
+            "output": "Created [run-plan.md](run-plan.md).\n\nI used the local task files to select Step 1.1, noted the missing `tests/example.test.ts` target and absent test configuration, and included validation constraints plus the next command. I did not modify task docs or run git.",
+            "runPath": "tests/benchmarks/runs/run-codex-47e0dd54/run-001.json",
+            "reportPath": "benchmark/test-run-2026-05-11.md"
+          }
+        }
+      }
+    },
+    "ship": {
+      "workflowKey": "ship",
+      "stepsTotal": 1,
+      "stepsBenchmarked": 1,
+      "aggregatePassRate": "100%",
+      "aggregateQuality": "78.6%",
+      "stepBenchmarks": {
+        "4": {
+          "skill": "ship",
+          "passRate": "100.0% (3/3)",
+          "qualityScore": "78.6%",
+          "demo": {
+            "agent": "codex",
+            "runIndex": 2,
+            "prompt": "You have the ship skill installed. Read the fixture task and diff summary, then write ship-manifest.md with User goal, Changed files, Tests run, Deploy status, Rollback note, and Next command. Use your runner's command convention for Next command: Claude uses `/run`; Codex uses `$run`. Do not run git.",
+            "output": "Created [ship-manifest.md](ship-manifest.md) with the requested sections and Codex next command convention: `$run`.\n\nI did not run git.",
+            "runPath": "tests/benchmarks/runs/ship-codex-b69cb187/run-002.json",
+            "reportPath": "benchmark/test-ship-2026-05-11.md"
+          }
+        }
+      }
+    },
+    "spec": {
+      "workflowKey": "spec",
+      "stepsTotal": 3,
+      "stepsBenchmarked": 1,
+      "aggregatePassRate": "100%",
+      "aggregateQuality": "100.0%",
+      "stepBenchmarks": {
+        "1": {
+          "skill": "spec-interview",
+          "passRate": null,
+          "qualityScore": null,
+          "demo": null
+        },
+        "3": {
+          "skill": "roadmap",
+          "passRate": null,
+          "qualityScore": null,
+          "demo": null
+        },
+        "4": {
+          "skill": "run",
+          "passRate": "100.0% (3/3)",
+          "qualityScore": "100.0%",
+          "demo": {
+            "agent": "codex",
+            "runIndex": 1,
+            "prompt": "You have the run skill installed. Using the local task files, write run-plan.md with the selected next step, files you would inspect or modify, validation commands, shipping note, and Next command. Do not modify task docs or run git.",
+            "output": "Created [run-plan.md](run-plan.md).\n\nI used the local task files to select Step 1.1, noted the missing `tests/example.test.ts` target and absent test configuration, and included validation constraints plus the next command. I did not modify task docs or run git.",
+            "runPath": "tests/benchmarks/runs/run-codex-47e0dd54/run-001.json",
+            "reportPath": "benchmark/test-run-2026-05-11.md"
+          }
+        }
+      }
+    },
+    "research": {
+      "workflowKey": "research",
+      "stepsTotal": 1,
+      "stepsBenchmarked": 0,
+      "aggregatePassRate": null,
+      "aggregateQuality": null,
+      "stepBenchmarks": {
+        "4": {
+          "skill": "feature-interview",
+          "passRate": null,
+          "qualityScore": null,
+          "demo": null
+        }
+      }
+    },
+    "handoff": {
+      "workflowKey": "handoff",
+      "stepsTotal": 2,
+      "stepsBenchmarked": 2,
+      "aggregatePassRate": "100%",
+      "aggregateQuality": "89.3%",
+      "stepBenchmarks": {
+        "2": {
+          "skill": "run",
+          "passRate": "100.0% (3/3)",
+          "qualityScore": "100.0%",
+          "demo": {
+            "agent": "codex",
+            "runIndex": 1,
+            "prompt": "You have the run skill installed. Using the local task files, write run-plan.md with the selected next step, files you would inspect or modify, validation commands, shipping note, and Next command. Do not modify task docs or run git.",
+            "output": "Created [run-plan.md](run-plan.md).\n\nI used the local task files to select Step 1.1, noted the missing `tests/example.test.ts` target and absent test configuration, and included validation constraints plus the next command. I did not modify task docs or run git.",
+            "runPath": "tests/benchmarks/runs/run-codex-47e0dd54/run-001.json",
+            "reportPath": "benchmark/test-run-2026-05-11.md"
+          }
+        },
+        "4": {
+          "skill": "ship",
+          "passRate": "100.0% (3/3)",
+          "qualityScore": "78.6%",
+          "demo": {
+            "agent": "codex",
+            "runIndex": 2,
+            "prompt": "You have the ship skill installed. Read the fixture task and diff summary, then write ship-manifest.md with User goal, Changed files, Tests run, Deploy status, Rollback note, and Next command. Use your runner's command convention for Next command: Claude uses `/run`; Codex uses `$run`. Do not run git.",
+            "output": "Created [ship-manifest.md](ship-manifest.md) with the requested sections and Codex next command convention: `$run`.\n\nI did not run git.",
+            "runPath": "tests/benchmarks/runs/ship-codex-b69cb187/run-002.json",
+            "reportPath": "benchmark/test-ship-2026-05-11.md"
+          }
+        }
+      }
+    },
+    "validation": {
+      "workflowKey": "validation",
+      "stepsTotal": 1,
+      "stepsBenchmarked": 0,
+      "aggregatePassRate": null,
+      "aggregateQuality": null,
+      "stepBenchmarks": {
+        "1": {
+          "skill": "debug",
+          "passRate": null,
+          "qualityScore": null,
+          "demo": null
+        }
+      }
+    }
+  }
 };

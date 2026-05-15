@@ -61,10 +61,27 @@ export interface Pack {
   platforms?: string[];
 }
 
+export interface WorkflowStepBenchmark {
+  skill: string;
+  passRate: string | null;
+  qualityScore: string | null;
+  demo: BenchmarkDemo | null;
+}
+
+export interface WorkflowBenchmarkSummary {
+  workflowKey: string;
+  stepsTotal: number;
+  stepsBenchmarked: number;
+  aggregatePassRate: string | null;
+  aggregateQuality: string | null;
+  stepBenchmarks: Record<number, WorkflowStepBenchmark>;
+}
+
 export interface ShowcaseData {
   skills?: Skill[];
   packs?: Pack[];
   skillCount?: number;
   packCount?: number;
   sourceCount?: number;
+  workflowBenchmarks?: Record<string, WorkflowBenchmarkSummary>;
 }

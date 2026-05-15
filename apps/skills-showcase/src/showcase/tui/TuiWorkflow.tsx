@@ -1,6 +1,8 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useWorkflowPlayer } from "@/showcase/tui/shared/useWorkflowPlayer";
+import type { WorkflowBenchmarkSummary, WorkflowStepBenchmark } from "@/showcase/types";
 import "./workflow.css";
 
 export function TuiWorkflow() {
@@ -18,10 +20,19 @@ export function TuiWorkflow() {
     restart,
   } = useWorkflowPlayer();
 
+  const [benchmarks, setBenchmarks] = useState<Record<string, WorkflowBenchmarkSummary>>({});
+
+  useEffect(() => {
+    const data = (window as any).SKILLS_SHOWCASE_DATA;
+    if (data?.workflowBenchmarks) setBenchmarks(data.workflowBenchmarks);
+  }, []);
+
   const step = workflow.steps[activeStep];
   const totalSteps = workflow.steps.length;
   const workflowIndex = workflows.findIndex((w) => w.key === activeKey);
   const tiltClass = `tui-workflow__notebook--tilt-${workflowIndex % 7}`;
+  const summary = benchmarks[activeKey];
+  const stepBenchmark: WorkflowStepBenchmark | undefined = summary?.stepBenchmarks[activeStep];
 
   return (
     <div className="tui-workflow">
@@ -41,6 +52,14 @@ export function TuiWorkflow() {
         ))}
       </div>
 
+      {summary && summary.stepsBenchmarked > 0 && (
+        <div className="tui-workflow__benchmark-strip">
+          <span>{summary.stepsBenchmarked}/{summary.stepsTotal} steps benchmarked</span>
+          {summary.aggregatePassRate && <span>Pass {summary.aggregatePassRate}</span>}
+          {summary.aggregateQuality && <span>Quality {summary.aggregateQuality}</span>}
+        </div>
+      )}
+
       {/* Main body */}
       <div className="tui-workflow__body">
         {/* Left: step area */}
@@ -52,7 +71,26 @@ export function TuiWorkflow() {
             <p className="tui-workflow__step-name">{step[0]}</p>
             <code className="tui-workflow__step-command">{step[1]}</code>
             <p className="tui-workflow__step-desc">{step[2]}</p>
+            {stepBenchmark && (stepBenchmark.passRate || stepBenchmark.qualityScore) && (
+              <div className="tui-workflow__step-badge">
+                {stepBenchmark.passRate && <span className="tui-workflow__step-badge--pass">{stepBenchmark.passRate} pass</span>}
+                {stepBenchmark.qualityScore && <span className="tui-workflow__step-badge--quality">{stepBenchmark.qualityScore} quality</span>}
+              </div>
+            )}
           </div>
+
+          {stepBenchmark?.demo && (
+            <details className="tui-workflow__demo-panel">
+              <summary className="tui-workflow__demo-toggle">View benchmark execution</summary>
+              <div className="tui-workflow__demo-content">
+                <span className="tui-workflow__demo-label">Prompt</span>
+                <pre className="tui-workflow__demo-pre">{stepBenchmark.demo.prompt}</pre>
+                <span className="tui-workflow__demo-label">Output</span>
+                <pre className="tui-workflow__demo-pre">{stepBenchmark.demo.output}</pre>
+                <p className="tui-workflow__demo-meta">Agent: {stepBenchmark.demo.agent} &middot; Run #{stepBenchmark.demo.runIndex}</p>
+              </div>
+            </details>
+          )}
 
           {/* Dot indicators with connecting lines */}
           <div className="tui-workflow__dots">
