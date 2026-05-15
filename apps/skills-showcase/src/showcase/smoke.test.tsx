@@ -50,6 +50,8 @@ describe("smoke rendering", () => {
     expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
     expect(screen.getByLabelText("Previous step")).toBeInTheDocument();
     expect(screen.getByLabelText("Next step")).toBeInTheDocument();
+    expect(document.querySelector(".tui-workflow")).toBeInTheDocument();
+    expect(document.querySelector("[data-workflow-list]")).not.toBeInTheDocument();
   });
 
   it("CatalogPage renders search and filter controls", () => {
