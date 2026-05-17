@@ -1,6 +1,7 @@
-import { describe, it, expect, afterEach, vi } from "vitest";
-import { render, cleanup } from "@testing-library/react";
+import { describe, it, expect, afterEach, beforeEach, vi } from "vitest";
+import { render, cleanup, fireEvent, screen, within } from "@testing-library/react";
 import WorkflowsClient from "./workflows";
+import { TuiWorkflow } from "./tui/TuiWorkflow";
 
 function workflowPageDOM() {
   document.body.innerHTML = `
@@ -23,9 +24,18 @@ function workflowPageDOM() {
 }
 
 describe("WorkflowsClient", () => {
+  beforeEach(() => {
+    window.matchMedia = vi.fn().mockReturnValue({
+      matches: true,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    });
+  });
+
   afterEach(() => {
     cleanup();
     vi.restoreAllMocks();
+    delete (window as any).SKILLS_SHOWCASE_DATA;
   });
 
   it("renders 8 workflow buttons into the selector list", () => {
@@ -162,5 +172,104 @@ describe("WorkflowsClient", () => {
 
     const stage = document.querySelector("[data-workflow-stage]")!;
     expect(stage.querySelector("strong")!.textContent).toBe("Install");
+  });
+});
+
+describe("TuiWorkflow replay pilot", () => {
+  beforeEach(() => {
+    window.matchMedia = vi.fn().mockReturnValue({
+      matches: true,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    });
+    (window as any).SKILLS_SHOWCASE_DATA = {
+      workflowBenchmarks: {
+        first: {
+          workflowKey: "first",
+          stepsTotal: 5,
+          stepsBenchmarked: 1,
+          aggregatePassRate: "100%",
+          aggregateQuality: "92.0%",
+          stepBenchmarks: {
+            2: {
+              skill: "roadmap",
+              passRate: "100%",
+              qualityScore: "92.0%",
+              demo: {
+                agent: "codex",
+                runIndex: 2,
+                prompt: "Run the roadmap workflow.",
+                output: "Generated roadmap phase structure.",
+                reportPath: "benchmark/test-roadmap-2026-05-17.md",
+                runPath: "tests/benchmarks/runs/roadmap-codex-123/run-002.json",
+              },
+            },
+          },
+        },
+      },
+    };
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+    delete (window as any).SKILLS_SHOWCASE_DATA;
+  });
+
+  it("renders the active replay data surface for the selected step", () => {
+    render(<TuiWorkflow />);
+
+    const replay = screen.getByLabelText("Install replay");
+    expect(within(replay).getByText("User")).toBeTruthy();
+    expect(within(replay).getByText("Run ./install.sh.")).toBeTruthy();
+    expect(within(replay).getByText("Agent")).toBeTruthy();
+    expect(within(replay).getAllByText("Global skill links refresh.").length).toBeGreaterThan(0);
+    expect(within(replay).getByText("Terminal")).toBeTruthy();
+    expect(within(replay).getAllByText(/\.\/install\.sh/).length).toBeGreaterThan(0);
+    expect(within(replay).getByText("Result")).toBeTruthy();
+  });
+
+  it("changes replay state when a step circle is selected", () => {
+    render(<TuiWorkflow />);
+
+    fireEvent.click(screen.getByLabelText("Step 3: Plan"));
+
+    expect(screen.getByLabelText("Plan replay")).toBeTruthy();
+    expect(screen.getByText("$roadmap")).toBeTruthy();
+    expect(screen.getByText("$roadmap for this workflow step.")).toBeTruthy();
+    expect(screen.getAllByText("Task docs describe the next phase.").length).toBeGreaterThan(0);
+  });
+
+  it("renders visible benchmark receipt metadata when generated evidence exists", () => {
+    render(<TuiWorkflow />);
+
+    fireEvent.click(screen.getByLabelText("Step 3: Plan"));
+
+    const replay = screen.getByLabelText("Plan replay");
+    expect(within(replay).getByText("Benchmark receipt")).toBeTruthy();
+    expect(within(replay).getByText("Persisted benchmark evidence")).toBeTruthy();
+    expect(within(replay).getByText("Pass rate")).toBeTruthy();
+    expect(within(replay).getByText("100%")).toBeTruthy();
+    expect(within(replay).getByText("Quality")).toBeTruthy();
+    expect(within(replay).getByText("92.0%")).toBeTruthy();
+    expect(within(replay).getAllByText("Agent").length).toBeGreaterThan(0);
+    expect(within(replay).getByText("codex")).toBeTruthy();
+    expect(within(replay).getByText("Run artifact")).toBeTruthy();
+    expect(
+      within(replay).getByText("tests/benchmarks/runs/roadmap-codex-123/run-002.json"),
+    ).toBeTruthy();
+    expect(within(replay).getByText("Report")).toBeTruthy();
+    expect(within(replay).getByText("benchmark/test-roadmap-2026-05-17.md")).toBeTruthy();
+  });
+
+  it("renders an explicit no-receipt state for curated steps", () => {
+    render(<TuiWorkflow />);
+
+    const replay = screen.getByLabelText("Install replay");
+    expect(within(replay).getByText("Curated scenario")).toBeTruthy();
+    expect(within(replay).getByText("No persisted benchmark receipt")).toBeTruthy();
+    expect(
+      within(replay).getByText("No persisted benchmark receipt is attached to this step yet."),
+    ).toBeTruthy();
   });
 });
