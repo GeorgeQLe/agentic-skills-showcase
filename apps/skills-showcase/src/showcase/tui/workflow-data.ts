@@ -1,4 +1,29 @@
-export type WorkflowStep = [string, string, string, string?];
+export interface WorkflowReplayBlock {
+  label: string;
+  body: string;
+}
+
+export interface WorkflowReplayReceipt {
+  state: "benchmark" | "curated";
+  label: string;
+  body: string;
+}
+
+export interface WorkflowReplay {
+  user: WorkflowReplayBlock;
+  agent: WorkflowReplayBlock;
+  terminal: WorkflowReplayBlock;
+  artifact: WorkflowReplayBlock;
+  receipt: WorkflowReplayReceipt;
+}
+
+export interface WorkflowStep {
+  title: string;
+  command: string;
+  summary: string;
+  skill?: string;
+  replay: WorkflowReplay;
+}
 
 export interface Workflow {
   key: string;
@@ -15,6 +40,40 @@ export interface Workflow {
   steps: WorkflowStep[];
 }
 
+function step(title: string, command: string, summary: string, skill?: string): WorkflowStep {
+  return {
+    title,
+    command,
+    summary,
+    skill,
+    replay: {
+      user: {
+        label: "User",
+        body: command.startsWith("$") ? `${command} for this workflow step.` : `Run ${command}.`,
+      },
+      agent: {
+        label: "Agent",
+        body: summary,
+      },
+      terminal: {
+        label: "Terminal",
+        body: `${command}\n${summary}`,
+      },
+      artifact: {
+        label: "Result",
+        body: summary,
+      },
+      receipt: {
+        state: skill ? "benchmark" : "curated",
+        label: skill ? "Benchmark receipt pending render" : "Curated scenario",
+        body: skill
+          ? "Benchmark evidence is attached by workflowBenchmarks when generated data includes this skill."
+          : "No persisted benchmark receipt is attached to this step yet.",
+      },
+    },
+  };
+}
+
 export const workflows: Workflow[] = [
   {
     key: "first",
@@ -29,11 +88,11 @@ export const workflows: Workflow[] = [
     artifacts: ["install output", "pack status", "validation transcript", "shipping commit"],
     failure: "If install or validation fails, rerun the failed script, inspect missing links, and ship only after the task history and generated references agree.",
     steps: [
-      ["Install", "./install.sh", "Global skill links refresh."],
-      ["Select pack", "./scripts/pack.sh", "Project context narrows loaded workflows."],
-      ["Plan", "$roadmap", "Task docs describe the next phase.", "roadmap"],
-      ["Run", "$run", "One step executes with validation.", "run"],
-      ["Ship", "git push", "History and commit land on primary."]
+      step("Install", "./install.sh", "Global skill links refresh."),
+      step("Select pack", "./scripts/pack.sh", "Project context narrows loaded workflows."),
+      step("Plan", "$roadmap", "Task docs describe the next phase.", "roadmap"),
+      step("Run", "$run", "One step executes with validation.", "run"),
+      step("Ship", "git push", "History and commit land on primary.")
     ]
   },
   {
@@ -49,11 +108,11 @@ export const workflows: Workflow[] = [
     artifacts: ["enabled pack list", "pack-specific commands", "compatibility alias notes", "context hygiene boundary"],
     failure: "If a pack is unavailable or ambiguous, keep the global workflow active and record the pack decision as a task-doc follow-up.",
     steps: [
-      ["Detect shape", "repo context", "Project evidence sets the lane."],
-      ["Choose core", "global/codex", "Shared planning and shipping stay loaded."],
-      ["Add pack", "packs/*", "Domain skills become local context."],
-      ["Overlay", "kanban/monorepo", "Execution style adapts without replacing core."],
-      ["Verify", "list-packs", "Recommendation text matches enabled packs."]
+      step("Detect shape", "repo context", "Project evidence sets the lane."),
+      step("Choose core", "global/codex", "Shared planning and shipping stay loaded."),
+      step("Add pack", "packs/*", "Domain skills become local context."),
+      step("Overlay", "kanban/monorepo", "Execution style adapts without replacing core."),
+      step("Verify", "list-packs", "Recommendation text matches enabled packs.")
     ]
   },
   {
@@ -69,11 +128,11 @@ export const workflows: Workflow[] = [
     artifacts: ["quality gate manifest", "validation output", "history entry", "primary branch commit"],
     failure: "If validation fails, fix the source issue and rerun the failing command; do not commit known regressions.",
     steps: [
-      ["Read todo", "tasks/todo.md", "The next unchecked item sets scope."],
-      ["Plan", "update_plan", "Files, trade-offs, and tests are explicit."],
-      ["Execute", "source diff", "Only the scoped change lands."],
-      ["Validate", "tests/checks", "Warnings are fixed or recorded."],
-      ["Ship", "commit + push", "History and next work are ready.", "ship"]
+      step("Read todo", "tasks/todo.md", "The next unchecked item sets scope."),
+      step("Plan", "update_plan", "Files, trade-offs, and tests are explicit."),
+      step("Execute", "source diff", "Only the scoped change lands."),
+      step("Validate", "tests/checks", "Warnings are fixed or recorded."),
+      step("Ship", "commit + push", "History and next work are ready.", "ship")
     ]
   },
   {
@@ -89,11 +148,11 @@ export const workflows: Workflow[] = [
     artifacts: ["interview log", "implementation-ready spec", "phase plan", "verification strategy"],
     failure: "If evidence contradicts the idea, update assumptions before writing roadmap tasks; do not encode speculative work as accepted scope.",
     steps: [
-      ["Idea", "user brief", "Intent and unknowns are separated."],
-      ["Interview", "$spec-interview", "Assumptions become explicit.", "spec-interview"],
-      ["Spec", "specs/*.md", "Behavior and constraints are written."],
-      ["Roadmap", "$roadmap", "The work becomes phases.", "roadmap"],
-      ["Implement", "$run", "A single phase step executes.", "run"]
+      step("Idea", "user brief", "Intent and unknowns are separated."),
+      step("Interview", "$spec-interview", "Assumptions become explicit.", "spec-interview"),
+      step("Spec", "specs/*.md", "Behavior and constraints are written."),
+      step("Roadmap", "$roadmap", "The work becomes phases.", "roadmap"),
+      step("Implement", "$run", "A single phase step executes.", "run")
     ]
   },
   {
@@ -109,11 +168,11 @@ export const workflows: Workflow[] = [
     artifacts: ["capability matrix", "dossier", "research queue", "prioritized next action"],
     failure: "If sources are missing or private, mark the evidence gap and route to manual collection instead of fabricating certainty.",
     steps: [
-      ["Scope", "research brief", "The question is bounded."],
-      ["Collect", "sources", "Evidence gets archived."],
-      ["Synthesize", "analysis", "Claims cite artifacts."],
-      ["Prioritize", "queue", "Next research or build step is ranked."],
-      ["Route", "$feature-interview", "Good candidates become product work.", "feature-interview"]
+      step("Scope", "research brief", "The question is bounded."),
+      step("Collect", "sources", "Evidence gets archived."),
+      step("Synthesize", "analysis", "Claims cite artifacts."),
+      step("Prioritize", "queue", "Next research or build step is ranked."),
+      step("Route", "$feature-interview", "Good candidates become product work.", "feature-interview")
     ]
   },
   {
@@ -129,11 +188,11 @@ export const workflows: Workflow[] = [
     artifacts: ["approved packet", "consumed approval record", "validation transcript", "shipping commit"],
     failure: "If the packet is stale, mode-mismatched, or missing `jq`, stop and fall back to the standard `$run` planning path.",
     steps: [
-      ["Plan", "Claude", "Scope is approved elsewhere."],
-      ["Packet", "approved-plan.json", "One step becomes executable."],
-      ["Consume", "$run --execute-approved", "Codex records the handoff.", "run"],
-      ["Integrate", "main agent", "Conflicts and docs stay owned here."],
-      ["Ship", "primary branch", "The result lands with evidence.", "ship"]
+      step("Plan", "Claude", "Scope is approved elsewhere."),
+      step("Packet", "approved-plan.json", "One step becomes executable."),
+      step("Consume", "$run --execute-approved", "Codex records the handoff.", "run"),
+      step("Integrate", "main agent", "Conflicts and docs stay owned here."),
+      step("Ship", "primary branch", "The result lands with evidence.", "ship")
     ]
   },
   {
@@ -149,11 +208,11 @@ export const workflows: Workflow[] = [
     artifacts: ["skill contract", "metadata", "routing docs", "fresh catalog/proof data"],
     failure: "If validation finds stale metadata or broken references, fix the skill contract before installing or shipping it.",
     steps: [
-      ["Name", "workflow gap", "The repeated behavior is concrete."],
-      ["Scaffold", "SKILL.md", "Contract and metadata are written."],
-      ["Mirror", "Claude/Codex", "Surfaces stay aligned when needed."],
-      ["Validate", "skill scripts", "References and routing pass."],
-      ["Refresh", "showcase data", "Public catalog reflects the change."]
+      step("Name", "workflow gap", "The repeated behavior is concrete."),
+      step("Scaffold", "SKILL.md", "Contract and metadata are written."),
+      step("Mirror", "Claude/Codex", "Surfaces stay aligned when needed."),
+      step("Validate", "skill scripts", "References and routing pass."),
+      step("Refresh", "showcase data", "Public catalog reflects the change.")
     ]
   },
   {
@@ -169,11 +228,11 @@ export const workflows: Workflow[] = [
     artifacts: ["root cause", "fixed diff", "passing rerun", "accepted residual risk if any"],
     failure: "If the failure cannot be fixed confidently, stop before commit and report the exact command output and next decision.",
     steps: [
-      ["Fail", "check output", "The problem is reproduced."],
-      ["Trace", "$debug", "Root cause is found.", "debug"],
-      ["Fix", "minimal diff", "The behavior changes at the source."],
-      ["Rerun", "failing command", "The proof is executable."],
-      ["Record", "history/lessons", "The pattern is not lost."]
+      step("Fail", "check output", "The problem is reproduced."),
+      step("Trace", "$debug", "Root cause is found.", "debug"),
+      step("Fix", "minimal diff", "The behavior changes at the source."),
+      step("Rerun", "failing command", "The proof is executable."),
+      step("Record", "history/lessons", "The pattern is not lost.")
     ]
   }
 ];

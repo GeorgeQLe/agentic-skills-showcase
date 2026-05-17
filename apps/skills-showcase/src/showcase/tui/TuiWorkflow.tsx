@@ -68,9 +68,9 @@ export function TuiWorkflow() {
             className="tui-workflow__step-card"
             key={`${activeKey}-${activeStep}`}
           >
-            <p className="tui-workflow__step-name">{step[0]}</p>
-            <code className="tui-workflow__step-command">{step[1]}</code>
-            <p className="tui-workflow__step-desc">{step[2]}</p>
+            <p className="tui-workflow__step-name">{step.title}</p>
+            <code className="tui-workflow__step-command">{step.command}</code>
+            <p className="tui-workflow__step-desc">{step.summary}</p>
             {stepBenchmark && (stepBenchmark.passRate || stepBenchmark.qualityScore) && (
               <div className="tui-workflow__step-badge">
                 {stepBenchmark.passRate && <span className="tui-workflow__step-badge--pass">{stepBenchmark.passRate} pass</span>}
@@ -101,7 +101,7 @@ export function TuiWorkflow() {
                     i === activeStep ? "tui-workflow__dot--active" : ""
                   }`}
                   onClick={() => goToStep(i)}
-                  aria-label={`Step ${i + 1}: ${workflow.steps[i][0]}`}
+                  aria-label={`Step ${i + 1}: ${workflow.steps[i].title}`}
                 />
                 {i < workflow.steps.length - 1 && (
                   <span className="tui-workflow__dot-line" />

@@ -79,12 +79,12 @@ export default function WorkflowsClient() {
       label.className = "coordinate";
       label.textContent = `Step ${stepIndex + 1} / ${workflow.steps.length}`;
       const title = document.createElement("strong");
-      title.textContent = step[0];
+      title.textContent = step.title;
       const command = document.createElement("span");
       command.className = "command";
-      command.textContent = step[1];
+      command.textContent = step.command;
       const copy = document.createElement("p");
-      copy.textContent = step[2];
+      copy.textContent = step.summary;
       node.append(label, title, command, copy);
       els.stage.appendChild(node);
     }
@@ -97,8 +97,8 @@ export default function WorkflowsClient() {
         marker.type = "button";
         marker.className = "progress-step";
         marker.setAttribute("aria-current", String(index === stepIndex));
-        marker.setAttribute("aria-label", `Go to ${step[0]}`);
-        marker.textContent = step[0];
+        marker.setAttribute("aria-label", `Go to ${step.title}`);
+        marker.textContent = step.title;
         marker.addEventListener("click", () => renderWorkflow(workflow.key, index, false));
         els.progress!.appendChild(marker);
       });
