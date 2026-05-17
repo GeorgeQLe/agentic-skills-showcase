@@ -20,7 +20,7 @@ window.SKILLS_SHOWCASE_GITHUB_PROOF_DATA = {
     "stars": 0,
     "forks": 0,
     "openIssues": 0,
-    "pushedAt": "2026-05-17T22:20:21Z",
+    "pushedAt": "2026-05-17T22:21:01Z",
     "url": "https://github.com/GeorgeQLe/agentic-skills"
   },
   "proofArtifacts": [
