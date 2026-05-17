@@ -33,6 +33,21 @@ export function TuiWorkflow() {
   const tiltClass = `tui-workflow__notebook--tilt-${workflowIndex % 7}`;
   const summary = benchmarks[activeKey];
   const stepBenchmark: WorkflowStepBenchmark | undefined = summary?.stepBenchmarks[activeStep];
+  const replayReceiptLabel =
+    step.replay.receipt.state === "benchmark" && stepBenchmark
+      ? "Benchmark receipt"
+      : step.replay.receipt.label;
+  const replayReceiptBody =
+    step.replay.receipt.state === "benchmark" && stepBenchmark
+      ? [
+          stepBenchmark.passRate ? `Pass rate: ${stepBenchmark.passRate}` : undefined,
+          stepBenchmark.qualityScore ? `Quality: ${stepBenchmark.qualityScore}` : undefined,
+          stepBenchmark.demo?.reportPath ? `Report: ${stepBenchmark.demo.reportPath}` : undefined,
+          stepBenchmark.demo?.runPath ? `Run artifact: ${stepBenchmark.demo.runPath}` : undefined,
+        ]
+          .filter(Boolean)
+          .join("\n")
+      : step.replay.receipt.body;
 
   return (
     <div className="tui-workflow">
@@ -70,7 +85,24 @@ export function TuiWorkflow() {
           >
             <p className="tui-workflow__step-name">{step.title}</p>
             <code className="tui-workflow__step-command">{step.command}</code>
-            <p className="tui-workflow__step-desc">{step.summary}</p>
+            <div className="tui-workflow__replay" aria-label={`${step.title} replay`}>
+              <div className="tui-workflow__replay-message tui-workflow__replay-message--user">
+                <span className="tui-workflow__demo-label">{step.replay.user.label}</span>
+                <p className="tui-workflow__step-desc">{step.replay.user.body}</p>
+              </div>
+              <div className="tui-workflow__replay-message tui-workflow__replay-message--agent">
+                <span className="tui-workflow__demo-label">{step.replay.agent.label}</span>
+                <p className="tui-workflow__step-desc">{step.replay.agent.body}</p>
+              </div>
+              <div className="tui-workflow__demo-content">
+                <span className="tui-workflow__demo-label">{step.replay.terminal.label}</span>
+                <pre className="tui-workflow__demo-pre">{step.replay.terminal.body}</pre>
+                <span className="tui-workflow__demo-label">{step.replay.artifact.label}</span>
+                <pre className="tui-workflow__demo-pre">{step.replay.artifact.body}</pre>
+                <span className="tui-workflow__demo-label">{replayReceiptLabel}</span>
+                <pre className="tui-workflow__demo-pre">{replayReceiptBody}</pre>
+              </div>
+            </div>
             {stepBenchmark && (stepBenchmark.passRate || stepBenchmark.qualityScore) && (
               <div className="tui-workflow__step-badge">
                 {stepBenchmark.passRate && <span className="tui-workflow__step-badge--pass">{stepBenchmark.passRate} pass</span>}
