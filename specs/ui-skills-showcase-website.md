@@ -244,6 +244,8 @@ Route: `/workflows/`.
 
 Purpose: demonstrate how the library works before visitors hit the catalog.
 
+Pilot direction: `/workflows/` is the first validation surface for the hybrid replay pattern. This is not the permanent boundary for the pattern; it is the place to prove the visual and interaction model before applying it to the homepage preview, catalog proof surfaces, or other site routes.
+
 Desktop layout:
 
 - Section header full width:
@@ -270,33 +272,45 @@ Workflow selector:
   - plain-language subtitle
   - small badge: `setup`, `planning`, `shipping`, `research`, `hybrid`, `authoring`, or `validation`
 
-Animation panel:
+Hybrid replay panel:
 
 - Header contains selected workflow title and a one-sentence proof claim.
-- Body shows one of the animation primitives:
-  - terminal playback
-  - state machine
-  - artifact timeline
-  - handoff diagram
-  - validation gate
+- Step circles are the primary progress control. Advancing a circle changes the active replay state rather than only highlighting a static card.
+- Body shows a chat-style replay with embedded terminal/proof blocks:
+  - user prompt or command as if the visitor typed the skill invocation for the scenario;
+  - assistant or agent response summarizing the work happening at that step;
+  - terminal, test, validation, or benchmark output block when relevant;
+  - artifact/result block naming the durable file, report, task update, commit, or handoff produced;
+  - benchmark receipt block when persisted evidence exists, including pass rate, quality score, agent, run index, report path, and run-artifact path.
+- Benchmark evidence is primary replay proof, not a hidden secondary detail. Do not bury the representative prompt/output behind a collapsed details control on benchmarked steps.
+- Non-benchmarked steps still render a curated scenario transcript and artifact/result state. They should show no receipt or a clear "not benchmarked in this replay" state instead of empty proof UI.
+- Full benchmark tables remain on `/benchmarks/`; the replay panel uses benchmark data as contextual receipts, not as a replacement for the matrix.
 - Controls:
   - icon button `Previous step`
   - icon button `Play animation` / `Pause animation`
   - icon button `Next step`
   - icon button `Restart workflow`
-  - progress rail with 4-7 labeled steps
-- Below animation:
+  - progress rail or circle row with 4-7 labeled steps
+- Context can remain in a secondary notebook or metadata column:
   - `When to use this`
   - `What changes`
   - `What you get`
   - `Failure/recovery path` when relevant
 
+Replay data requirements:
+
+- Prefer structured step replay records over extending `WorkflowStep` tuples with more positional fields.
+- Each replay step should support user message, agent message, terminal/proof block, artifact/result block, and optional benchmark receipt.
+- Existing generated benchmark evidence from `workflowBenchmarks` can supply receipt metrics and representative run excerpts.
+- Curated transcript copy should be concise enough to read in the UI while preserving links or source paths back to persisted benchmark reports and run artifacts.
+
 Mobile layout:
 
 - Section header.
 - Workflow selector becomes horizontal scroll list or stacked segmented tabs.
-- Animation panel becomes one-column.
+- Hybrid replay panel becomes one-column, with chat messages and terminal/proof blocks constrained to the viewport.
 - Controls remain visible below the animation.
+- Long commands, report paths, and benchmark output wrap or scroll inside their own fixed-width blocks without causing horizontal page overflow.
 
 ### Pack Map
 
