@@ -33,21 +33,23 @@ export function TuiWorkflow() {
   const tiltClass = `tui-workflow__notebook--tilt-${workflowIndex % 7}`;
   const summary = benchmarks[activeKey];
   const stepBenchmark: WorkflowStepBenchmark | undefined = summary?.stepBenchmarks[activeStep];
-  const replayReceiptLabel =
-    step.replay.receipt.state === "benchmark" && stepBenchmark
-      ? "Benchmark receipt"
-      : step.replay.receipt.label;
-  const replayReceiptBody =
-    step.replay.receipt.state === "benchmark" && stepBenchmark
-      ? [
-          stepBenchmark.passRate ? `Pass rate: ${stepBenchmark.passRate}` : undefined,
-          stepBenchmark.qualityScore ? `Quality: ${stepBenchmark.qualityScore}` : undefined,
-          stepBenchmark.demo?.reportPath ? `Report: ${stepBenchmark.demo.reportPath}` : undefined,
-          stepBenchmark.demo?.runPath ? `Run artifact: ${stepBenchmark.demo.runPath}` : undefined,
-        ]
-          .filter(Boolean)
-          .join("\n")
-      : step.replay.receipt.body;
+  const hasBenchmarkReceipt = step.replay.receipt.state === "benchmark" && Boolean(stepBenchmark);
+  const receiptTitle = hasBenchmarkReceipt ? "Benchmark receipt" : step.replay.receipt.label;
+  const receiptStatus = hasBenchmarkReceipt
+    ? "Persisted benchmark evidence"
+    : step.replay.receipt.state === "benchmark"
+      ? "Benchmark receipt unavailable"
+      : "No persisted benchmark receipt";
+  const receiptRows = hasBenchmarkReceipt && stepBenchmark
+    ? [
+        ["Pass rate", stepBenchmark.passRate],
+        ["Quality", stepBenchmark.qualityScore],
+        ["Agent", stepBenchmark.demo?.agent],
+        ["Run", stepBenchmark.demo ? `#${stepBenchmark.demo.runIndex}` : null],
+        ["Report", stepBenchmark.demo?.reportPath],
+        ["Run artifact", stepBenchmark.demo?.runPath],
+      ].filter((row): row is [string, string] => Boolean(row[1]))
+    : [];
 
   return (
     <div className="tui-workflow">
@@ -99,8 +101,28 @@ export function TuiWorkflow() {
                 <pre className="tui-workflow__demo-pre">{step.replay.terminal.body}</pre>
                 <span className="tui-workflow__demo-label">{step.replay.artifact.label}</span>
                 <pre className="tui-workflow__demo-pre">{step.replay.artifact.body}</pre>
-                <span className="tui-workflow__demo-label">{replayReceiptLabel}</span>
-                <pre className="tui-workflow__demo-pre">{replayReceiptBody}</pre>
+                <div
+                  className={`tui-workflow__receipt ${
+                    hasBenchmarkReceipt ? "tui-workflow__receipt--benchmark" : ""
+                  }`}
+                >
+                  <div className="tui-workflow__receipt-header">
+                    <span className="tui-workflow__demo-label">{receiptTitle}</span>
+                    <span className="tui-workflow__receipt-status">{receiptStatus}</span>
+                  </div>
+                  {receiptRows.length > 0 ? (
+                    <dl className="tui-workflow__receipt-grid">
+                      {receiptRows.map(([label, value]) => (
+                        <div className="tui-workflow__receipt-row" key={label}>
+                          <dt>{label}</dt>
+                          <dd>{value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  ) : (
+                    <p className="tui-workflow__receipt-empty">{step.replay.receipt.body}</p>
+                  )}
+                </div>
               </div>
             </div>
             {stepBenchmark && (stepBenchmark.passRate || stepBenchmark.qualityScore) && (
@@ -110,19 +132,6 @@ export function TuiWorkflow() {
               </div>
             )}
           </div>
-
-          {stepBenchmark?.demo && (
-            <details className="tui-workflow__demo-panel">
-              <summary className="tui-workflow__demo-toggle">View benchmark execution</summary>
-              <div className="tui-workflow__demo-content">
-                <span className="tui-workflow__demo-label">Prompt</span>
-                <pre className="tui-workflow__demo-pre">{stepBenchmark.demo.prompt}</pre>
-                <span className="tui-workflow__demo-label">Output</span>
-                <pre className="tui-workflow__demo-pre">{stepBenchmark.demo.output}</pre>
-                <p className="tui-workflow__demo-meta">Agent: {stepBenchmark.demo.agent} &middot; Run #{stepBenchmark.demo.runIndex}</p>
-              </div>
-            </details>
-          )}
 
           {/* Dot indicators with connecting lines */}
           <div className="tui-workflow__dots">
