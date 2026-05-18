@@ -34,6 +34,7 @@ describe("WorkflowsClient", () => {
 
   afterEach(() => {
     cleanup();
+    vi.useRealTimers();
     vi.restoreAllMocks();
     delete (window as any).SKILLS_SHOWCASE_DATA;
   });
@@ -177,6 +178,8 @@ describe("WorkflowsClient", () => {
 
 describe("TuiWorkflow replay pilot", () => {
   beforeEach(() => {
+    document.body.innerHTML = "";
+    Element.prototype.scrollIntoView = vi.fn();
     window.matchMedia = vi.fn().mockReturnValue({
       matches: true,
       addEventListener: vi.fn(),
@@ -240,6 +243,31 @@ describe("TuiWorkflow replay pilot", () => {
     expect(screen.getAllByText("Task docs describe the next phase.").length).toBeGreaterThan(0);
   });
 
+  it("keeps completed transcript turns expanded after advancing", () => {
+    window.matchMedia = vi.fn().mockReturnValue({
+      matches: false,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    });
+    vi.useFakeTimers();
+
+    render(<TuiWorkflow />);
+
+    fireEvent.click(screen.getByLabelText("Next step"));
+    vi.runOnlyPendingTimers();
+
+    const installReplay = screen.getByLabelText("Install replay");
+    expect(within(installReplay).getByText("Run ./install.sh.")).toBeTruthy();
+    expect(within(installReplay).getByText("Terminal")).toBeTruthy();
+    expect(within(installReplay).getByText("Result")).toBeTruthy();
+
+    const selectPackReplay = screen.getByLabelText("Select pack replay");
+    expect(within(selectPackReplay).getByText("User")).toBeTruthy();
+    expect(within(selectPackReplay).getByText("Agent")).toBeTruthy();
+
+    vi.useRealTimers();
+  });
+
   it("keeps revealed transcript turns mounted when jumping back to an earlier step", () => {
     render(<TuiWorkflow />);
 
@@ -251,6 +279,20 @@ describe("TuiWorkflow replay pilot", () => {
     expect(screen.getAllByText(/Step\s+1\s+\/\s+5/).length).toBeGreaterThan(0);
     expect(screen.getByLabelText("Install replay")).toBeTruthy();
     expect(screen.getByLabelText("Plan replay")).toBeTruthy();
+  });
+
+  it("resets transcript turns when switching workflows", () => {
+    render(<TuiWorkflow />);
+
+    fireEvent.click(screen.getByLabelText("Step 3: Plan"));
+    expect(screen.getByLabelText("Plan replay")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Plan -> Run -> Ship" }));
+
+    expect(screen.getByLabelText("Read todo replay")).toBeTruthy();
+    expect(screen.queryByLabelText("Install replay")).toBeNull();
+    expect(screen.queryByText("$roadmap")).toBeNull();
+    expect(screen.getAllByText("tasks/todo.md").length).toBeGreaterThan(0);
   });
 
   it("renders visible benchmark receipt metadata when generated evidence exists", () => {
@@ -284,6 +326,17 @@ describe("TuiWorkflow replay pilot", () => {
     expect(
       within(replay).getByText("No persisted benchmark receipt is attached to this step yet."),
     ).toBeTruthy();
+  });
+
+  it("renders reduced-motion turns and proof blocks without typewriter delay", () => {
+    render(<TuiWorkflow />);
+
+    const replay = screen.getByLabelText("Install replay");
+    expect(within(replay).getAllByText("Global skill links refresh.").length).toBeGreaterThan(0);
+    expect(within(replay).getByText("Terminal")).toBeTruthy();
+    expect(within(replay).getByText("Result")).toBeTruthy();
+    expect(within(replay).getByText("Curated scenario")).toBeTruthy();
+    expect(within(replay).getByText("No persisted benchmark receipt")).toBeTruthy();
   });
 
   it("smooth-scrolls the active transcript turn during playback", () => {
