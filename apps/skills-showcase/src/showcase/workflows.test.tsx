@@ -240,6 +240,19 @@ describe("TuiWorkflow replay pilot", () => {
     expect(screen.getAllByText("Task docs describe the next phase.").length).toBeGreaterThan(0);
   });
 
+  it("keeps revealed transcript turns mounted when jumping back to an earlier step", () => {
+    render(<TuiWorkflow />);
+
+    fireEvent.click(screen.getByLabelText("Step 3: Plan"));
+    expect(screen.getByLabelText("Plan replay")).toBeTruthy();
+
+    fireEvent.click(screen.getByLabelText("Step 1: Install"));
+
+    expect(screen.getAllByText(/Step\s+1\s+\/\s+5/).length).toBeGreaterThan(0);
+    expect(screen.getByLabelText("Install replay")).toBeTruthy();
+    expect(screen.getByLabelText("Plan replay")).toBeTruthy();
+  });
+
   it("renders visible benchmark receipt metadata when generated evidence exists", () => {
     render(<TuiWorkflow />);
 

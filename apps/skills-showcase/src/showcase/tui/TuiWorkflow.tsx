@@ -9,6 +9,7 @@ export function TuiWorkflow() {
   const {
     activeKey,
     activeStep,
+    revealedStep,
     playing,
     workflow,
     workflows,
@@ -31,7 +32,7 @@ export function TuiWorkflow() {
   const workflowIndex = workflows.findIndex((w) => w.key === activeKey);
   const tiltClass = `tui-workflow__notebook--tilt-${workflowIndex % 7}`;
   const summary = benchmarks[activeKey];
-  const revealedSteps = workflow.steps.slice(0, activeStep + 1);
+  const revealedSteps = workflow.steps.slice(0, revealedStep + 1);
 
   return (
     <div className="tui-workflow">

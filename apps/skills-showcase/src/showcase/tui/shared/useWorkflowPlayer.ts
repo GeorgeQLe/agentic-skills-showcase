@@ -7,6 +7,7 @@ import type { Workflow } from "../workflow-data";
 interface WorkflowPlayerState {
   activeKey: string;
   activeStep: number;
+  revealedStep: number;
   playing: boolean;
   workflow: Workflow;
 }
@@ -14,7 +15,13 @@ interface WorkflowPlayerState {
 export function useWorkflowPlayer(autoAdvanceMs = 3200) {
   const [state, setState] = useState<WorkflowPlayerState>(() => {
     const wf = workflows[0];
-    return { activeKey: wf.key, activeStep: 0, playing: true, workflow: wf };
+    return {
+      activeKey: wf.key,
+      activeStep: 0,
+      revealedStep: 0,
+      playing: true,
+      workflow: wf,
+    };
   });
 
   const reducedMotion = useRef(false);
@@ -42,6 +49,7 @@ export function useWorkflowPlayer(autoAdvanceMs = 3200) {
       setState({
         activeKey: wf.key,
         activeStep: 0,
+        revealedStep: 0,
         playing: !reducedMotion.current,
         workflow: wf,
       });
@@ -52,14 +60,22 @@ export function useWorkflowPlayer(autoAdvanceMs = 3200) {
   const goToStep = useCallback((step: number) => {
     setState((s) => {
       const clamped = Math.max(0, Math.min(step, s.workflow.steps.length - 1));
-      return { ...s, activeStep: clamped };
+      return {
+        ...s,
+        activeStep: clamped,
+        revealedStep: Math.max(s.revealedStep, clamped),
+      };
     });
   }, []);
 
   const nextStep = useCallback(() => {
     setState((s) => {
       const next = (s.activeStep + 1) % s.workflow.steps.length;
-      return { ...s, activeStep: next };
+      return {
+        ...s,
+        activeStep: next,
+        revealedStep: Math.max(s.revealedStep, next),
+      };
     });
   }, []);
 
@@ -79,6 +95,7 @@ export function useWorkflowPlayer(autoAdvanceMs = 3200) {
     setState((s) => ({
       ...s,
       activeStep: 0,
+      revealedStep: 0,
       playing: !reducedMotion.current,
     }));
   }, []);
@@ -89,7 +106,11 @@ export function useWorkflowPlayer(autoAdvanceMs = 3200) {
     timerRef.current = setInterval(() => {
       setState((s) => {
         const next = (s.activeStep + 1) % s.workflow.steps.length;
-        return { ...s, activeStep: next };
+        return {
+          ...s,
+          activeStep: next,
+          revealedStep: Math.max(s.revealedStep, next),
+        };
       });
     }, autoAdvanceMs);
     return stopTimer;
