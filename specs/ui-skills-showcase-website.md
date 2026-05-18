@@ -275,13 +275,22 @@ Workflow selector:
 Hybrid replay panel:
 
 - Header contains selected workflow title and a one-sentence proof claim.
-- Step circles are the primary progress control. Advancing a circle changes the active replay state rather than only highlighting a static card.
-- Body shows a chat-style replay with embedded terminal/proof blocks:
+- Step circles are the primary progress control. They stay above the replay and behave as jump controls into the workflow conversation.
+- A selected workflow behaves like one persistent terminal/chat session, not a carousel of remounted cards. Changing workflows starts a new session; moving through steps within one workflow reveals additional turns in the same conversation.
+- Body shows a chat-style transcript with embedded terminal/proof blocks:
   - user prompt or command as if the visitor typed the skill invocation for the scenario;
   - assistant or agent response summarizing the work happening at that step;
   - terminal, test, validation, or benchmark output block when relevant;
   - artifact/result block naming the durable file, report, task update, commit, or handoff produced;
   - benchmark receipt block when persisted evidence exists, including pass rate, quality score, agent, run index, report path, and run-artifact path.
+- Each skill invocation is a new transcript turn. Completed turns remain fully expanded so the visitor can read the whole workflow conversation as it accumulates.
+- The active turn is followed by the viewport during playback. Auto-scroll should keep the current turn in view without hiding or collapsing earlier turns.
+- Clicking an earlier step jumps to that existing transcript turn. It should not delete later turns, rewind the visible conversation, or make the panel blink into a new card.
+- Reveal cadence should feel like ChatGPT/Claude:
+  - user command appears immediately;
+  - agent response fake-types briefly;
+  - terminal, proof, artifact, and receipt blocks reveal after the agent response;
+  - step advancement is artificially slowed by the text reveal rather than a hard card swap.
 - Benchmark evidence is primary replay proof, not a hidden secondary detail. Do not bury the representative prompt/output behind a collapsed details control on benchmarked steps.
 - Non-benchmarked steps still render a curated scenario transcript and artifact/result state. They should show no receipt or a clear "not benchmarked in this replay" state instead of empty proof UI.
 - Full benchmark tables remain on `/benchmarks/`; the replay panel uses benchmark data as contextual receipts, not as a replacement for the matrix.
@@ -301,8 +310,11 @@ Replay data requirements:
 
 - Prefer structured step replay records over extending `WorkflowStep` tuples with more positional fields.
 - Each replay step should support user message, agent message, terminal/proof block, artifact/result block, and optional benchmark receipt.
+- The UI may derive transcript turns from the existing structured step records, but rendering should preserve session continuity across revealed steps.
+- Playback timing should coordinate with fake typing completion and proof-block reveal timing instead of advancing solely on a fixed interval.
 - Existing generated benchmark evidence from `workflowBenchmarks` can supply receipt metrics and representative run excerpts.
 - Curated transcript copy should be concise enough to read in the UI while preserving links or source paths back to persisted benchmark reports and run artifacts.
+- Reduced-motion fallback shows complete turn content without fake typing or animated scroll, while preserving step jump controls.
 
 Mobile layout:
 
