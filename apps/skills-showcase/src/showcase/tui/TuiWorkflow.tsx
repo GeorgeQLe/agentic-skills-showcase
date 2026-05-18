@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useWorkflowPlayer } from "@/showcase/tui/shared/useWorkflowPlayer";
 import { useTypewriter } from "@/showcase/tui/shared/useTypewriter";
 import type { WorkflowBenchmarkSummary, WorkflowStepBenchmark } from "@/showcase/types";
@@ -8,6 +8,7 @@ import "./workflow.css";
 
 export function TuiWorkflow() {
   const [activeTurnReady, setActiveTurnReady] = useState(false);
+  const turnRefs = useRef<Array<HTMLElement | null>>([]);
   const {
     activeKey,
     activeStep,
@@ -53,6 +54,22 @@ export function TuiWorkflow() {
       setActiveTurnReady(true);
     }
   }, [activeAgentBodyDone, reducedMotion]);
+
+  useEffect(() => {
+    if (!playing || reducedMotion) return;
+    const activeTurn = turnRefs.current[activeStep];
+    if (!activeTurn) return;
+
+    const frame = window.requestAnimationFrame(() => {
+      activeTurn.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "nearest",
+      });
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [activeKey, activeStep, playing, reducedMotion]);
 
   return (
     <div className="tui-workflow">
@@ -121,6 +138,11 @@ export function TuiWorkflow() {
                     isActiveStep ? "tui-workflow__step-card--active" : ""
                   }`}
                   key={`${activeKey}-${index}`}
+                  ref={(node) => {
+                    turnRefs.current[index] = node;
+                  }}
+                  data-workflow-turn={index + 1}
+                  data-workflow-turn-active={isActiveStep ? "true" : "false"}
                 >
                   <p className="tui-workflow__step-name">{step.title}</p>
                   <code className="tui-workflow__step-command">{step.command}</code>
@@ -143,6 +165,8 @@ export function TuiWorkflow() {
                           className={`tui-workflow__receipt ${
                             hasBenchmarkReceipt ? "tui-workflow__receipt--benchmark" : ""
                           }`}
+                          data-receipt-state={step.replay.receipt.state}
+                          data-receipt-step={index + 1}
                         >
                           <div className="tui-workflow__receipt-header">
                             <span className="tui-workflow__demo-label">{receiptTitle}</span>

@@ -285,4 +285,44 @@ describe("TuiWorkflow replay pilot", () => {
       within(replay).getByText("No persisted benchmark receipt is attached to this step yet."),
     ).toBeTruthy();
   });
+
+  it("smooth-scrolls the active transcript turn during playback", () => {
+    const scrollIntoView = vi.fn();
+    window.matchMedia = vi.fn().mockReturnValue({
+      matches: false,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    });
+    Element.prototype.scrollIntoView = scrollIntoView;
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
+      callback(0);
+      return 1;
+    });
+    vi.spyOn(window, "cancelAnimationFrame").mockImplementation(() => {});
+
+    render(<TuiWorkflow />);
+
+    fireEvent.click(screen.getByLabelText("Step 3: Plan"));
+
+    expect(scrollIntoView).toHaveBeenCalledWith({
+      behavior: "smooth",
+      block: "nearest",
+      inline: "nearest",
+    });
+    expect(document.querySelector('[data-workflow-turn="3"]')).toHaveAttribute(
+      "data-workflow-turn-active",
+      "true",
+    );
+  });
+
+  it("does not animate transcript scroll for reduced-motion users", () => {
+    const scrollIntoView = vi.fn();
+    Element.prototype.scrollIntoView = scrollIntoView;
+
+    render(<TuiWorkflow />);
+
+    fireEvent.click(screen.getByLabelText("Step 3: Plan"));
+
+    expect(scrollIntoView).not.toHaveBeenCalled();
+  });
 });
