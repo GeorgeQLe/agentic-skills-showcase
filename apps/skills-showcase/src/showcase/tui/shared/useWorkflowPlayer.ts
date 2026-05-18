@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { workflows, workflowByKey } from "../workflow-data";
 import type { Workflow } from "../workflow-data";
 
@@ -12,7 +12,7 @@ interface WorkflowPlayerState {
   workflow: Workflow;
 }
 
-export function useWorkflowPlayer(autoAdvanceMs = 3200) {
+export function useWorkflowPlayer(autoAdvanceMs = 900, canAutoAdvance = true) {
   const [state, setState] = useState<WorkflowPlayerState>(() => {
     const wf = workflows[0];
     return {
@@ -24,37 +24,29 @@ export function useWorkflowPlayer(autoAdvanceMs = 3200) {
     };
   });
 
-  const reducedMotion = useRef(false);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [reducedMotion, setReducedMotion] = useState(false);
 
   useEffect(() => {
-    reducedMotion.current =
+    const prefersReducedMotion =
       window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
-    if (reducedMotion.current) {
+    setReducedMotion(prefersReducedMotion);
+    if (prefersReducedMotion) {
       setState((s) => ({ ...s, playing: false }));
-    }
-  }, []);
-
-  const stopTimer = useCallback(() => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
     }
   }, []);
 
   const selectWorkflow = useCallback(
     (key: string) => {
       const wf = workflowByKey[key] || workflows[0];
-      stopTimer();
       setState({
         activeKey: wf.key,
         activeStep: 0,
         revealedStep: 0,
-        playing: !reducedMotion.current,
+        playing: !reducedMotion,
         workflow: wf,
       });
     },
-    [stopTimer]
+    [reducedMotion]
   );
 
   const goToStep = useCallback((step: number) => {
@@ -87,23 +79,22 @@ export function useWorkflowPlayer(autoAdvanceMs = 3200) {
   }, []);
 
   const togglePlay = useCallback(() => {
-    if (reducedMotion.current) return;
+    if (reducedMotion) return;
     setState((s) => ({ ...s, playing: !s.playing }));
-  }, []);
+  }, [reducedMotion]);
 
   const restart = useCallback(() => {
     setState((s) => ({
       ...s,
       activeStep: 0,
       revealedStep: 0,
-      playing: !reducedMotion.current,
+      playing: !reducedMotion,
     }));
-  }, []);
+  }, [reducedMotion]);
 
   useEffect(() => {
-    stopTimer();
-    if (!state.playing || reducedMotion.current) return;
-    timerRef.current = setInterval(() => {
+    if (!state.playing || reducedMotion || !canAutoAdvance) return;
+    const id = window.setTimeout(() => {
       setState((s) => {
         const next = (s.activeStep + 1) % s.workflow.steps.length;
         return {
@@ -113,13 +104,13 @@ export function useWorkflowPlayer(autoAdvanceMs = 3200) {
         };
       });
     }, autoAdvanceMs);
-    return stopTimer;
-  }, [state.playing, state.activeKey, autoAdvanceMs, stopTimer]);
+    return () => window.clearTimeout(id);
+  }, [state.playing, state.activeKey, state.activeStep, autoAdvanceMs, canAutoAdvance, reducedMotion]);
 
   return {
     ...state,
     workflows,
-    reducedMotion: reducedMotion.current,
+    reducedMotion,
     selectWorkflow,
     goToStep,
     nextStep,

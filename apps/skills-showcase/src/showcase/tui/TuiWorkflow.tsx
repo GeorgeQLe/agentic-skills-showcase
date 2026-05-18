@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { useWorkflowPlayer } from "@/showcase/tui/shared/useWorkflowPlayer";
+import { useTypewriter } from "@/showcase/tui/shared/useTypewriter";
 import type { WorkflowBenchmarkSummary, WorkflowStepBenchmark } from "@/showcase/types";
 import "./workflow.css";
 
 export function TuiWorkflow() {
+  const [activeTurnReady, setActiveTurnReady] = useState(false);
   const {
     activeKey,
     activeStep,
@@ -19,7 +21,8 @@ export function TuiWorkflow() {
     prevStep,
     togglePlay,
     restart,
-  } = useWorkflowPlayer();
+    reducedMotion,
+  } = useWorkflowPlayer(900, activeTurnReady);
 
   const [benchmarks, setBenchmarks] = useState<Record<string, WorkflowBenchmarkSummary>>({});
 
@@ -33,6 +36,23 @@ export function TuiWorkflow() {
   const tiltClass = `tui-workflow__notebook--tilt-${workflowIndex % 7}`;
   const summary = benchmarks[activeKey];
   const revealedSteps = workflow.steps.slice(0, revealedStep + 1);
+  const activeAgentBody = workflow.steps[activeStep]?.replay.agent.body ?? "";
+  const { displayed: activeAgentBodyDisplayed, done: activeAgentBodyDone } = useTypewriter(
+    activeAgentBody,
+    2,
+    30,
+    !reducedMotion,
+  );
+
+  useEffect(() => {
+    setActiveTurnReady(reducedMotion);
+  }, [activeKey, activeStep, reducedMotion]);
+
+  useEffect(() => {
+    if (reducedMotion || activeAgentBodyDone) {
+      setActiveTurnReady(true);
+    }
+  }, [activeAgentBodyDone, reducedMotion]);
 
   return (
     <div className="tui-workflow">
@@ -66,6 +86,12 @@ export function TuiWorkflow() {
         <div className="tui-workflow__step-area">
           <div className="tui-workflow__transcript" aria-label={`${workflow.title} transcript`}>
             {revealedSteps.map((step, index) => {
+              const isActiveStep = index === activeStep;
+              const stagesActiveTurn = isActiveStep && index === revealedStep;
+              const showProofBlocks = !stagesActiveTurn || activeTurnReady || reducedMotion;
+              const agentBody = stagesActiveTurn && !reducedMotion
+                ? activeAgentBodyDisplayed
+                : step.replay.agent.body;
               const stepBenchmark: WorkflowStepBenchmark | undefined =
                 summary?.stepBenchmarks[index];
               const hasBenchmarkReceipt =
@@ -92,7 +118,7 @@ export function TuiWorkflow() {
               return (
                 <article
                   className={`tui-workflow__step-card ${
-                    index === activeStep ? "tui-workflow__step-card--active" : ""
+                    isActiveStep ? "tui-workflow__step-card--active" : ""
                   }`}
                   key={`${activeKey}-${index}`}
                 >
@@ -105,36 +131,40 @@ export function TuiWorkflow() {
                     </div>
                     <div className="tui-workflow__replay-message tui-workflow__replay-message--agent">
                       <span className="tui-workflow__demo-label">{step.replay.agent.label}</span>
-                      <p className="tui-workflow__step-desc">{step.replay.agent.body}</p>
+                      <p className="tui-workflow__step-desc">{agentBody}</p>
                     </div>
-                    <div className="tui-workflow__demo-content">
-                      <span className="tui-workflow__demo-label">{step.replay.terminal.label}</span>
-                      <pre className="tui-workflow__demo-pre">{step.replay.terminal.body}</pre>
-                      <span className="tui-workflow__demo-label">{step.replay.artifact.label}</span>
-                      <pre className="tui-workflow__demo-pre">{step.replay.artifact.body}</pre>
-                      <div
-                        className={`tui-workflow__receipt ${
-                          hasBenchmarkReceipt ? "tui-workflow__receipt--benchmark" : ""
-                        }`}
-                      >
-                        <div className="tui-workflow__receipt-header">
-                          <span className="tui-workflow__demo-label">{receiptTitle}</span>
-                          <span className="tui-workflow__receipt-status">{receiptStatus}</span>
+                    {showProofBlocks && (
+                      <div className="tui-workflow__demo-content">
+                        <span className="tui-workflow__demo-label">{step.replay.terminal.label}</span>
+                        <pre className="tui-workflow__demo-pre">{step.replay.terminal.body}</pre>
+                        <span className="tui-workflow__demo-label">{step.replay.artifact.label}</span>
+                        <pre className="tui-workflow__demo-pre">{step.replay.artifact.body}</pre>
+                        <div
+                          className={`tui-workflow__receipt ${
+                            hasBenchmarkReceipt ? "tui-workflow__receipt--benchmark" : ""
+                          }`}
+                        >
+                          <div className="tui-workflow__receipt-header">
+                            <span className="tui-workflow__demo-label">{receiptTitle}</span>
+                            <span className="tui-workflow__receipt-status">{receiptStatus}</span>
+                          </div>
+                          {receiptRows.length > 0 ? (
+                            <dl className="tui-workflow__receipt-grid">
+                              {receiptRows.map(([label, value]) => (
+                                <div className="tui-workflow__receipt-row" key={label}>
+                                  <dt>{label}</dt>
+                                  <dd>{value}</dd>
+                                </div>
+                              ))}
+                            </dl>
+                          ) : (
+                            <p className="tui-workflow__receipt-empty">
+                              {step.replay.receipt.body}
+                            </p>
+                          )}
                         </div>
-                        {receiptRows.length > 0 ? (
-                          <dl className="tui-workflow__receipt-grid">
-                            {receiptRows.map(([label, value]) => (
-                              <div className="tui-workflow__receipt-row" key={label}>
-                                <dt>{label}</dt>
-                                <dd>{value}</dd>
-                              </div>
-                            ))}
-                          </dl>
-                        ) : (
-                          <p className="tui-workflow__receipt-empty">{step.replay.receipt.body}</p>
-                        )}
                       </div>
-                    </div>
+                    )}
                   </div>
                   {stepBenchmark && (stepBenchmark.passRate || stepBenchmark.qualityScore) && (
                     <div className="tui-workflow__step-badge">
