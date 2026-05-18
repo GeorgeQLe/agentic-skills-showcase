@@ -37,7 +37,9 @@ export function TuiWorkflow() {
   const tiltClass = `tui-workflow__notebook--tilt-${workflowIndex % 7}`;
   const summary = benchmarks[activeKey];
   const revealedSteps = workflow.steps.slice(0, revealedStep + 1);
-  const activeAgentBody = workflow.steps[activeStep]?.replay.agent.body ?? "";
+  const activeStepBenchmark = summary?.stepBenchmarks[activeStep];
+  const activeAgentBody =
+    activeStepBenchmark?.demo?.output ?? workflow.steps[activeStep]?.replay.agent.body ?? "";
   const { displayed: activeAgentBodyDisplayed, done: activeAgentBodyDone } = useTypewriter(
     activeAgentBody,
     2,
@@ -106,11 +108,13 @@ export function TuiWorkflow() {
               const isActiveStep = index === activeStep;
               const stagesActiveTurn = isActiveStep && index === revealedStep;
               const showProofBlocks = !stagesActiveTurn || activeTurnReady || reducedMotion;
-              const agentBody = stagesActiveTurn && !reducedMotion
-                ? activeAgentBodyDisplayed
-                : step.replay.agent.body;
               const stepBenchmark: WorkflowStepBenchmark | undefined =
                 summary?.stepBenchmarks[index];
+              const runDemo = stepBenchmark?.demo;
+              const userBody = runDemo?.prompt ?? step.replay.user.body;
+              const agentBody = stagesActiveTurn && !reducedMotion
+                ? activeAgentBodyDisplayed
+                : runDemo?.output ?? step.replay.agent.body;
               const hasBenchmarkReceipt =
                 step.replay.receipt.state === "benchmark" && Boolean(stepBenchmark);
               const receiptTitle = hasBenchmarkReceipt
@@ -149,7 +153,7 @@ export function TuiWorkflow() {
                   <div className="tui-workflow__replay" aria-label={`${step.title} replay`}>
                     <div className="tui-workflow__replay-message tui-workflow__replay-message--user">
                       <span className="tui-workflow__demo-label">{step.replay.user.label}</span>
-                      <p className="tui-workflow__step-desc">{step.replay.user.body}</p>
+                      <p className="tui-workflow__step-desc">{userBody}</p>
                     </div>
                     <div className="tui-workflow__replay-message tui-workflow__replay-message--agent">
                       <span className="tui-workflow__demo-label">{step.replay.agent.label}</span>

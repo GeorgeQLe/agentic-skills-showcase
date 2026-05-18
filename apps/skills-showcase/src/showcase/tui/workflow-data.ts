@@ -48,8 +48,10 @@ function step(title: string, command: string, summary: string, skill?: string): 
     skill,
     replay: {
       user: {
-        label: "User",
-        body: command.startsWith("$") ? `${command} for this workflow step.` : `Run ${command}.`,
+        label: "User goal",
+        body: command.startsWith("$")
+          ? `Use ${command} to move this workflow step from intent to evidence.`
+          : `Use ${command} to complete this workflow step with visible proof.`,
       },
       agent: {
         label: "Agent",

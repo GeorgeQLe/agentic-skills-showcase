@@ -223,8 +223,10 @@ describe("TuiWorkflow replay pilot", () => {
     render(<TuiWorkflow />);
 
     const replay = screen.getByLabelText("Install replay");
-    expect(within(replay).getByText("User")).toBeTruthy();
-    expect(within(replay).getByText("Run ./install.sh.")).toBeTruthy();
+    expect(within(replay).getByText("User goal")).toBeTruthy();
+    expect(
+      within(replay).getByText("Use ./install.sh to complete this workflow step with visible proof."),
+    ).toBeTruthy();
     expect(within(replay).getByText("Agent")).toBeTruthy();
     expect(within(replay).getAllByText("Global skill links refresh.").length).toBeGreaterThan(0);
     expect(within(replay).getByText("Terminal")).toBeTruthy();
@@ -239,8 +241,8 @@ describe("TuiWorkflow replay pilot", () => {
 
     expect(screen.getByLabelText("Plan replay")).toBeTruthy();
     expect(screen.getByText("$roadmap")).toBeTruthy();
-    expect(screen.getByText("$roadmap for this workflow step.")).toBeTruthy();
-    expect(screen.getAllByText("Task docs describe the next phase.").length).toBeGreaterThan(0);
+    expect(screen.getByText("Run the roadmap workflow.")).toBeTruthy();
+    expect(screen.getAllByText("Generated roadmap phase structure.").length).toBeGreaterThan(0);
   });
 
   it("keeps completed transcript turns expanded after advancing", () => {
@@ -257,12 +259,14 @@ describe("TuiWorkflow replay pilot", () => {
     vi.runOnlyPendingTimers();
 
     const installReplay = screen.getByLabelText("Install replay");
-    expect(within(installReplay).getByText("Run ./install.sh.")).toBeTruthy();
+    expect(
+      within(installReplay).getByText("Use ./install.sh to complete this workflow step with visible proof."),
+    ).toBeTruthy();
     expect(within(installReplay).getByText("Terminal")).toBeTruthy();
     expect(within(installReplay).getByText("Result")).toBeTruthy();
 
     const selectPackReplay = screen.getByLabelText("Select pack replay");
-    expect(within(selectPackReplay).getByText("User")).toBeTruthy();
+    expect(within(selectPackReplay).getByText("User goal")).toBeTruthy();
     expect(within(selectPackReplay).getByText("Agent")).toBeTruthy();
 
     vi.useRealTimers();
@@ -301,6 +305,8 @@ describe("TuiWorkflow replay pilot", () => {
     fireEvent.click(screen.getByLabelText("Step 3: Plan"));
 
     const replay = screen.getByLabelText("Plan replay");
+    expect(within(replay).getByText("Run the roadmap workflow.")).toBeTruthy();
+    expect(within(replay).getByText("Generated roadmap phase structure.")).toBeTruthy();
     expect(within(replay).getByText("Benchmark receipt")).toBeTruthy();
     expect(within(replay).getByText("Persisted benchmark evidence")).toBeTruthy();
     expect(within(replay).getByText("Pass rate")).toBeTruthy();
