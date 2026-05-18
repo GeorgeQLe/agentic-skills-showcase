@@ -80,6 +80,12 @@
 
 /* ── Step card ── */
 
+.tui-workflow__transcript {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+
 .tui-workflow__step-card {
   background: var(--panel);
   border: 1px solid var(--line);
