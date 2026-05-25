@@ -39,28 +39,28 @@ describe("WorkflowsClient", () => {
     delete (window as any).SKILLS_SHOWCASE_DATA;
   });
 
-  it("renders 8 workflow buttons into the selector list", () => {
+  it("renders 7 workflow buttons into the selector list", () => {
     workflowPageDOM();
     render(<WorkflowsClient />);
 
     const list = document.querySelector("[data-workflow-list]")!;
-    expect(list.querySelectorAll(".workflow-item")).toHaveLength(8);
+    expect(list.querySelectorAll(".workflow-item")).toHaveLength(7);
   });
 
-  it("renders 8 preview cards", () => {
+  it("renders 7 preview cards", () => {
     workflowPageDOM();
     render(<WorkflowsClient />);
 
     const preview = document.querySelector("[data-workflow-preview]")!;
-    expect(preview.querySelectorAll(".workflow-preview-card")).toHaveLength(8);
+    expect(preview.querySelectorAll(".workflow-preview-card")).toHaveLength(7);
   });
 
-  it("defaults to First Successful Cycle", () => {
+  it("defaults to Market Discovery", () => {
     workflowPageDOM();
     render(<WorkflowsClient />);
 
     expect(document.querySelector("[data-workflow-title]")!.textContent).toBe(
-      "First Successful Cycle"
+      "Market Discovery"
     );
     expect(document.querySelector("[data-workflow-coordinate]")!.textContent).toBe("LAB-01");
   });
@@ -71,7 +71,7 @@ describe("WorkflowsClient", () => {
 
     const stage = document.querySelector("[data-workflow-stage]")!;
     expect(stage.querySelector(".stage-node")).toBeTruthy();
-    expect(stage.querySelector("strong")!.textContent).toBe("Install");
+    expect(stage.querySelector("strong")!.textContent).toBe("Explore concept");
   });
 
   it("renders progress markers matching step count", () => {
@@ -87,15 +87,15 @@ describe("WorkflowsClient", () => {
     render(<WorkflowsClient />);
 
     const buttons = document.querySelectorAll("[data-workflow-list] .workflow-item");
-    const shipButton = Array.from(buttons).find(
-      (b) => (b as HTMLElement).dataset.workflow === "ship"
+    const productionButton = Array.from(buttons).find(
+      (b) => (b as HTMLElement).dataset.workflow === "production"
     )!;
-    shipButton.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    productionButton.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 
     expect(document.querySelector("[data-workflow-title]")!.textContent).toBe(
-      "Plan -> Run -> Ship"
+      "Production"
     );
-    expect(document.querySelector("[data-workflow-coordinate]")!.textContent).toBe("LAB-03");
+    expect(document.querySelector("[data-workflow-coordinate]")!.textContent).toBe("LAB-07");
   });
 
   it("navigates steps with prev/next buttons", () => {
@@ -111,7 +111,7 @@ describe("WorkflowsClient", () => {
     const prev = document.querySelector("[data-workflow-prev]") as HTMLButtonElement;
     prev.click();
 
-    expect(stage.querySelector("strong")!.textContent).toBe("Install");
+    expect(stage.querySelector("strong")!.textContent).toBe("Explore concept");
   });
 
   it("disables prev on first step and next on last step", () => {
@@ -150,14 +150,14 @@ describe("WorkflowsClient", () => {
 
     const buttons = document.querySelectorAll("[data-workflow-list] .workflow-item");
     const firstButton = Array.from(buttons).find(
-      (b) => (b as HTMLElement).dataset.workflow === "first"
+      (b) => (b as HTMLElement).dataset.workflow === "market-discovery"
     )!;
     expect(firstButton.getAttribute("aria-pressed")).toBe("true");
 
-    const packButton = Array.from(buttons).find(
-      (b) => (b as HTMLElement).dataset.workflow === "packs"
+    const valueButton = Array.from(buttons).find(
+      (b) => (b as HTMLElement).dataset.workflow === "value-strategy"
     )!;
-    expect(packButton.getAttribute("aria-pressed")).toBe("false");
+    expect(valueButton.getAttribute("aria-pressed")).toBe("false");
   });
 
   it("restart button resets to step 0", () => {
@@ -172,7 +172,7 @@ describe("WorkflowsClient", () => {
     restart.click();
 
     const stage = document.querySelector("[data-workflow-stage]")!;
-    expect(stage.querySelector("strong")!.textContent).toBe("Install");
+    expect(stage.querySelector("strong")!.textContent).toBe("Explore concept");
   });
 });
 
@@ -187,24 +187,24 @@ describe("TuiWorkflow replay pilot", () => {
     });
     (window as any).SKILLS_SHOWCASE_DATA = {
       workflowBenchmarks: {
-        first: {
-          workflowKey: "first",
+        "market-discovery": {
+          workflowKey: "market-discovery",
           stepsTotal: 5,
           stepsBenchmarked: 1,
           aggregatePassRate: "100%",
           aggregateQuality: "92.0%",
           stepBenchmarks: {
-            2: {
-              skill: "roadmap",
+            0: {
+              skill: "concept-exploration",
               passRate: "100%",
               qualityScore: "92.0%",
               demo: {
                 agent: "codex",
                 runIndex: 2,
-                prompt: "Run the roadmap workflow.",
-                output: "Generated roadmap phase structure.",
-                reportPath: "benchmark/test-roadmap-2026-05-17.md",
-                runPath: "tests/benchmarks/runs/roadmap-codex-123/run-002.json",
+                prompt: "Run concept exploration.",
+                output: "Generated concept brief.",
+                reportPath: "benchmark/test-concept-exploration-2026-05-17.md",
+                runPath: "tests/benchmarks/runs/concept-exploration-codex-123/run-002.json",
               },
             },
           },
@@ -222,27 +222,25 @@ describe("TuiWorkflow replay pilot", () => {
   it("renders the active replay data surface for the selected step", () => {
     render(<TuiWorkflow />);
 
-    const replay = screen.getByLabelText("Install replay");
+    const replay = screen.getByLabelText("Explore concept replay");
     expect(within(replay).getByText("User goal")).toBeTruthy();
     expect(
-      within(replay).getByText("Use ./install.sh to complete this workflow step with visible proof."),
+      within(replay).getByText("Use $concept-exploration to move this workflow step from intent to evidence."),
     ).toBeTruthy();
     expect(within(replay).getByText("Agent")).toBeTruthy();
-    expect(within(replay).getAllByText("Global skill links refresh.").length).toBeGreaterThan(0);
+    expect(within(replay).getAllByText("Rough idea becomes a bounded concept brief.").length).toBeGreaterThan(0);
     expect(within(replay).getByText("Terminal")).toBeTruthy();
-    expect(within(replay).getAllByText(/\.\/install\.sh/).length).toBeGreaterThan(0);
+    expect(within(replay).getAllByText(/\$concept-exploration/).length).toBeGreaterThan(0);
     expect(within(replay).getByText("Result")).toBeTruthy();
   });
 
   it("changes replay state when a step circle is selected", () => {
     render(<TuiWorkflow />);
 
-    fireEvent.click(screen.getByLabelText("Step 3: Plan"));
+    fireEvent.click(screen.getByLabelText("Step 2: Select pack"));
 
-    expect(screen.getByLabelText("Plan replay")).toBeTruthy();
-    expect(screen.getByText("$roadmap")).toBeTruthy();
-    expect(screen.getByText("Run the roadmap workflow.")).toBeTruthy();
-    expect(screen.getAllByText("Generated roadmap phase structure.").length).toBeGreaterThan(0);
+    expect(screen.getByLabelText("Select pack replay")).toBeTruthy();
+    expect(screen.getByText("$pack")).toBeTruthy();
   });
 
   it("keeps completed transcript turns expanded after advancing", () => {
@@ -258,12 +256,12 @@ describe("TuiWorkflow replay pilot", () => {
     fireEvent.click(screen.getByLabelText("Next step"));
     vi.runOnlyPendingTimers();
 
-    const installReplay = screen.getByLabelText("Install replay");
+    const exploreReplay = screen.getByLabelText("Explore concept replay");
     expect(
-      within(installReplay).getByText("Use ./install.sh to complete this workflow step with visible proof."),
+      within(exploreReplay).getByText("Use $concept-exploration to move this workflow step from intent to evidence."),
     ).toBeTruthy();
-    expect(within(installReplay).getByText("Terminal")).toBeTruthy();
-    expect(within(installReplay).getByText("Result")).toBeTruthy();
+    expect(within(exploreReplay).getByText("Terminal")).toBeTruthy();
+    expect(within(exploreReplay).getByText("Result")).toBeTruthy();
 
     const selectPackReplay = screen.getByLabelText("Select pack replay");
     expect(within(selectPackReplay).getByText("User goal")).toBeTruthy();
@@ -275,38 +273,35 @@ describe("TuiWorkflow replay pilot", () => {
   it("keeps revealed transcript turns mounted when jumping back to an earlier step", () => {
     render(<TuiWorkflow />);
 
-    fireEvent.click(screen.getByLabelText("Step 3: Plan"));
-    expect(screen.getByLabelText("Plan replay")).toBeTruthy();
+    fireEvent.click(screen.getByLabelText("Step 3: Define ICP"));
+    expect(screen.getByLabelText("Define ICP replay")).toBeTruthy();
 
-    fireEvent.click(screen.getByLabelText("Step 1: Install"));
+    fireEvent.click(screen.getByLabelText("Step 1: Explore concept"));
 
     expect(screen.getAllByText(/Step\s+1\s+\/\s+5/).length).toBeGreaterThan(0);
-    expect(screen.getByLabelText("Install replay")).toBeTruthy();
-    expect(screen.getByLabelText("Plan replay")).toBeTruthy();
+    expect(screen.getByLabelText("Explore concept replay")).toBeTruthy();
+    expect(screen.getByLabelText("Define ICP replay")).toBeTruthy();
   });
 
   it("resets transcript turns when switching workflows", () => {
     render(<TuiWorkflow />);
 
-    fireEvent.click(screen.getByLabelText("Step 3: Plan"));
-    expect(screen.getByLabelText("Plan replay")).toBeTruthy();
+    fireEvent.click(screen.getByLabelText("Step 3: Define ICP"));
+    expect(screen.getByLabelText("Define ICP replay")).toBeTruthy();
 
-    fireEvent.click(screen.getByRole("button", { name: "Plan -> Run -> Ship" }));
+    fireEvent.click(screen.getByRole("button", { name: "Production" }));
 
-    expect(screen.getByLabelText("Read todo replay")).toBeTruthy();
-    expect(screen.queryByLabelText("Install replay")).toBeNull();
-    expect(screen.queryByText("$roadmap")).toBeNull();
-    expect(screen.getAllByText("tasks/todo.md").length).toBeGreaterThan(0);
+    expect(screen.getByLabelText("Roadmap replay")).toBeTruthy();
+    expect(screen.queryByLabelText("Explore concept replay")).toBeNull();
+    expect(screen.queryByText("$concept-exploration")).toBeNull();
   });
 
   it("renders visible benchmark receipt metadata when generated evidence exists", () => {
     render(<TuiWorkflow />);
 
-    fireEvent.click(screen.getByLabelText("Step 3: Plan"));
-
-    const replay = screen.getByLabelText("Plan replay");
-    expect(within(replay).getByText("Run the roadmap workflow.")).toBeTruthy();
-    expect(within(replay).getByText("Generated roadmap phase structure.")).toBeTruthy();
+    const replay = screen.getByLabelText("Explore concept replay");
+    expect(within(replay).getByText("Run concept exploration.")).toBeTruthy();
+    expect(within(replay).getByText("Generated concept brief.")).toBeTruthy();
     expect(within(replay).getByText("Benchmark receipt")).toBeTruthy();
     expect(within(replay).getByText("Persisted benchmark evidence")).toBeTruthy();
     expect(within(replay).getByText("Pass rate")).toBeTruthy();
@@ -317,16 +312,18 @@ describe("TuiWorkflow replay pilot", () => {
     expect(within(replay).getByText("codex")).toBeTruthy();
     expect(within(replay).getByText("Run artifact")).toBeTruthy();
     expect(
-      within(replay).getByText("tests/benchmarks/runs/roadmap-codex-123/run-002.json"),
+      within(replay).getByText("tests/benchmarks/runs/concept-exploration-codex-123/run-002.json"),
     ).toBeTruthy();
     expect(within(replay).getByText("Report")).toBeTruthy();
-    expect(within(replay).getByText("benchmark/test-roadmap-2026-05-17.md")).toBeTruthy();
+    expect(within(replay).getByText("benchmark/test-concept-exploration-2026-05-17.md")).toBeTruthy();
   });
 
   it("renders an explicit no-receipt state for curated steps", () => {
     render(<TuiWorkflow />);
 
-    const replay = screen.getByLabelText("Install replay");
+    fireEvent.click(screen.getByLabelText("Step 3: Define ICP"));
+
+    const replay = screen.getByLabelText("Define ICP replay");
     expect(within(replay).getByText("Curated scenario")).toBeTruthy();
     expect(within(replay).getByText("No persisted benchmark receipt")).toBeTruthy();
     expect(
@@ -337,12 +334,10 @@ describe("TuiWorkflow replay pilot", () => {
   it("renders reduced-motion turns and proof blocks without typewriter delay", () => {
     render(<TuiWorkflow />);
 
-    const replay = screen.getByLabelText("Install replay");
-    expect(within(replay).getAllByText("Global skill links refresh.").length).toBeGreaterThan(0);
+    const replay = screen.getByLabelText("Explore concept replay");
+    expect(within(replay).getAllByText("Rough idea becomes a bounded concept brief.").length).toBeGreaterThan(0);
     expect(within(replay).getByText("Terminal")).toBeTruthy();
     expect(within(replay).getByText("Result")).toBeTruthy();
-    expect(within(replay).getByText("Curated scenario")).toBeTruthy();
-    expect(within(replay).getByText("No persisted benchmark receipt")).toBeTruthy();
   });
 
   it("smooth-scrolls the active transcript turn during playback", () => {
@@ -361,7 +356,7 @@ describe("TuiWorkflow replay pilot", () => {
 
     render(<TuiWorkflow />);
 
-    fireEvent.click(screen.getByLabelText("Step 3: Plan"));
+    fireEvent.click(screen.getByLabelText("Step 3: Define ICP"));
 
     expect(scrollIntoView).toHaveBeenCalledWith({
       behavior: "smooth",
@@ -380,7 +375,7 @@ describe("TuiWorkflow replay pilot", () => {
 
     render(<TuiWorkflow />);
 
-    fireEvent.click(screen.getByLabelText("Step 3: Plan"));
+    fireEvent.click(screen.getByLabelText("Step 3: Define ICP"));
 
     expect(scrollIntoView).not.toHaveBeenCalled();
   });
