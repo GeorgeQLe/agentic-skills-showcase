@@ -40,6 +40,7 @@ export default function SealedPack({ name, skillCount, previews, onOpen }: Seale
   const glowWidth = useTransform(dragX, [0, PACK_WIDTH], [0, PACK_WIDTH - 16]);
   const glowOpacity = useTransform(dragX, [0, 20, THRESHOLD], [0, 0.6, 1]);
   const hintOpacity = useTransform(dragX, [0, 30], [1, 0]);
+  const sheenOpacity = useTransform(dragX, [0, 15], [1, 0]);
 
   const isDragging = useRef(false);
   const startX = useRef(0);
@@ -82,7 +83,6 @@ export default function SealedPack({ name, skillCount, previews, onOpen }: Seale
         {/* Bottom half */}
         <div className="absolute top-[33%] left-0 right-0 bottom-0 rounded-b-2xl overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-zinc-700 via-zinc-600 to-zinc-800" />
-          <div className="absolute inset-0 shimmer-foil" />
           <div className="absolute inset-x-2 top-0 bottom-2 rounded-b-xl border-b border-x border-zinc-500/30 bg-gradient-to-b from-zinc-800/80 to-zinc-900/90 flex flex-col items-center justify-center p-4">
             <span className="text-xs text-zinc-500">
               {skillCount} {skillCount === 1 ? "skill" : "skills"}
@@ -143,7 +143,6 @@ export default function SealedPack({ name, skillCount, previews, onOpen }: Seale
           style={{ clipPath: flapClip }}
         >
           <div className="absolute inset-0 bg-gradient-to-br from-zinc-700 via-zinc-600 to-zinc-800" />
-          <div className="absolute inset-0 shimmer-foil" />
           <div className="absolute inset-x-2 top-2 bottom-0 rounded-t-xl border-t border-x border-zinc-500/30 bg-gradient-to-b from-zinc-800/80 to-zinc-900/90 flex flex-col items-center justify-end pb-2">
             <Package size={28} className="text-zinc-400 mb-2" />
             <h3 className="text-sm font-bold text-zinc-200 text-center leading-tight">
@@ -167,6 +166,12 @@ export default function SealedPack({ name, skillCount, previews, onOpen }: Seale
             borderRadius: "0 50% 50% 0",
             boxShadow: "-2px 2px 6px rgba(0,0,0,0.3)",
           }}
+        />
+
+        {/* Unified shimmer overlay */}
+        <motion.div
+          className="absolute inset-0 rounded-2xl shimmer-foil pointer-events-none"
+          style={{ opacity: sheenOpacity }}
         />
 
         {/* Invisible drag zone */}
