@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import { Package } from "lucide-react";
 
@@ -40,11 +40,34 @@ export default function SealedPack({ name, skillCount, previews, onOpen }: Seale
   const glowWidth = useTransform(dragX, [0, PACK_WIDTH], [0, PACK_WIDTH - 16]);
   const glowOpacity = useTransform(dragX, [0, 20, THRESHOLD], [0, 0.6, 1]);
   const hintOpacity = useTransform(dragX, [0, 30], [1, 0]);
-  const sheenOpacity = useTransform(dragX, [0, 15], [1, 0]);
+  const sheenOpacity = useMotionValue(1);
+  const sheenRef = useRef<HTMLDivElement>(null);
+  const sheenDismissing = useRef(false);
 
   const isDragging = useRef(false);
   const startX = useRef(0);
   const hasTriggered = useRef(false);
+
+  useEffect(() => {
+    const unsub = dragX.on("change", (x) => {
+      if (x > 5 && !sheenDismissing.current) {
+        sheenDismissing.current = true;
+      }
+    });
+    return unsub;
+  }, [dragX]);
+
+  useEffect(() => {
+    const el = sheenRef.current;
+    if (!el) return;
+    const handleIteration = () => {
+      if (sheenDismissing.current) {
+        animate(sheenOpacity, 0, { duration: 0.4 });
+      }
+    };
+    el.addEventListener("animationiteration", handleIteration);
+    return () => el.removeEventListener("animationiteration", handleIteration);
+  }, [sheenOpacity]);
 
   function handlePointerDown(e: React.PointerEvent) {
     if (hasTriggered.current) return;
@@ -170,6 +193,7 @@ export default function SealedPack({ name, skillCount, previews, onOpen }: Seale
 
         {/* Unified shimmer overlay */}
         <motion.div
+          ref={sheenRef}
           className="absolute inset-0 rounded-2xl shimmer-foil pointer-events-none"
           style={{ opacity: sheenOpacity }}
         />
