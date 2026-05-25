@@ -98,8 +98,8 @@ export default function SealedPack({ name, skillCount, previews, onOpen }: Seale
             style={{
               left: 8,
               right: 8,
-              height: 40,
-              top: "calc(33% - 20px)",
+              height: 56,
+              top: "calc(33% - 28px)",
             }}
           >
             <div
