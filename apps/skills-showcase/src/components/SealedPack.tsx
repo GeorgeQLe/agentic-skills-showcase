@@ -42,32 +42,35 @@ export default function SealedPack({ name, skillCount, previews, onOpen }: Seale
   const hintOpacity = useTransform(dragX, [0, 30], [1, 0]);
   const sheenOpacity = useMotionValue(1);
   const sheenRef = useRef<HTMLDivElement>(null);
-  const sheenDismissing = useRef(false);
 
   const isDragging = useRef(false);
   const startX = useRef(0);
   const hasTriggered = useRef(false);
 
   useEffect(() => {
-    const unsub = dragX.on("change", (x) => {
-      if (x > 5 && !sheenDismissing.current) {
-        sheenDismissing.current = true;
-      }
-    });
-    return unsub;
-  }, [dragX]);
-
-  useEffect(() => {
     const el = sheenRef.current;
     if (!el) return;
-    const handleIteration = () => {
-      if (sheenDismissing.current) {
-        animate(sheenOpacity, 0, { duration: 0.4 });
+    let timer: ReturnType<typeof setTimeout>;
+
+    const unsub = dragX.on("change", (x) => {
+      if (x > 5 && !timer) {
+        const anim = el.getAnimations()[0];
+        const DURATION = 3000;
+        const elapsed = anim?.currentTime != null
+          ? (anim.currentTime as number) % DURATION
+          : 0;
+        const remaining = DURATION - elapsed;
+        timer = setTimeout(() => {
+          animate(sheenOpacity, 0, { duration: 0.4 });
+        }, remaining);
       }
+    });
+
+    return () => {
+      unsub();
+      clearTimeout(timer);
     };
-    el.addEventListener("animationiteration", handleIteration);
-    return () => el.removeEventListener("animationiteration", handleIteration);
-  }, [sheenOpacity]);
+  }, [dragX, sheenOpacity]);
 
   function handlePointerDown(e: React.PointerEvent) {
     if (hasTriggered.current) return;
