@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://gskillpacks.com"),
   title: "G Skillpacks",
   description:
-    "The skill packs for agentic-skills workflows, packs, proof data, and follow updates.",
+    "The AFPS pipeline and skill library for Claude Code and Codex — alignment, prototype, specification, and shipping workflows.",
   manifest: "/manifest.webmanifest",
   icons: {
     icon: [

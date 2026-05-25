@@ -16,8 +16,9 @@ export default function BenchmarksPage() {
           Evaluated benchmark evidence from persisted runs.
         </h1>
         <p className="lede">
-          Skills with completed benchmark runs and evaluated results.
-          Benchmark data comes from persisted run reports — see the{" "}
+          Skills used within AFPS phases with completed benchmark runs and
+          evaluated results. Benchmark data comes from persisted run
+          reports — see the{" "}
           <a href="https://github.com/GeorgeQLe/agentic-skills/blob/master/docs/benchmark-results-matrix.md">
             benchmark results matrix
           </a>{" "}

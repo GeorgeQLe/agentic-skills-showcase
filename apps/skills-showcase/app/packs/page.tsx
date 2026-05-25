@@ -4,7 +4,7 @@ import CatalogClient from "@/showcase/catalog";
 export const metadata: Metadata = {
   title: "Pack Map / agentic-skills",
   description:
-    "Install the workflow language your project needs. Packs separate global foundations, domain workflows, and overlays."
+    "Packs tune which AFPS phases your project uses. Global core provides the full pipeline; domain packs specialize phase behavior."
 };
 
 export default function PacksPage() {
@@ -13,12 +13,12 @@ export default function PacksPage() {
       <section className="section" aria-labelledby="packs-title">
         <p className="eyebrow">Pack Map</p>
         <h1 id="packs-title">
-          Install the workflow language your project actually needs.
+          Packs tune which AFPS phases your project uses.
         </h1>
         <p className="lede">
-          Packs keep context focused by separating global foundations, domain
-          workflows, and overlays. Pack names, platform coverage, and skill
-          counts are generated from repository metadata.
+          Global core provides the full AFPS pipeline: alignment, design,
+          prototype, spec, and shipping workflows. Domain packs specialize
+          phase behavior for business, devtool, game, and creator contexts.
         </p>
         <div className="pack-summary" data-pack-summary=""></div>
         <div
@@ -60,10 +60,10 @@ export default function PacksPage() {
         <div className="pack-layout">
           <div className="pack-band core" aria-label="Global core">
             <span className="tag">global core</span>
-            <strong>Global foundations</strong>
+            <strong>The full AFPS pipeline</strong>
             <p>
-              Planning, execution, validation, review, hygiene, and shipping
-              workflows stay available across projects.
+              Alignment, design, prototype, spec, and shipping workflows stay
+              available across projects as the default phase structure.
             </p>
           </div>
           <div
@@ -78,10 +78,10 @@ export default function PacksPage() {
           ></aside>
           <div className="pack-band output" aria-label="Workflow outputs">
             <span className="tag">outputs</span>
-            <strong>research/ specs/ tasks/ commits</strong>
+            <strong>alignment proof / prototype / specs / commits</strong>
             <p>
-              Pack-specific workflows still end in inspectable artifacts and
-              primary-branch shipping evidence.
+              Every AFPS phase produces inspectable artifacts — market evidence,
+              validated prototypes, production specs, and shipping receipts.
             </p>
           </div>
         </div>

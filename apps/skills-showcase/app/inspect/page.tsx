@@ -16,10 +16,11 @@ export default function InspectPage() {
           <p className="eyebrow">Proof Surface</p>
           <h1 id="inspect-title">Receipts first, claims second.</h1>
           <p className="lede">
-            Proof data is generated into a committed static file. This route
-            shows public repository receipts, local validation commands,
-            GitHub fallback status, route freshness, and explicit claim
-            boundaries.
+            Proof data is generated into a committed static file. Each AFPS
+            phase boundary produces its own proof class — alignment evidence,
+            prototype validation, spec receipts, and shipping commits. This
+            route shows public repository receipts, validation commands,
+            GitHub fallback status, and explicit claim boundaries.
           </p>
           <div className="cta-row">
             <Link className="button secondary" href="/follow">
@@ -44,10 +45,10 @@ export default function InspectPage() {
           and <code>scripts/validate-skills-showcase-data.sh</code>.
         </div>
         <div className="notice span-12 proof-funnel-note">
-          Static telemetry can prove repository artifacts, validation
-          commands, generated-data freshness, and fallback behavior. It does
-          not prove live LexCorp product adoption, community membership,
-          visitor analytics, or newsletter performance.{" "}
+          Static telemetry proves AFPS phase artifacts: alignment docs,
+          prototype builds, spec files, and shipping commits. It does not
+          prove live LexCorp product adoption, community membership, visitor
+          analytics, or newsletter performance.{" "}
           <Link href="/follow">Choose a follow/community path</Link>.
         </div>
         <div

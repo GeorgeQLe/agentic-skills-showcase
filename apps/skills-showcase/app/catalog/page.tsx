@@ -16,8 +16,9 @@ export default function CatalogPage() {
           Every source skill gets an inspectable row.
         </h1>
         <p className="lede">
-          Search the committed static catalog generated from every source
-          skill. Counts, commands, platform labels, and source paths come from{" "}
+          Every skill in the AFPS pipeline and domain packs gets an
+          inspectable row. Counts, commands, platform labels, and source
+          paths come from{" "}
           <code>skills-data.js</code>.
         </p>
         <div className="catalog-tools" role="search">

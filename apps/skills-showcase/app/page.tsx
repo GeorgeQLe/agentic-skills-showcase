@@ -6,7 +6,7 @@ import WorkflowsClient from "@/showcase/workflows";
 export const metadata: Metadata = {
   title: "G Skillpacks",
   description:
-    "The agentic-skills workflow library behind repeatable Claude Code and Codex planning, execution, validation, and shipping."
+    "The AFPS pipeline and skill library for Claude Code and Codex — alignment, prototype, specification, and shipping workflows."
 };
 
 export default function HomePage() {
@@ -17,16 +17,16 @@ export default function HomePage() {
           <div className="hero-copy">
             <p className="eyebrow">G Skillpacks / gskillpacks.com</p>
             <h1 id="home-title">
-              The skill packs behind repeatable agentic engineering.
+              Alignment first. Prototype second. Ship with proof.
             </h1>
             <p className="lede">
-              G Skillpacks is the public catalog for George &ldquo;G&rdquo; Le&rsquo;s
-              open-source agentic-skills system: workflows, packs, proof data,
-              and shipping loops for Claude Code and Codex.
+              G Skillpacks is the open-source AFPS pipeline for Claude Code and
+              Codex: market alignment and clickable prototypes before production
+              infrastructure, with proof at every gate.
             </p>
             <div className="cta-row">
               <Link className="button" href="/workflows">
-                Explore Packs
+                See the Pipeline
               </Link>
               <Link className="button secondary" href="/follow">
                 Follow G&rsquo;s Work
@@ -42,62 +42,60 @@ export default function HomePage() {
           <div className="hero-visual">
             <article
               className="blueprint-panel"
-              aria-label="Prompt to ship workflow blueprint"
+              aria-label="AFPS pipeline blueprint"
             >
               <div className="panel-header">
                 <strong>
-                  prompt -&gt; spec -&gt; roadmap -&gt; run -&gt; ship
+                  align -&gt; prototype -&gt; validate -&gt; spec -&gt; ship
                 </strong>
-                <span className="coordinate">X12/Y04</span>
+                <span className="coordinate">AFPS/v1</span>
               </div>
               <div className="state-machine">
                 <div className="state-node">
-                  <strong>Prompt</strong>
-                  <span className="command">user intent</span>
+                  <strong>Align</strong>
+                  <span className="command">$concept-exploration</span>
+                </div>
+                <div className="state-node">
+                  <strong>Prototype</strong>
+                  <span className="command">$prototype</span>
+                </div>
+                <div className="state-node">
+                  <strong>Validate</strong>
+                  <span className="command">$uat</span>
                 </div>
                 <div className="state-node">
                   <strong>Spec</strong>
                   <span className="command">$spec-interview</span>
                 </div>
                 <div className="state-node">
-                  <strong>Roadmap</strong>
-                  <span className="command">tasks/*.md</span>
-                </div>
-                <div className="state-node">
-                  <strong>Run</strong>
-                  <span className="command">$run</span>
-                </div>
-                <div className="state-node">
                   <strong>Ship</strong>
-                  <span className="command">history + commit</span>
+                  <span className="command">$run + $ship</span>
                 </div>
               </div>
-              <div className="terminal" aria-label="Simulated validation output">
-                <div>$run</div>
-                <div>plan accepted: Step 32.1 static shell</div>
-                <div>validation: route files, shared CSS, shared JS</div>
-                <div>ship: tasks/history.md + direct-to-primary commit</div>
+              <div className="terminal" aria-label="Simulated AFPS output">
+                <div>$concept-exploration</div>
+                <div>alignment: ICP locked, competitive gaps mapped</div>
+                <div>$prototype → $uat → validated reference build</div>
+                <div>$spec-interview → $run → direct-to-primary ship</div>
               </div>
             </article>
           </div>
           <div className="metrics" aria-label="Showcase facts">
             <div className="metric">
-              <span className="metric-value">global + packs</span>
-              <span className="metric-label">skill scopes</span>
+              <span className="metric-value">7 phases</span>
+              <span className="metric-label">alignment to ship</span>
             </div>
             <div className="metric">
-              <span className="metric-value">Claude + Codex</span>
-              <span className="metric-label">agent surfaces</span>
+              <span className="metric-value">proof gates</span>
+              <span className="metric-label">every phase boundary</span>
             </div>
             <div className="metric">
-              <span className="metric-value" data-skill-count="">
-                static catalog
-              </span>
-              <span className="metric-label">generated skills</span>
+              <span className="metric-value">prototype first</span>
+              <span className="metric-label">validate before spec</span>
             </div>
             <div className="metric">
-              <span className="metric-value">GitHub proof</span>
-              <span className="metric-label">open source</span>
+              <span className="metric-value">open source</span>
+              <span className="metric-label">GitHub proof</span>
             </div>
           </div>
         </section>
@@ -107,14 +105,14 @@ export default function HomePage() {
           aria-labelledby="workflow-preview-title"
         >
           <div className="span-12">
-            <p className="eyebrow">Workflow proof</p>
+            <p className="eyebrow">AFPS pipeline</p>
             <h2 id="workflow-preview-title">
-              Eight ways work becomes inspectable.
+              Seven phases from market alignment to production ship.
             </h2>
             <p className="lede">
-              The workflow lab turns agent sessions into visible state changes:
-              commands, task files, validation gates, handoffs, and shipped
-              history.
+              The workflow lab walks through every AFPS phase: market discovery,
+              value strategy, go-to-market, UX design, prototype validation,
+              specification, and production shipping.
             </p>
           </div>
           <div
@@ -134,24 +132,24 @@ export default function HomePage() {
             <span className="coordinate">01</span>
             <h3>Workflow Lab</h3>
             <p>
-              Curated walkthroughs for install, planning, shipping, research,
-              handoff, authoring, and validation.
+              Walk through every AFPS phase from market alignment to production
+              shipping with inspectable proof at each gate.
             </p>
           </Link>
           <Link className="route-card span-4" href="/packs">
             <span className="coordinate">02</span>
             <h3>Pack Map</h3>
             <p>
-              Global core, domain packs, overlays, and compatibility aliases in
-              a scan-friendly map.
+              Global AFPS pipeline, domain packs, overlays, and compatibility
+              aliases in a scan-friendly map.
             </p>
           </Link>
           <Link className="route-card span-4" href="/catalog">
             <span className="coordinate">03</span>
             <h3>Skill Catalog</h3>
             <p>
-              A generated catalog will cover every tracked source skill without
-              a runtime backend.
+              Every skill in the AFPS pipeline and domain packs, generated from
+              source with benchmark evidence.
             </p>
           </Link>
         </section>
