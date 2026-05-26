@@ -17,9 +17,16 @@ interface OpenPackState {
 export default function PrototypePage() {
   const data = useSkillsData();
   const [openPack, setOpenPack] = useState<OpenPackState | null>(null);
+  const [openedPacks, setOpenedPacks] = useState<Set<string>>(new Set());
 
   const handleOpen = useCallback((packName: string, origin: { x: number; y: number }) => {
     setOpenPack({ packName, origin });
+    setOpenedPacks((prev) => {
+      if (prev.has(packName)) return prev;
+      const next = new Set(prev);
+      next.add(packName);
+      return next;
+    });
   }, []);
 
   const handleClose = useCallback(() => {
@@ -66,6 +73,7 @@ export default function PrototypePage() {
               skillCount={pack.skills.length}
               previews={pack.skills.slice(0, 3).map((s) => ({ title: s.title, type: s.type }))}
               onOpen={(origin) => handleOpen(pack.name, origin)}
+              isOpened={openedPacks.has(pack.name)}
             />
           ))}
         </div>

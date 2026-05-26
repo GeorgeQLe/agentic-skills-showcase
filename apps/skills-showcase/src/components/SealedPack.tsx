@@ -9,6 +9,7 @@ interface SealedPackProps {
   skillCount: number;
   previews: Array<{ title: string; type: string }>;
   onOpen: (origin: { x: number; y: number }) => void;
+  isOpened?: boolean;
 }
 
 const typeColors: Record<string, string> = {
@@ -29,7 +30,9 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
 }
 
-export default function SealedPack({ name, skillCount, previews, onOpen }: SealedPackProps) {
+const DRAG_UP_THRESHOLD = 80;
+
+export default function SealedPack({ name, skillCount, previews, onOpen, isOpened }: SealedPackProps) {
   const dragX = useMotionValue(0);
   const curlOpacity = useMotionValue(1);
 
@@ -95,17 +98,89 @@ export default function SealedPack({ name, skillCount, previews, onOpen }: Seale
       hasTriggered.current = true;
       animate(dragX, PACK_WIDTH, { duration: 0.3 });
       animate(curlOpacity, 0, { duration: 0.3 }).then(() => {
-        const rect = containerRef.current?.getBoundingClientRect();
-        const origin = rect
-          ? { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
-          : { x: window.innerWidth / 2, y: window.innerHeight / 2 };
-        onOpen(origin);
+        onOpen(getOrigin());
       });
     }
   }
 
   function handleLostPointerCapture() {
     isDragging.current = false;
+  }
+
+  function getOrigin() {
+    const rect = containerRef.current?.getBoundingClientRect();
+    return rect
+      ? { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
+      : { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+  }
+
+  if (isOpened) {
+    return (
+      <div style={{ perspective: PERSPECTIVE }}>
+        <motion.div
+          ref={containerRef}
+          className="relative w-48 h-64 select-none cursor-pointer"
+          drag="y"
+          dragConstraints={{ top: 0, bottom: 0 }}
+          dragElastic={0.4}
+          onDragEnd={(_e, info) => {
+            if (info.offset.y < -DRAG_UP_THRESHOLD) {
+              onOpen(getOrigin());
+            }
+          }}
+          onClick={() => onOpen(getOrigin())}
+          whileTap={{ scale: 0.97 }}
+          style={{ touchAction: "none" }}
+        >
+          {/* Bottom half — same as sealed */}
+          <div className="absolute top-[33%] left-0 right-0 bottom-0 rounded-b-2xl overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-zinc-700 via-zinc-600 to-zinc-800" />
+            <div className="absolute inset-x-2 top-0 bottom-2 rounded-b-xl border-b border-x border-zinc-500/30 bg-gradient-to-b from-zinc-800/80 to-zinc-900/90 flex flex-col items-center justify-center p-4">
+              <span className="text-xs text-zinc-500">
+                {skillCount} {skillCount === 1 ? "skill" : "skills"}
+              </span>
+            </div>
+            <div className="absolute top-0 left-2 right-2 border-t border-dashed border-zinc-500/40" />
+          </div>
+
+          {/* Card preview — visible since flap is removed */}
+          {previews.length > 0 && (
+            <motion.div
+              layoutId={`pack-card-${name}`}
+              className="absolute rounded-t-lg overflow-hidden shadow-md bg-zinc-800"
+              style={{
+                left: 8,
+                right: 8,
+                height: "calc(33% - 8px)",
+                top: 8,
+              }}
+            >
+              <div
+                className="h-1.5 w-full"
+                style={{ background: typeColors[previews[0].type] || "#71717a" }}
+              />
+              <div className="bg-zinc-800 px-1.5 pt-1 h-full">
+                <span className="text-[8px] text-zinc-300 leading-tight line-clamp-2">
+                  {previews[0].title}
+                </span>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Swipe-up hint arrow */}
+          <motion.div
+            className="absolute z-10 left-1/2 -translate-x-1/2"
+            style={{ top: 2 }}
+            animate={{ y: [0, -4, 0] }}
+            transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M12 19V5M6 11l6-6 6 6" stroke="#a1a1aa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </motion.div>
+        </motion.div>
+      </div>
+    );
   }
 
   return (
