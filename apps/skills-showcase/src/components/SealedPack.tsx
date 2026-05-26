@@ -3,25 +3,17 @@
 import { useRef, useEffect } from "react";
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import { Package } from "lucide-react";
+import type { Skill } from "@/hooks/useSkillsData";
+import CardFace from "./CardFace";
 
 interface SealedPackProps {
   name: string;
   skillCount: number;
-  previews: Array<{ title: string; type: string }>;
+  previewSkill: Skill | null;
   onOpen: (origin: { x: number; y: number }) => void;
   isOpened?: boolean;
   isDrawerOpen?: boolean;
 }
-
-const typeColors: Record<string, string> = {
-  analysis: "#3b82f6",
-  research: "#8b5cf6",
-  generation: "#10b981",
-  workflow: "#f59e0b",
-  automation: "#06b6d4",
-  review: "#f43f5e",
-  planning: "#f97316",
-};
 
 const PACK_WIDTH = 192;
 const THRESHOLD = 120;
@@ -33,7 +25,7 @@ function clamp(value: number, min: number, max: number) {
 
 const DRAG_UP_THRESHOLD = 80;
 
-export default function SealedPack({ name, skillCount, previews, onOpen, isOpened, isDrawerOpen }: SealedPackProps) {
+export default function SealedPack({ name, skillCount, previewSkill, onOpen, isOpened, isDrawerOpen }: SealedPackProps) {
   const dragX = useMotionValue(0);
   const curlOpacity = useMotionValue(1);
 
@@ -196,10 +188,10 @@ export default function SealedPack({ name, skillCount, previews, onOpen, isOpene
           </div>
 
           {/* Card preview — draws upward out of the pack on drag */}
-          {previews.length > 0 && (
+          {previewSkill && (
             <motion.div
               layoutId={`pack-card-${name}`}
-              className="absolute rounded-t-lg overflow-hidden shadow-md bg-zinc-800 cursor-grab active:cursor-grabbing"
+              className="absolute rounded-t-lg overflow-hidden shadow-md cursor-grab active:cursor-grabbing"
               style={{
                 left: 8,
                 right: 8,
@@ -213,15 +205,7 @@ export default function SealedPack({ name, skillCount, previews, onOpen, isOpene
               onPointerUp={handleCardPointerUp}
               onLostPointerCapture={handleCardLostCapture}
             >
-              <div
-                className="h-1.5 w-full"
-                style={{ background: typeColors[previews[0].type] || "#71717a" }}
-              />
-              <div className="bg-zinc-800 px-1.5 pt-1 h-full">
-                <span className="text-[8px] text-zinc-300 leading-tight line-clamp-2">
-                  {previews[0].title}
-                </span>
-              </div>
+              <CardFace skill={previewSkill} className="rounded-t-lg" />
             </motion.div>
           )}
         </div>
@@ -244,10 +228,10 @@ export default function SealedPack({ name, skillCount, previews, onOpen, isOpene
         </div>
 
         {/* Card preview — sits above bottom half, hidden behind the flap */}
-        {previews.length > 0 && (
+        {previewSkill && (
           <motion.div
             layoutId={`pack-card-${name}`}
-            className="absolute rounded-t-lg overflow-hidden shadow-md bg-zinc-800"
+            className="absolute rounded-t-lg overflow-hidden shadow-md"
             style={{
               left: 8,
               right: 8,
@@ -255,15 +239,7 @@ export default function SealedPack({ name, skillCount, previews, onOpen, isOpene
               top: 8,
             }}
           >
-            <div
-              className="h-1.5 w-full"
-              style={{ background: typeColors[previews[0].type] || "#71717a" }}
-            />
-            <div className="bg-zinc-800 px-1.5 pt-1 h-full">
-              <span className="text-[8px] text-zinc-300 leading-tight line-clamp-2">
-                {previews[0].title}
-              </span>
-            </div>
+            <CardFace skill={previewSkill} className="rounded-t-lg" />
           </motion.div>
         )}
 

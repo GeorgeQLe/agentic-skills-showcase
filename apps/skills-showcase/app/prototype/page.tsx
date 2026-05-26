@@ -71,7 +71,7 @@ export default function PrototypePage() {
               key={pack.name}
               name={pack.name}
               skillCount={pack.skills.length}
-              previews={pack.skills.slice(0, 3).map((s) => ({ title: s.title, type: s.type }))}
+              previewSkill={pack.skills[0] ?? null}
               onOpen={(origin) => handleOpen(pack.name, origin)}
               isOpened={openedPacks.has(pack.name)}
               isDrawerOpen={openPack?.packName === pack.name}
