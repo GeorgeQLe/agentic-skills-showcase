@@ -124,7 +124,7 @@ export default function SealedPack({ name, skillCount, previews, onOpen, isOpene
 
   useEffect(() => {
     if (prevDrawerOpen.current && !isDrawerOpen) {
-      cardDragY.jump(120);
+      cardDragY.jump(180);
       hasCardTriggered.current = false;
       animate(cardDragY, 0, { type: "spring", stiffness: 300, damping: 25 });
     }
