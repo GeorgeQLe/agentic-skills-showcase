@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useLayoutEffect } from "react";
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import { Package } from "lucide-react";
 import type { Skill } from "@/hooks/useSkillsData";
@@ -115,22 +115,20 @@ export default function SealedPack({ name, skillCount, previewSkill, onOpen, isO
 
   const prevDrawerOpen = useRef(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (prevDrawerOpen.current && !isDrawerOpen) {
       hasCardTriggered.current = false;
       cardDragY.set(0);
-      cardSlideY.set(-70);
-      animate(cardSlideY, 0, {
-        type: "tween",
-        duration: 0.5,
-        ease: "easeOut",
-      });
+      cardSlideY.set(0);
     }
     prevDrawerOpen.current = !!isDrawerOpen;
   }, [isDrawerOpen, cardDragY, cardSlideY]);
 
-  const cardHeight = useTransform(cardDragY, (v) => `calc(33% - 8px + ${v}px)`);
-  const cardTop = useTransform(cardDragY, (v) => `calc(8px + ${-v}px)`);
+  const combinedY = useTransform(
+    [cardDragY, cardSlideY],
+    ([drag, slide]: number[]) => slide - drag
+  );
+  const cardZ = useTransform(combinedY, (y) => (y < -2 ? 10 : 0));
 
   function handleCardPointerDown(e: React.PointerEvent) {
     if (hasCardTriggered.current) return;
@@ -168,15 +166,57 @@ export default function SealedPack({ name, skillCount, previewSkill, onOpen, isO
     }
   }
 
+  function handlePackClick() {
+    if (hasCardTriggered.current) return;
+    hasCardTriggered.current = true;
+    animate(cardSlideY, -150, {
+      type: "spring",
+      stiffness: 400,
+      damping: 25,
+    }).then(() => {
+      onOpen(getOrigin());
+    });
+  }
+
   if (isOpened) {
     return (
       <div style={{ perspective: PERSPECTIVE }}>
         <div
           ref={containerRef}
           className="relative w-48 h-64 select-none cursor-pointer"
-          onClick={() => onOpen(getOrigin())}
+          onClick={handlePackClick}
         >
-          {/* Bottom half — same as sealed */}
+          {/* Card — full height, sits behind the bottom half */}
+          {previewSkill && (
+            <motion.div
+              layoutId={`pack-card-${name}`}
+              className="absolute rounded-t-lg overflow-hidden shadow-md cursor-grab active:cursor-grabbing"
+              style={{
+                left: 8,
+                right: 8,
+                height: "calc(100% - 16px)",
+                top: 8,
+                y: combinedY,
+                zIndex: cardZ,
+                touchAction: "none",
+              }}
+              onPointerDown={handleCardPointerDown}
+              onPointerMove={handleCardPointerMove}
+              onPointerUp={handleCardPointerUp}
+              onLostPointerCapture={handleCardLostCapture}
+              onLayoutAnimationComplete={() => {
+                if (!isDrawerOpen) {
+                  animate(cardSlideY, -12, { duration: 0.08 }).then(() =>
+                    animate(cardSlideY, 0, { type: "spring", stiffness: 500, damping: 20 })
+                  );
+                }
+              }}
+            >
+              <CardFace skill={previewSkill} className="rounded-t-lg" />
+            </motion.div>
+          )}
+
+          {/* Bottom half — paints on top of the card to hide its lower portion */}
           <div className="absolute top-[33%] left-0 right-0 bottom-0 rounded-b-2xl overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-zinc-700 via-zinc-600 to-zinc-800" />
             <div className="absolute inset-x-2 top-0 bottom-2 rounded-b-xl border-b border-x border-zinc-500/30 bg-gradient-to-b from-zinc-800/80 to-zinc-900/90 flex flex-col items-center justify-center p-4">
@@ -186,28 +226,6 @@ export default function SealedPack({ name, skillCount, previewSkill, onOpen, isO
             </div>
             <div className="absolute top-0 left-2 right-2 border-t border-dashed border-zinc-500/40" />
           </div>
-
-          {/* Card preview — draws upward out of the pack on drag */}
-          {previewSkill && (
-            <motion.div
-              layoutId={`pack-card-${name}`}
-              className="absolute rounded-t-lg overflow-hidden shadow-md cursor-grab active:cursor-grabbing"
-              style={{
-                left: 8,
-                right: 8,
-                height: cardHeight,
-                top: cardTop,
-                y: cardSlideY,
-                touchAction: "none",
-              }}
-              onPointerDown={handleCardPointerDown}
-              onPointerMove={handleCardPointerMove}
-              onPointerUp={handleCardPointerUp}
-              onLostPointerCapture={handleCardLostCapture}
-            >
-              <CardFace skill={previewSkill} className="rounded-t-lg" />
-            </motion.div>
-          )}
         </div>
       </div>
     );
@@ -216,6 +234,22 @@ export default function SealedPack({ name, skillCount, previewSkill, onOpen, isO
   return (
     <div style={{ perspective: PERSPECTIVE }}>
       <div ref={containerRef} className="relative w-48 h-64 select-none">
+        {/* Card — full height, hidden behind flap and bottom half */}
+        {previewSkill && (
+          <motion.div
+            layoutId={`pack-card-${name}`}
+            className="absolute rounded-t-lg overflow-hidden shadow-md"
+            style={{
+              left: 8,
+              right: 8,
+              height: "calc(100% - 16px)",
+              top: 8,
+            }}
+          >
+            <CardFace skill={previewSkill} className="rounded-t-lg" />
+          </motion.div>
+        )}
+
         {/* Bottom half */}
         <div className="absolute top-[33%] left-0 right-0 bottom-0 rounded-b-2xl overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-zinc-700 via-zinc-600 to-zinc-800" />
@@ -226,22 +260,6 @@ export default function SealedPack({ name, skillCount, previewSkill, onOpen, isO
           </div>
           <div className="absolute top-0 left-2 right-2 border-t border-dashed border-zinc-500/40" />
         </div>
-
-        {/* Card preview — sits above bottom half, hidden behind the flap */}
-        {previewSkill && (
-          <motion.div
-            layoutId={`pack-card-${name}`}
-            className="absolute rounded-t-lg overflow-hidden shadow-md"
-            style={{
-              left: 8,
-              right: 8,
-              height: "calc(33% - 8px)",
-              top: 8,
-            }}
-          >
-            <CardFace skill={previewSkill} className="rounded-t-lg" />
-          </motion.div>
-        )}
 
         {/* Tear glow line */}
         <motion.div
