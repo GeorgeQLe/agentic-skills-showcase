@@ -194,7 +194,7 @@ export const workflows: Workflow[] = [
     key: "production",
     coordinate: "LAB-07",
     badge: "shipping",
-    command: "$run",
+    command: "$exec",
     title: "Production",
     subtitle: "Ship phased work from validated spec.",
     copy: "The validated specification becomes a phased roadmap, each phase is planned and executed with validation gates, and shipped commits land on the primary branch with proof.",
@@ -205,7 +205,7 @@ export const workflows: Workflow[] = [
     steps: [
       step("Roadmap", "$roadmap", "Spec becomes phased implementation plan.", "roadmap"),
       step("Plan phase", "$plan-phase", "Single phase broken into implementation steps."),
-      step("Run", "$run", "One step executes with validation gates.", "run"),
+      step("Run", "$exec", "One step executes with validation gates.", "run"),
       step("Ship", "$ship", "History, commit, and push land on primary.", "ship"),
       step("Close", "$ship-end", "Session wrapped, docs updated, next phase queued.")
     ]

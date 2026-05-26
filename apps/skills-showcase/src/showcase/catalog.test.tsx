@@ -9,10 +9,10 @@ const MOCK_SKILLS = [
     description: "Execute the next step",
     type: "execution",
     platform: "claude",
-    command: "$run",
+    command: "$exec",
     scope: "global",
     pack: "",
-    path: "global/claude/run/SKILL.md",
+    path: "global/claude/exec/SKILL.md",
     mirrorKey: "run",
     tags: ["planning"],
     benchmarkEvidence: {
@@ -30,7 +30,7 @@ const MOCK_SKILLS = [
       demo: {
         agent: "Codex",
         runIndex: 0,
-        prompt: "You have the run skill installed. Write run-plan.md.",
+        prompt: "You have the exec skill installed. Write run-plan.md.",
         output: "Created run-plan.md with validation guidance.",
         runPath: "tests/benchmarks/runs/run-codex-47e0dd54/run-000.json",
         reportPath: "benchmark/test-run-2026-05-11.md"
@@ -56,10 +56,10 @@ const MOCK_SKILLS = [
     description: "Execute the next step in Codex",
     type: "execution",
     platform: "codex",
-    command: "$run",
+    command: "$exec",
     scope: "global",
     pack: "",
-    path: "global/codex/run/SKILL.md",
+    path: "global/codex/exec/SKILL.md",
     mirrorKey: "run",
     tags: ["planning"]
   }
@@ -179,7 +179,7 @@ describe("CatalogClient", () => {
 
       const list = document.querySelector("[data-catalog-list]")!;
       expect(list.textContent).toContain("Codex benchmark demo");
-      expect(list.textContent).toContain("You have the run skill installed");
+      expect(list.textContent).toContain("You have the exec skill installed");
       expect(list.textContent).toContain("Created run-plan.md");
       expect(list.textContent).toContain("run-000.json");
     });
