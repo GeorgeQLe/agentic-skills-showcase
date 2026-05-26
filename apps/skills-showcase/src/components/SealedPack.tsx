@@ -116,6 +116,7 @@ export default function SealedPack({ name, skillCount, previews, onOpen, isOpene
   }
 
   const cardDragY = useMotionValue(0);
+  const cardSlideY = useMotionValue(0);
   const isCardDragging = useRef(false);
   const cardStartY = useRef(0);
   const hasCardTriggered = useRef(false);
@@ -124,12 +125,17 @@ export default function SealedPack({ name, skillCount, previews, onOpen, isOpene
 
   useEffect(() => {
     if (prevDrawerOpen.current && !isDrawerOpen) {
-      cardDragY.jump(180);
       hasCardTriggered.current = false;
-      animate(cardDragY, 0, { type: "spring", stiffness: 300, damping: 25 });
+      cardDragY.set(0);
+      cardSlideY.set(-70);
+      animate(cardSlideY, 0, {
+        type: "tween",
+        duration: 0.5,
+        ease: "easeOut",
+      });
     }
     prevDrawerOpen.current = !!isDrawerOpen;
-  }, [isDrawerOpen, cardDragY]);
+  }, [isDrawerOpen, cardDragY, cardSlideY]);
 
   const cardHeight = useTransform(cardDragY, (v) => `calc(33% - 8px + ${v}px)`);
   const cardTop = useTransform(cardDragY, (v) => `calc(8px + ${-v}px)`);
@@ -199,6 +205,7 @@ export default function SealedPack({ name, skillCount, previews, onOpen, isOpene
                 right: 8,
                 height: cardHeight,
                 top: cardTop,
+                y: cardSlideY,
                 touchAction: "none",
               }}
               onPointerDown={handleCardPointerDown}
