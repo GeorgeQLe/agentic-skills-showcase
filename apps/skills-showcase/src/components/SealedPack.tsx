@@ -10,6 +10,7 @@ interface SealedPackProps {
   previews: Array<{ title: string; type: string }>;
   onOpen: (origin: { x: number; y: number }) => void;
   isOpened?: boolean;
+  isDrawerOpen?: boolean;
 }
 
 const typeColors: Record<string, string> = {
@@ -32,7 +33,7 @@ function clamp(value: number, min: number, max: number) {
 
 const DRAG_UP_THRESHOLD = 80;
 
-export default function SealedPack({ name, skillCount, previews, onOpen, isOpened }: SealedPackProps) {
+export default function SealedPack({ name, skillCount, previews, onOpen, isOpened, isDrawerOpen }: SealedPackProps) {
   const dragX = useMotionValue(0);
   const curlOpacity = useMotionValue(1);
 
@@ -114,23 +115,68 @@ export default function SealedPack({ name, skillCount, previews, onOpen, isOpene
       : { x: window.innerWidth / 2, y: window.innerHeight / 2 };
   }
 
+  const cardDragY = useMotionValue(0);
+  const isCardDragging = useRef(false);
+  const cardStartY = useRef(0);
+  const hasCardTriggered = useRef(false);
+
+  const prevDrawerOpen = useRef(false);
+
+  useEffect(() => {
+    if (prevDrawerOpen.current && !isDrawerOpen) {
+      cardDragY.jump(120);
+      hasCardTriggered.current = false;
+      animate(cardDragY, 0, { type: "spring", stiffness: 300, damping: 25 });
+    }
+    prevDrawerOpen.current = !!isDrawerOpen;
+  }, [isDrawerOpen, cardDragY]);
+
+  const cardHeight = useTransform(cardDragY, (v) => `calc(33% - 8px + ${v}px)`);
+  const cardTop = useTransform(cardDragY, (v) => `calc(8px + ${-v}px)`);
+
+  function handleCardPointerDown(e: React.PointerEvent) {
+    if (hasCardTriggered.current) return;
+    e.stopPropagation();
+    isCardDragging.current = true;
+    cardStartY.current = e.clientY;
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  }
+
+  function handleCardPointerMove(e: React.PointerEvent) {
+    if (!isCardDragging.current || hasCardTriggered.current) return;
+    const dy = clamp(cardStartY.current - e.clientY, 0, 100);
+    cardDragY.set(dy);
+  }
+
+  function handleCardPointerUp() {
+    if (!isCardDragging.current || hasCardTriggered.current) return;
+    isCardDragging.current = false;
+    const current = cardDragY.get();
+
+    if (current >= DRAG_UP_THRESHOLD) {
+      hasCardTriggered.current = true;
+      animate(cardDragY, 120, { type: "spring", stiffness: 300, damping: 30 }).then(() => {
+        onOpen(getOrigin());
+      });
+    } else {
+      animate(cardDragY, 0, { type: "spring", stiffness: 400, damping: 25 });
+    }
+  }
+
+  function handleCardLostCapture() {
+    if (isCardDragging.current && !hasCardTriggered.current) {
+      isCardDragging.current = false;
+      animate(cardDragY, 0, { type: "spring", stiffness: 400, damping: 25 });
+    }
+  }
+
   if (isOpened) {
     return (
       <div style={{ perspective: PERSPECTIVE }}>
-        <motion.div
+        <div
           ref={containerRef}
           className="relative w-48 h-64 select-none cursor-pointer"
-          drag="y"
-          dragConstraints={{ top: 0, bottom: 0 }}
-          dragElastic={0.4}
-          onDragEnd={(_e, info) => {
-            if (info.offset.y < -DRAG_UP_THRESHOLD) {
-              onOpen(getOrigin());
-            }
-          }}
           onClick={() => onOpen(getOrigin())}
-          whileTap={{ scale: 0.97 }}
-          style={{ touchAction: "none" }}
         >
           {/* Bottom half — same as sealed */}
           <div className="absolute top-[33%] left-0 right-0 bottom-0 rounded-b-2xl overflow-hidden">
@@ -143,17 +189,22 @@ export default function SealedPack({ name, skillCount, previews, onOpen, isOpene
             <div className="absolute top-0 left-2 right-2 border-t border-dashed border-zinc-500/40" />
           </div>
 
-          {/* Card preview — visible since flap is removed */}
+          {/* Card preview — draws upward out of the pack on drag */}
           {previews.length > 0 && (
             <motion.div
               layoutId={`pack-card-${name}`}
-              className="absolute rounded-t-lg overflow-hidden shadow-md bg-zinc-800"
+              className="absolute rounded-t-lg overflow-hidden shadow-md bg-zinc-800 cursor-grab active:cursor-grabbing"
               style={{
                 left: 8,
                 right: 8,
-                height: "calc(33% - 8px)",
-                top: 8,
+                height: cardHeight,
+                top: cardTop,
+                touchAction: "none",
               }}
+              onPointerDown={handleCardPointerDown}
+              onPointerMove={handleCardPointerMove}
+              onPointerUp={handleCardPointerUp}
+              onLostPointerCapture={handleCardLostCapture}
             >
               <div
                 className="h-1.5 w-full"
@@ -166,19 +217,7 @@ export default function SealedPack({ name, skillCount, previews, onOpen, isOpene
               </div>
             </motion.div>
           )}
-
-          {/* Swipe-up hint arrow */}
-          <motion.div
-            className="absolute z-10 left-1/2 -translate-x-1/2"
-            style={{ top: 2 }}
-            animate={{ y: [0, -4, 0] }}
-            transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M12 19V5M6 11l6-6 6 6" stroke="#a1a1aa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </motion.div>
-        </motion.div>
+        </div>
       </div>
     );
   }

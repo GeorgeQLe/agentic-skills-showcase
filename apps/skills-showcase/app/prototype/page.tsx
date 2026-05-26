@@ -74,6 +74,7 @@ export default function PrototypePage() {
               previews={pack.skills.slice(0, 3).map((s) => ({ title: s.title, type: s.type }))}
               onOpen={(origin) => handleOpen(pack.name, origin)}
               isOpened={openedPacks.has(pack.name)}
+              isDrawerOpen={openPack?.packName === pack.name}
             />
           ))}
         </div>
