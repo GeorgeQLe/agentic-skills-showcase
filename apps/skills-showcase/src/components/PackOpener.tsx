@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useRef, useLayoutEffect, useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import SkillCard from "./SkillCard";
 import type { Skill } from "@/hooks/useSkillsData";
@@ -12,10 +12,27 @@ interface PackOpenerProps {
 }
 
 export default function PackOpener({ skills, packName }: PackOpenerProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [fanOffsets, setFanOffsets] = useState<Array<{ x: number; y: number }> | null>(null);
+
   const rotations = useMemo(
-    () => skills.map(() => -8 + Math.random() * 16),
+    () => skills.map(() => -6 + Math.random() * 12),
     [skills]
   );
+
+  useLayoutEffect(() => {
+    const el = containerRef.current;
+    if (!el || fanOffsets) return;
+    const cards = Array.from(el.children) as HTMLElement[];
+    if (cards.length < 2) return;
+    const first = cards[0].getBoundingClientRect();
+    setFanOffsets(
+      cards.map((c) => {
+        const r = c.getBoundingClientRect();
+        return { x: first.left - r.left, y: first.top - r.top };
+      })
+    );
+  }, [skills, fanOffsets]);
 
   return (
     <div className="relative pt-4 pb-4">
@@ -28,10 +45,9 @@ export default function PackOpener({ skills, packName }: PackOpenerProps) {
         {formatPackName(packName)}
       </motion.h2>
 
-      <div className="flex flex-wrap justify-center gap-4 px-4 max-w-4xl mx-auto">
+      <div ref={containerRef} className="flex flex-wrap justify-center gap-4 px-4 max-w-4xl mx-auto">
         {skills.map((skill, i) => {
           const isFirst = i === 0;
-          const staggerDelay = Math.min(i, 12) * 0.07;
 
           if (isFirst) {
             return (
@@ -47,26 +63,40 @@ export default function PackOpener({ skills, packName }: PackOpenerProps) {
             );
           }
 
+          if (!fanOffsets) {
+            return (
+              <div
+                key={skill.id}
+                style={{ width: 180, height: 252, visibility: "hidden" }}
+              />
+            );
+          }
+
+          const offset = fanOffsets[i];
+          const staggerDelay = 0.3 + Math.min(i, 12) * 0.04;
+
           return (
             <motion.div
               key={skill.id}
               initial={{
+                x: offset.x,
+                y: offset.y,
                 opacity: 0,
-                scale: 0.15,
-                y: 100,
+                scale: 0.6,
                 rotateZ: rotations[i],
               }}
               animate={{
+                x: 0,
+                y: 0,
                 opacity: 1,
                 scale: 1,
-                y: 0,
                 rotateZ: 0,
               }}
               transition={{
                 type: "spring",
-                stiffness: 260,
-                damping: 22,
-                delay: 0.3 + staggerDelay,
+                stiffness: 200,
+                damping: 25,
+                delay: staggerDelay,
               }}
             >
               <SkillCard skill={skill} />

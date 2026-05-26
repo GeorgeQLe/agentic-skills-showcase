@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useLayoutEffect } from "react";
+import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import { Package } from "lucide-react";
 import type { Skill } from "@/hooks/useSkillsData";
@@ -11,6 +11,7 @@ interface SealedPackProps {
   skillCount: number;
   previewSkill: Skill | null;
   onOpen: (origin: { x: number; y: number }) => void;
+  onTear?: () => void;
   isOpened?: boolean;
   isDrawerOpen?: boolean;
 }
@@ -25,7 +26,7 @@ function clamp(value: number, min: number, max: number) {
 
 const DRAG_UP_THRESHOLD = 80;
 
-export default function SealedPack({ name, skillCount, previewSkill, onOpen, isOpened, isDrawerOpen }: SealedPackProps) {
+export default function SealedPack({ name, skillCount, previewSkill, onOpen, onTear, isOpened, isDrawerOpen }: SealedPackProps) {
   const dragX = useMotionValue(0);
   const curlOpacity = useMotionValue(1);
 
@@ -91,7 +92,15 @@ export default function SealedPack({ name, skillCount, previewSkill, onOpen, isO
       hasTriggered.current = true;
       animate(dragX, PACK_WIDTH, { duration: 0.3 });
       animate(curlOpacity, 0, { duration: 0.3 }).then(() => {
-        onOpen(getOrigin());
+        onTear?.();
+        animate(cardSlideY, -180, {
+          type: "spring",
+          stiffness: 300,
+          damping: 25,
+        }).then(() => {
+          setCardElevated(true);
+          setTimeout(() => onOpen(getOrigin()), 200);
+        });
       });
     }
   }
@@ -112,14 +121,19 @@ export default function SealedPack({ name, skillCount, previewSkill, onOpen, isO
   const isCardDragging = useRef(false);
   const cardStartY = useRef(0);
   const hasCardTriggered = useRef(false);
+  const [cardElevated, setCardElevated] = useState(false);
+  const [packBodyElevated, setPackBodyElevated] = useState(false);
 
   const prevDrawerOpen = useRef(false);
+  const wasInDrawer = useRef(false);
 
   useLayoutEffect(() => {
     if (prevDrawerOpen.current && !isDrawerOpen) {
+      wasInDrawer.current = true;
       hasCardTriggered.current = false;
+      setCardElevated(true);
       cardDragY.set(0);
-      cardSlideY.set(0);
+      cardSlideY.set(-180);
     }
     prevDrawerOpen.current = !!isDrawerOpen;
   }, [isDrawerOpen, cardDragY, cardSlideY]);
@@ -128,7 +142,6 @@ export default function SealedPack({ name, skillCount, previewSkill, onOpen, isO
     [cardDragY, cardSlideY],
     ([drag, slide]: number[]) => slide - drag
   );
-  const cardZ = useTransform(combinedY, (y) => (y < -2 ? 10 : 0));
 
   function handleCardPointerDown(e: React.PointerEvent) {
     if (hasCardTriggered.current) return;
@@ -151,8 +164,9 @@ export default function SealedPack({ name, skillCount, previewSkill, onOpen, isO
 
     if (current >= DRAG_UP_THRESHOLD) {
       hasCardTriggered.current = true;
-      animate(cardDragY, 120, { type: "spring", stiffness: 300, damping: 30 }).then(() => {
-        onOpen(getOrigin());
+      animate(cardDragY, 180, { type: "spring", stiffness: 300, damping: 30 }).then(() => {
+        setCardElevated(true);
+        setTimeout(() => onOpen(getOrigin()), 200);
       });
     } else {
       animate(cardDragY, 0, { type: "spring", stiffness: 400, damping: 25 });
@@ -169,18 +183,19 @@ export default function SealedPack({ name, skillCount, previewSkill, onOpen, isO
   function handlePackClick() {
     if (hasCardTriggered.current) return;
     hasCardTriggered.current = true;
-    animate(cardSlideY, -150, {
+    animate(cardSlideY, -180, {
       type: "spring",
       stiffness: 400,
       damping: 25,
     }).then(() => {
-      onOpen(getOrigin());
+      setCardElevated(true);
+      setTimeout(() => onOpen(getOrigin()), 200);
     });
   }
 
   if (isOpened) {
     return (
-      <div style={{ perspective: PERSPECTIVE }}>
+      <div>
         <div
           ref={containerRef}
           className="relative w-48 h-64 select-none cursor-pointer"
@@ -190,14 +205,14 @@ export default function SealedPack({ name, skillCount, previewSkill, onOpen, isO
           {previewSkill && (
             <motion.div
               layoutId={`pack-card-${name}`}
-              className="absolute rounded-t-lg overflow-hidden shadow-md cursor-grab active:cursor-grabbing"
+              className="absolute rounded-lg overflow-hidden shadow-md cursor-grab active:cursor-grabbing"
               style={{
-                left: 8,
-                right: 8,
-                height: "calc(100% - 16px)",
-                top: 8,
+                left: 6,
+                right: 6,
+                height: 252,
+                top: 2,
                 y: combinedY,
-                zIndex: cardZ,
+                zIndex: cardElevated ? 60 : undefined,
                 touchAction: "none",
               }}
               onPointerDown={handleCardPointerDown}
@@ -205,19 +220,27 @@ export default function SealedPack({ name, skillCount, previewSkill, onOpen, isO
               onPointerUp={handleCardPointerUp}
               onLostPointerCapture={handleCardLostCapture}
               onLayoutAnimationComplete={() => {
-                if (!isDrawerOpen) {
-                  animate(cardSlideY, -12, { duration: 0.08 }).then(() =>
-                    animate(cardSlideY, 0, { type: "spring", stiffness: 500, damping: 20 })
-                  );
+                if (!isDrawerOpen && wasInDrawer.current) {
+                  wasInDrawer.current = false;
+                  setCardElevated(false);
+                  setPackBodyElevated(true);
+                  animate(cardSlideY, 0, {
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 25,
+                  }).then(() => {
+                    setCardElevated(false);
+                    setPackBodyElevated(false);
+                  });
                 }
               }}
             >
-              <CardFace skill={previewSkill} className="rounded-t-lg" />
+              <CardFace skill={previewSkill} className="rounded-lg" />
             </motion.div>
           )}
 
           {/* Bottom half — paints on top of the card to hide its lower portion */}
-          <div className="absolute top-[33%] left-0 right-0 bottom-0 rounded-b-2xl overflow-hidden">
+          <div className={`absolute top-[33%] left-0 right-0 bottom-0 rounded-b-2xl overflow-hidden ${packBodyElevated ? 'z-[70]' : 'z-[1]'}`}>
             <div className="absolute inset-0 bg-gradient-to-br from-zinc-700 via-zinc-600 to-zinc-800" />
             <div className="absolute inset-x-2 top-0 bottom-2 rounded-b-xl border-b border-x border-zinc-500/30 bg-gradient-to-b from-zinc-800/80 to-zinc-900/90 flex flex-col items-center justify-center p-4">
               <span className="text-xs text-zinc-500">
@@ -238,20 +261,20 @@ export default function SealedPack({ name, skillCount, previewSkill, onOpen, isO
         {previewSkill && (
           <motion.div
             layoutId={`pack-card-${name}`}
-            className="absolute rounded-t-lg overflow-hidden shadow-md"
+            className="absolute rounded-lg overflow-hidden shadow-md"
             style={{
-              left: 8,
-              right: 8,
-              height: "calc(100% - 16px)",
-              top: 8,
+              left: 6,
+              right: 6,
+              height: 252,
+              top: 2,
             }}
           >
-            <CardFace skill={previewSkill} className="rounded-t-lg" />
+            <CardFace skill={previewSkill} className="rounded-lg" />
           </motion.div>
         )}
 
         {/* Bottom half */}
-        <div className="absolute top-[33%] left-0 right-0 bottom-0 rounded-b-2xl overflow-hidden">
+        <div className="absolute top-[33%] left-0 right-0 bottom-0 rounded-b-2xl overflow-hidden z-[1]">
           <div className="absolute inset-0 bg-gradient-to-br from-zinc-700 via-zinc-600 to-zinc-800" />
           <div className="absolute inset-x-2 top-0 bottom-2 rounded-b-xl border-b border-x border-zinc-500/30 bg-gradient-to-b from-zinc-800/80 to-zinc-900/90 flex flex-col items-center justify-center p-4">
             <span className="text-xs text-zinc-500">

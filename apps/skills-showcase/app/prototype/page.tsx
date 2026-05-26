@@ -29,6 +29,15 @@ export default function PrototypePage() {
     });
   }, []);
 
+  const handleTear = useCallback((packName: string) => {
+    setOpenedPacks((prev) => {
+      if (prev.has(packName)) return prev;
+      const next = new Set(prev);
+      next.add(packName);
+      return next;
+    });
+  }, []);
+
   const handleClose = useCallback(() => {
     setOpenPack(null);
   }, []);
@@ -73,6 +82,7 @@ export default function PrototypePage() {
               skillCount={pack.skills.length}
               previewSkill={pack.skills[0] ?? null}
               onOpen={(origin) => handleOpen(pack.name, origin)}
+              onTear={() => handleTear(pack.name)}
               isOpened={openedPacks.has(pack.name)}
               isDrawerOpen={openPack?.packName === pack.name}
             />
