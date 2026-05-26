@@ -8,7 +8,7 @@ interface SealedPackProps {
   name: string;
   skillCount: number;
   previews: Array<{ title: string; type: string }>;
-  onOpen: () => void;
+  onOpen: (origin: { x: number; y: number }) => void;
 }
 
 const typeColors: Record<string, string> = {
@@ -43,6 +43,7 @@ export default function SealedPack({ name, skillCount, previews, onOpen }: Seale
   const sheenOpacity = useMotionValue(1);
   const sheenRef = useRef<HTMLDivElement>(null);
 
+  const containerRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
   const startX = useRef(0);
   const hasTriggered = useRef(false);
@@ -94,7 +95,11 @@ export default function SealedPack({ name, skillCount, previews, onOpen }: Seale
       hasTriggered.current = true;
       animate(dragX, PACK_WIDTH, { duration: 0.3 });
       animate(curlOpacity, 0, { duration: 0.3 }).then(() => {
-        onOpen();
+        const rect = containerRef.current?.getBoundingClientRect();
+        const origin = rect
+          ? { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
+          : { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+        onOpen(origin);
       });
     }
   }
@@ -105,7 +110,7 @@ export default function SealedPack({ name, skillCount, previews, onOpen }: Seale
 
   return (
     <div style={{ perspective: PERSPECTIVE }}>
-      <div className="relative w-48 h-64 select-none">
+      <div ref={containerRef} className="relative w-48 h-64 select-none">
         {/* Bottom half */}
         <div className="absolute top-[33%] left-0 right-0 bottom-0 rounded-b-2xl overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-zinc-700 via-zinc-600 to-zinc-800" />
@@ -119,7 +124,8 @@ export default function SealedPack({ name, skillCount, previews, onOpen }: Seale
 
         {/* Card preview — sits above bottom half, hidden behind the flap */}
         {previews.length > 0 && (
-          <div
+          <motion.div
+            layoutId={`pack-card-${name}`}
             className="absolute rounded-t-lg overflow-hidden shadow-md bg-zinc-800"
             style={{
               left: 8,
@@ -137,7 +143,7 @@ export default function SealedPack({ name, skillCount, previews, onOpen }: Seale
                 {previews[0].title}
               </span>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* Tear glow line */}

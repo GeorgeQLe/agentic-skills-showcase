@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import SkillCard from "./SkillCard";
 import type { Skill } from "@/hooks/useSkillsData";
@@ -7,10 +8,16 @@ import type { Skill } from "@/hooks/useSkillsData";
 interface PackOpenerProps {
   skills: Skill[];
   packName: string;
+  origin: { x: number; y: number };
   isOpen: boolean;
 }
 
 export default function PackOpener({ skills, packName, isOpen }: PackOpenerProps) {
+  const rotations = useMemo(
+    () => skills.map(() => -8 + Math.random() * 16),
+    [skills]
+  );
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -22,7 +29,6 @@ export default function PackOpener({ skills, packName, isOpen }: PackOpenerProps
           className="overflow-hidden"
         >
           <div className="relative pt-8 pb-4">
-            {/* Pack name label */}
             <motion.h2
               className="text-center text-lg font-bold text-zinc-300 mb-6"
               initial={{ opacity: 0, y: -10 }}
@@ -32,23 +38,60 @@ export default function PackOpener({ skills, packName, isOpen }: PackOpenerProps
               {formatPackName(packName)}
             </motion.h2>
 
-            {/* Card grid */}
             <div className="flex flex-wrap justify-center gap-4 px-4 max-w-4xl mx-auto">
-              {skills.map((skill, i) => (
-                <motion.div
-                  key={skill.id}
-                  initial={{ opacity: 0, y: 40, rotateZ: -5 + Math.random() * 10 }}
-                  animate={{ opacity: 1, y: 0, rotateZ: 0 }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 300,
-                    damping: 20,
-                    delay: 0.15 + i * 0.08,
-                  }}
-                >
-                  <SkillCard skill={skill} />
-                </motion.div>
-              ))}
+              {skills.map((skill, i) => {
+                const isFirst = i === 0;
+                const staggerDelay = Math.min(i, 12) * 0.07;
+
+                if (isFirst) {
+                  return (
+                    <motion.div
+                      key={skill.id}
+                      layoutId={`pack-card-${packName}`}
+                      transition={{
+                        layout: { type: "spring", stiffness: 200, damping: 25 },
+                      }}
+                    >
+                      <SkillCard skill={skill} />
+                    </motion.div>
+                  );
+                }
+
+                return (
+                  <motion.div
+                    key={skill.id}
+                    initial={{
+                      opacity: 0,
+                      scale: 0.15,
+                      y: 100,
+                      rotateZ: rotations[i],
+                    }}
+                    animate={{
+                      opacity: 1,
+                      scale: 1,
+                      y: 0,
+                      rotateZ: 0,
+                    }}
+                    exit={{
+                      opacity: 0,
+                      scale: 0.5,
+                      y: 40,
+                      transition: {
+                        delay: (skills.length - 1 - i) * 0.03,
+                        duration: 0.2,
+                      },
+                    }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 260,
+                      damping: 22,
+                      delay: 0.3 + staggerDelay,
+                    }}
+                  >
+                    <SkillCard skill={skill} />
+                  </motion.div>
+                );
+              })}
             </div>
           </div>
         </motion.div>
