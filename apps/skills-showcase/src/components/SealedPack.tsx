@@ -44,6 +44,7 @@ export default function SealedPack({ name, skillCount, previewSkill, onOpen, onT
   const isDragging = useRef(false);
   const startX = useRef(0);
   const hasTriggered = useRef(false);
+  const pendingOpen = useRef(false);
 
   useEffect(() => {
     const el = sheenRef.current;
@@ -70,6 +71,17 @@ export default function SealedPack({ name, skillCount, previewSkill, onOpen, onT
     };
   }, [dragX, sheenOpacity]);
 
+  function completeTear() {
+    hasTriggered.current = true;
+    pendingOpen.current = true;
+    animate(dragX, PACK_WIDTH, { duration: 0.3 });
+    animate(curlOpacity, 0, { duration: 0.3 }).then(() => onTear?.());
+  }
+
+  function revertTear() {
+    animate(dragX, 0, { type: "spring", stiffness: 400, damping: 25 });
+  }
+
   function handlePointerDown(e: React.PointerEvent) {
     if (hasTriggered.current) return;
     isDragging.current = true;
@@ -86,27 +98,15 @@ export default function SealedPack({ name, skillCount, previewSkill, onOpen, onT
   function handlePointerUp() {
     if (!isDragging.current || hasTriggered.current) return;
     isDragging.current = false;
-    const currentX = dragX.get();
-
-    if (currentX >= THRESHOLD) {
-      hasTriggered.current = true;
-      animate(dragX, PACK_WIDTH, { duration: 0.3 });
-      animate(curlOpacity, 0, { duration: 0.3 }).then(() => {
-        onTear?.();
-        animate(cardSlideY, -180, {
-          type: "spring",
-          stiffness: 300,
-          damping: 25,
-        }).then(() => {
-          setCardElevated(true);
-          setTimeout(() => onOpen(getOrigin()), 200);
-        });
-      });
-    }
+    dragX.get() >= THRESHOLD ? completeTear() : revertTear();
   }
 
   function handleLostPointerCapture() {
+    if (!isDragging.current) return;
     isDragging.current = false;
+    if (!hasTriggered.current) {
+      dragX.get() >= THRESHOLD ? completeTear() : revertTear();
+    }
   }
 
   function getOrigin() {
@@ -220,6 +220,11 @@ export default function SealedPack({ name, skillCount, previewSkill, onOpen, onT
               onPointerUp={handleCardPointerUp}
               onLostPointerCapture={handleCardLostCapture}
               onLayoutAnimationComplete={() => {
+                if (pendingOpen.current) {
+                  pendingOpen.current = false;
+                  setTimeout(() => onOpen(getOrigin()), 200);
+                  return;
+                }
                 if (!isDrawerOpen && wasInDrawer.current) {
                   wasInDrawer.current = false;
                   setCardElevated(false);
