@@ -81,7 +81,7 @@ export const workflows: Workflow[] = [
     key: "market-discovery",
     coordinate: "LAB-01",
     badge: "alignment",
-    command: "$concept-exploration",
+    command: "$idea-scope-brief",
     title: "Market Discovery",
     subtitle: "Gather market evidence before any design work.",
     copy: "A rough product idea becomes a bounded concept brief, ICP profile, competitive landscape, and user journey map — all before a single pixel is designed.",
@@ -90,7 +90,7 @@ export const workflows: Workflow[] = [
     artifacts: ["concept brief", "ICP document", "competitive matrix", "journey map"],
     failure: "If sources are missing or contradictory, mark the evidence gap and route to manual research instead of fabricating market claims.",
     steps: [
-      step("Explore concept", "$concept-exploration", "Rough idea becomes a bounded concept brief.", "concept-exploration"),
+      step("Explore concept", "$idea-scope-brief", "Rough idea becomes a bounded concept brief.", "idea-scope-brief"),
       step("Select pack", "$pack", "Business-discovery pack loads market workflows.", "pack"),
       step("Define ICP", "ICP interview", "Ideal customer profile crystallizes from evidence."),
       step("Analyze competition", "competitive scan", "Landscape gaps and positioning opportunities surface."),

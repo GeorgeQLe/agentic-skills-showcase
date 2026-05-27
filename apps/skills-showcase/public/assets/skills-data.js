@@ -96,19 +96,19 @@ window.SKILLS_SHOWCASE_DATA = {
       }
     },
     {
-      "id": "global-claude-concept-exploration",
-      "name": "concept-exploration",
-      "title": "Concept Exploration",
+      "id": "global-claude-idea-scope-brief",
+      "name": "idea-scope-brief",
+      "title": "Idea Scope Brief",
       "description": "Shape a rough product or project idea into an actionable concept brief before ICP, market research, specifications, UX, UI, or implementation planning",
       "type": "planning",
       "version": "v0.4",
       "argumentHint": "[optional rough idea, product thought, or app scope]",
       "platform": "claude",
-      "command": "/concept-exploration",
+      "command": "/idea-scope-brief",
       "scope": "global",
       "pack": null,
-      "path": "global/claude/concept-exploration/SKILL.md",
-      "mirrorKey": "concept-exploration",
+      "path": "global/claude/idea-scope-brief/SKILL.md",
+      "mirrorKey": "idea-scope-brief",
       "tags": [
         "claude",
         "concept",
@@ -117,9 +117,9 @@ window.SKILLS_SHOWCASE_DATA = {
         "planning"
       ],
       "benchmarkEvidence": {
-        "skill": "concept-exploration",
+        "skill": "idea-scope-brief",
         "date": "2026-05-21",
-        "reportPath": "benchmark/test-concept-exploration-2026-05-21.md",
+        "reportPath": "benchmark/test-idea-scope-brief-2026-05-21.md",
         "coverage": null,
         "verify": {
           "layer1": "PASS",
@@ -139,7 +139,7 @@ window.SKILLS_SHOWCASE_DATA = {
             "totalCost": "$3.00",
             "meanPairwiseSimilarity": "",
             "outliers": "0",
-            "rawSessionPath": "tests/benchmarks/runs/concept-exploration-claude-6ec70f41/"
+            "rawSessionPath": "tests/benchmarks/runs/idea-scope-brief-claude-6ec70f41/"
           },
           {
             "agent": "codex",
@@ -154,7 +154,7 @@ window.SKILLS_SHOWCASE_DATA = {
             "totalCost": "$3.00",
             "meanPairwiseSimilarity": "",
             "outliers": "0",
-            "rawSessionPath": "tests/benchmarks/runs/concept-exploration-codex-aebc7790/"
+            "rawSessionPath": "tests/benchmarks/runs/idea-scope-brief-codex-aebc7790/"
           }
         ],
         "quality": [
@@ -177,10 +177,10 @@ window.SKILLS_SHOWCASE_DATA = {
         "demo": {
           "agent": "codex",
           "runIndex": 1,
-          "prompt": "You have the concept-exploration skill installed. Turn idea.md into specs/concept-brief.md with problem, audience, value, constraints, open questions, and Next command. End with `Recommended next command: $spec-interview`.\n\nIMPORTANT: Your budget limit for this task is $1 USD. Stay within this budget.",
+          "prompt": "You have the idea-scope-brief skill installed. Turn idea.md into specs/concept-brief.md with problem, audience, value, constraints, open questions, and Next command. End with `Recommended next command: $spec-interview`.\n\nIMPORTANT: Your budget limit for this task is $1 USD. Stay within this budget.",
           "output": "Created [specs/concept-brief.md](specs/concept-brief.md) from `idea.md` with the requested sections: problem, audience, value, constraints, open questions, and Next command.\n\nRecommended next command: $spec-interview",
-          "runPath": "tests/benchmarks/runs/concept-exploration-codex-aebc7790/run-001.json",
-          "reportPath": "benchmark/test-concept-exploration-2026-05-21.md"
+          "runPath": "tests/benchmarks/runs/idea-scope-brief-codex-aebc7790/run-001.json",
+          "reportPath": "benchmark/test-idea-scope-brief-2026-05-21.md"
         }
       }
     },
@@ -564,19 +564,19 @@ window.SKILLS_SHOWCASE_DATA = {
       }
     },
     {
-      "id": "global-codex-concept-exploration",
-      "name": "concept-exploration",
-      "title": "Concept Exploration",
+      "id": "global-codex-idea-scope-brief",
+      "name": "idea-scope-brief",
+      "title": "Idea Scope Brief",
       "description": "Shape a rough product or project idea into an actionable concept brief before ICP, market research, specifications, UX, UI, or implementation planning",
       "type": "planning",
       "version": "v0.4",
       "argumentHint": "[optional rough idea, product thought, or app scope]",
       "platform": "codex",
-      "command": "$concept-exploration",
+      "command": "$idea-scope-brief",
       "scope": "global",
       "pack": null,
-      "path": "global/codex/concept-exploration/SKILL.md",
-      "mirrorKey": "concept-exploration",
+      "path": "global/codex/idea-scope-brief/SKILL.md",
+      "mirrorKey": "idea-scope-brief",
       "tags": [
         "codex",
         "concept",
@@ -585,9 +585,9 @@ window.SKILLS_SHOWCASE_DATA = {
         "planning"
       ],
       "benchmarkEvidence": {
-        "skill": "concept-exploration",
+        "skill": "idea-scope-brief",
         "date": "2026-05-21",
-        "reportPath": "benchmark/test-concept-exploration-2026-05-21.md",
+        "reportPath": "benchmark/test-idea-scope-brief-2026-05-21.md",
         "coverage": null,
         "verify": {
           "layer1": "PASS",
@@ -607,7 +607,7 @@ window.SKILLS_SHOWCASE_DATA = {
             "totalCost": "$3.00",
             "meanPairwiseSimilarity": "",
             "outliers": "0",
-            "rawSessionPath": "tests/benchmarks/runs/concept-exploration-claude-6ec70f41/"
+            "rawSessionPath": "tests/benchmarks/runs/idea-scope-brief-claude-6ec70f41/"
           },
           {
             "agent": "codex",
@@ -622,7 +622,7 @@ window.SKILLS_SHOWCASE_DATA = {
             "totalCost": "$3.00",
             "meanPairwiseSimilarity": "",
             "outliers": "0",
-            "rawSessionPath": "tests/benchmarks/runs/concept-exploration-codex-aebc7790/"
+            "rawSessionPath": "tests/benchmarks/runs/idea-scope-brief-codex-aebc7790/"
           }
         ],
         "quality": [
@@ -645,10 +645,10 @@ window.SKILLS_SHOWCASE_DATA = {
         "demo": {
           "agent": "codex",
           "runIndex": 1,
-          "prompt": "You have the concept-exploration skill installed. Turn idea.md into specs/concept-brief.md with problem, audience, value, constraints, open questions, and Next command. End with `Recommended next command: $spec-interview`.\n\nIMPORTANT: Your budget limit for this task is $1 USD. Stay within this budget.",
+          "prompt": "You have the idea-scope-brief skill installed. Turn idea.md into specs/concept-brief.md with problem, audience, value, constraints, open questions, and Next command. End with `Recommended next command: $spec-interview`.\n\nIMPORTANT: Your budget limit for this task is $1 USD. Stay within this budget.",
           "output": "Created [specs/concept-brief.md](specs/concept-brief.md) from `idea.md` with the requested sections: problem, audience, value, constraints, open questions, and Next command.\n\nRecommended next command: $spec-interview",
-          "runPath": "tests/benchmarks/runs/concept-exploration-codex-aebc7790/run-001.json",
-          "reportPath": "benchmark/test-concept-exploration-2026-05-21.md"
+          "runPath": "tests/benchmarks/runs/idea-scope-brief-codex-aebc7790/run-001.json",
+          "reportPath": "benchmark/test-idea-scope-brief-2026-05-21.md"
         }
       }
     },

@@ -53,7 +53,7 @@ export default function HomePage() {
               <div className="state-machine">
                 <div className="state-node">
                   <strong>Align</strong>
-                  <span className="command">$concept-exploration</span>
+                  <span className="command">$idea-scope-brief</span>
                 </div>
                 <div className="state-node">
                   <strong>Prototype</strong>
@@ -73,7 +73,7 @@ export default function HomePage() {
                 </div>
               </div>
               <div className="terminal" aria-label="Simulated AFPS output">
-                <div>$concept-exploration</div>
+                <div>$idea-scope-brief</div>
                 <div>alignment: ICP locked, competitive gaps mapped</div>
                 <div>$prototype → $uat → validated reference build</div>
                 <div>$spec-interview → $exec → direct-to-primary ship</div>

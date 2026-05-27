@@ -195,7 +195,7 @@ describe("TuiWorkflow replay pilot", () => {
           aggregateQuality: "92.0%",
           stepBenchmarks: {
             0: {
-              skill: "concept-exploration",
+              skill: "idea-scope-brief",
               passRate: "100%",
               qualityScore: "92.0%",
               demo: {
@@ -203,8 +203,8 @@ describe("TuiWorkflow replay pilot", () => {
                 runIndex: 2,
                 prompt: "Run concept exploration.",
                 output: "Generated concept brief.",
-                reportPath: "benchmark/test-concept-exploration-2026-05-17.md",
-                runPath: "tests/benchmarks/runs/concept-exploration-codex-123/run-002.json",
+                reportPath: "benchmark/test-idea-scope-brief-2026-05-17.md",
+                runPath: "tests/benchmarks/runs/idea-scope-brief-codex-123/run-002.json",
               },
             },
           },
@@ -225,12 +225,12 @@ describe("TuiWorkflow replay pilot", () => {
     const replay = screen.getByLabelText("Explore concept replay");
     expect(within(replay).getByText("User goal")).toBeTruthy();
     expect(
-      within(replay).getByText("Use $concept-exploration to move this workflow step from intent to evidence."),
+      within(replay).getByText("Use $idea-scope-brief to move this workflow step from intent to evidence."),
     ).toBeTruthy();
     expect(within(replay).getByText("Agent")).toBeTruthy();
     expect(within(replay).getAllByText("Rough idea becomes a bounded concept brief.").length).toBeGreaterThan(0);
     expect(within(replay).getByText("Terminal")).toBeTruthy();
-    expect(within(replay).getAllByText(/\$concept-exploration/).length).toBeGreaterThan(0);
+    expect(within(replay).getAllByText(/\$idea-scope-brief/).length).toBeGreaterThan(0);
     expect(within(replay).getByText("Result")).toBeTruthy();
   });
 
@@ -258,7 +258,7 @@ describe("TuiWorkflow replay pilot", () => {
 
     const exploreReplay = screen.getByLabelText("Explore concept replay");
     expect(
-      within(exploreReplay).getByText("Use $concept-exploration to move this workflow step from intent to evidence."),
+      within(exploreReplay).getByText("Use $idea-scope-brief to move this workflow step from intent to evidence."),
     ).toBeTruthy();
     expect(within(exploreReplay).getByText("Terminal")).toBeTruthy();
     expect(within(exploreReplay).getByText("Result")).toBeTruthy();
@@ -293,7 +293,7 @@ describe("TuiWorkflow replay pilot", () => {
 
     expect(screen.getByLabelText("Roadmap replay")).toBeTruthy();
     expect(screen.queryByLabelText("Explore concept replay")).toBeNull();
-    expect(screen.queryByText("$concept-exploration")).toBeNull();
+    expect(screen.queryByText("$idea-scope-brief")).toBeNull();
   });
 
   it("renders visible benchmark receipt metadata when generated evidence exists", () => {
@@ -312,10 +312,10 @@ describe("TuiWorkflow replay pilot", () => {
     expect(within(replay).getByText("codex")).toBeTruthy();
     expect(within(replay).getByText("Run artifact")).toBeTruthy();
     expect(
-      within(replay).getByText("tests/benchmarks/runs/concept-exploration-codex-123/run-002.json"),
+      within(replay).getByText("tests/benchmarks/runs/idea-scope-brief-codex-123/run-002.json"),
     ).toBeTruthy();
     expect(within(replay).getByText("Report")).toBeTruthy();
-    expect(within(replay).getByText("benchmark/test-concept-exploration-2026-05-17.md")).toBeTruthy();
+    expect(within(replay).getByText("benchmark/test-idea-scope-brief-2026-05-17.md")).toBeTruthy();
   });
 
   it("renders an explicit no-receipt state for curated steps", () => {
