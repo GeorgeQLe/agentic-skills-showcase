@@ -6661,29 +6661,6 @@ window.SKILLS_SHOWCASE_DATA = {
       ]
     },
     {
-      "id": "pack-creator-foundation-claude-research-bootstrap",
-      "name": "research-bootstrap",
-      "title": "Research Bootstrap",
-      "description": "Create the standard creator-media research directory structure in the current project, with platform directories, data roots, archive paths, and README index files",
-      "type": "execution",
-      "version": "v0.1",
-      "argumentHint": "[--platforms youtube,tiktok,...] [--handle <slug>]",
-      "platform": "claude",
-      "command": "/research-bootstrap",
-      "scope": "pack",
-      "pack": "creator-foundation",
-      "path": "packs/creator-foundation/claude/research-bootstrap/SKILL.md",
-      "mirrorKey": "research-bootstrap",
-      "tags": [
-        "bootstrap",
-        "claude",
-        "creator-foundation",
-        "execution",
-        "pack",
-        "research"
-      ]
-    },
-    {
       "id": "pack-creator-foundation-claude-research-directory-conventions",
       "name": "research-directory-conventions",
       "title": "Research Directory Conventions",
@@ -7306,29 +7283,6 @@ window.SKILLS_SHOWCASE_DATA = {
         "media",
         "pack",
         "product",
-        "research"
-      ]
-    },
-    {
-      "id": "pack-creator-foundation-codex-research-bootstrap",
-      "name": "research-bootstrap",
-      "title": "Research Bootstrap",
-      "description": "Create the standard creator-media research directory structure in the current project, with platform directories, data roots, archive paths, and README index files",
-      "type": "execution",
-      "version": "v0.1",
-      "argumentHint": "[--platforms youtube,tiktok,...] [--handle <slug>]",
-      "platform": "codex",
-      "command": "$research-bootstrap",
-      "scope": "pack",
-      "pack": "creator-foundation",
-      "path": "packs/creator-foundation/codex/research-bootstrap/SKILL.md",
-      "mirrorKey": "research-bootstrap",
-      "tags": [
-        "bootstrap",
-        "codex",
-        "creator-foundation",
-        "execution",
-        "pack",
         "research"
       ]
     },
