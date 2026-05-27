@@ -349,8 +349,8 @@ export default function SealedPack({ name, skillCount, previewSkill, onOpen, onT
         <div
           className="absolute left-0 right-0 z-10"
           style={{
-            top: "20%",
-            height: "26%",
+            top: "0%",
+            height: "33%",
             touchAction: "none",
             cursor: "grab",
           }}
