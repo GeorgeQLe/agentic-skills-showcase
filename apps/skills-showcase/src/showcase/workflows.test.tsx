@@ -201,7 +201,7 @@ describe("TuiWorkflow replay pilot", () => {
               demo: {
                 agent: "codex",
                 runIndex: 2,
-                prompt: "Run concept exploration.",
+                prompt: "Run idea scope brief.",
                 output: "Generated concept brief.",
                 reportPath: "benchmark/test-idea-scope-brief-2026-05-17.md",
                 runPath: "tests/benchmarks/runs/idea-scope-brief-codex-123/run-002.json",
@@ -224,10 +224,8 @@ describe("TuiWorkflow replay pilot", () => {
 
     const replay = screen.getByLabelText("Explore concept replay");
     expect(within(replay).getByText("User goal")).toBeTruthy();
-    expect(
-      within(replay).getByText("Use $idea-scope-brief to move this workflow step from intent to evidence."),
-    ).toBeTruthy();
-    expect(within(replay).getByText("Agent")).toBeTruthy();
+    expect(within(replay).getByText("Run idea scope brief.")).toBeTruthy();
+    expect(within(replay).getAllByText("Agent").length).toBeGreaterThan(0);
     expect(within(replay).getAllByText("Rough idea becomes a bounded concept brief.").length).toBeGreaterThan(0);
     expect(within(replay).getByText("Terminal")).toBeTruthy();
     expect(within(replay).getAllByText(/\$idea-scope-brief/).length).toBeGreaterThan(0);
@@ -257,9 +255,7 @@ describe("TuiWorkflow replay pilot", () => {
     vi.runOnlyPendingTimers();
 
     const exploreReplay = screen.getByLabelText("Explore concept replay");
-    expect(
-      within(exploreReplay).getByText("Use $idea-scope-brief to move this workflow step from intent to evidence."),
-    ).toBeTruthy();
+    expect(within(exploreReplay).getByText("Run idea scope brief.")).toBeTruthy();
     expect(within(exploreReplay).getByText("Terminal")).toBeTruthy();
     expect(within(exploreReplay).getByText("Result")).toBeTruthy();
 
@@ -300,7 +296,7 @@ describe("TuiWorkflow replay pilot", () => {
     render(<TuiWorkflow />);
 
     const replay = screen.getByLabelText("Explore concept replay");
-    expect(within(replay).getByText("Run concept exploration.")).toBeTruthy();
+    expect(within(replay).getByText("Run idea scope brief.")).toBeTruthy();
     expect(within(replay).getByText("Generated concept brief.")).toBeTruthy();
     expect(within(replay).getByText("Benchmark receipt")).toBeTruthy();
     expect(within(replay).getByText("Persisted benchmark evidence")).toBeTruthy();

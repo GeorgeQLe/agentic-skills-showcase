@@ -27,7 +27,7 @@ describe("smoke rendering", () => {
   it("HomePage renders hero and navigation links", () => {
     render(<HomePage />);
     expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
-    expect(screen.getByText("Explore Packs")).toBeInTheDocument();
+    expect(screen.getByText("See the Pipeline")).toBeInTheDocument();
     expect(screen.getByText("Follow G’s Work")).toBeInTheDocument();
   });
 
@@ -62,7 +62,7 @@ describe("smoke rendering", () => {
 
   it("PacksPage renders title and filter buttons", () => {
     render(<PacksPage />);
-    expect(screen.getByText(/Install the workflow language/i)).toBeInTheDocument();
+    expect(screen.getByText(/Packs tune which AFPS phases your project uses/i)).toBeInTheDocument();
     expect(screen.getByText("Business")).toBeInTheDocument();
     expect(screen.getByText("Devtool")).toBeInTheDocument();
     expect(screen.getByText("Game")).toBeInTheDocument();
