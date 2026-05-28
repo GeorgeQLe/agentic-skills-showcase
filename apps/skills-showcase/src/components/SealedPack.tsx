@@ -128,7 +128,6 @@ export default function SealedPack({ name, skillCount, previewSkill, onOpen, onT
   const cardStartY = useRef(0);
   const hasCardTriggered = useRef(false);
   const [cardElevated, setCardElevated] = useState(false);
-  const [packBodyElevated, setPackBodyElevated] = useState(false);
 
   const prevDrawerOpen = useRef(false);
   const wasInDrawer = useRef(false);
@@ -138,9 +137,8 @@ export default function SealedPack({ name, skillCount, previewSkill, onOpen, onT
     if (prevDrawerOpen.current && !isDrawerOpen) {
       wasInDrawer.current = true;
       setCardElevated(true);
-      setPackBodyElevated(true);
       cardDragY.set(0);
-      cardSlideY.set(-100);
+      cardSlideY.set(-180);
     }
     prevDrawerOpen.current = !!isDrawerOpen;
   }, [isDrawerOpen, cardDragY, cardSlideY]);
@@ -206,6 +204,8 @@ export default function SealedPack({ name, skillCount, previewSkill, onOpen, onT
     });
   }
 
+  const isClosingFromDrawer = prevDrawerOpen.current && !isDrawerOpen;
+
   if (isOpened) {
     return (
       <div>
@@ -226,7 +226,7 @@ export default function SealedPack({ name, skillCount, previewSkill, onOpen, onT
                 height: 252,
                 top: 2,
                 y: combinedY,
-                zIndex: cardElevated ? 60 : undefined,
+                zIndex: (cardElevated || isClosingFromDrawer) ? 60 : undefined,
                 touchAction: "none",
               }}
               onPointerDown={handleCardPointerDown}
@@ -241,21 +241,29 @@ export default function SealedPack({ name, skillCount, previewSkill, onOpen, onT
                 if (pendingOpen.current) {
                   pendingOpen.current = false;
                   if (!isDrawerOpen) {
-                    setTimeout(() => onOpen(getOrigin()), 80);
+                    animate(cardSlideY, -180, {
+                      type: "spring",
+                      stiffness: 400,
+                      damping: 25,
+                    }).then(() => {
+                      setCardElevated(true);
+                      setTimeout(() => onOpen(getOrigin()), 200);
+                    });
                   }
                   return;
                 }
                 if (!isDrawerOpen && wasInDrawer.current) {
                   wasInDrawer.current = false;
-                  animate(cardSlideY, 0, {
-                    type: "spring",
-                    stiffness: 300,
-                    damping: 25,
-                  }).then(() => {
+                  setTimeout(() => {
                     setCardElevated(false);
-                    setPackBodyElevated(false);
-                    hasCardTriggered.current = false;
-                  });
+                    animate(cardSlideY, 0, {
+                      type: "spring",
+                      stiffness: 300,
+                      damping: 25,
+                    }).then(() => {
+                      hasCardTriggered.current = false;
+                    });
+                  }, 180);
                 }
               }}
             >
@@ -264,7 +272,7 @@ export default function SealedPack({ name, skillCount, previewSkill, onOpen, onT
           )}
 
           {/* Bottom half — paints on top of the card to hide its lower portion */}
-          <div className={`absolute top-[33%] left-0 right-0 bottom-0 rounded-b-2xl overflow-hidden ${packBodyElevated ? 'z-[70]' : 'z-[1]'}`}>
+          <div className="absolute top-[33%] left-0 right-0 bottom-0 rounded-b-2xl overflow-hidden z-[1]">
             <div className="absolute inset-0 bg-gradient-to-br from-zinc-700 via-zinc-600 to-zinc-800" />
             <div className="absolute inset-x-2 top-0 bottom-2 rounded-b-xl border-b border-x border-zinc-500/30 bg-gradient-to-b from-zinc-800/80 to-zinc-900/90 flex flex-col items-center justify-center p-4">
               <span className="text-xs text-zinc-500">

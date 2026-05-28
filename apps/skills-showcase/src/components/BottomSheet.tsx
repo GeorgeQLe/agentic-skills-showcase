@@ -14,9 +14,10 @@ interface BottomSheetProps {
   isOpen: boolean;
   onClose: () => void;
   children: ReactNode;
+  dismissable?: boolean;
 }
 
-export default function BottomSheet({ isOpen, onClose, children }: BottomSheetProps) {
+export default function BottomSheet({ isOpen, onClose, children, dismissable = true }: BottomSheetProps) {
   const sheetY = useMotionValue(0);
   const dragControls = useDragControls();
 
@@ -39,12 +40,12 @@ export default function BottomSheet({ isOpen, onClose, children }: BottomSheetPr
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            onClick={onClose}
+            onClick={dismissable ? onClose : undefined}
           />
           <motion.div
             key="sheet"
             className="fixed bottom-0 inset-x-0 z-50 max-h-[70vh] rounded-t-2xl bg-zinc-900 flex flex-col"
-            drag="y"
+            drag={dismissable ? "y" : false}
             dragControls={dragControls}
             dragListener={false}
             dragConstraints={{ top: 0, bottom: 0 }}

@@ -18,6 +18,7 @@ export default function PrototypePage() {
   const data = useSkillsData();
   const [openPack, setOpenPack] = useState<OpenPackState | null>(null);
   const [openedPacks, setOpenedPacks] = useState<Set<string>>(new Set());
+  const [isClosing, setIsClosing] = useState(false);
 
   const handleOpen = useCallback((packName: string, origin: { x: number; y: number }) => {
     setOpenPack({ packName, origin });
@@ -39,6 +40,11 @@ export default function PrototypePage() {
   }, []);
 
   const handleClose = useCallback(() => {
+    setIsClosing(true);
+  }, []);
+
+  const handleCollapseComplete = useCallback(() => {
+    setIsClosing(false);
     setOpenPack(null);
   }, []);
 
@@ -89,12 +95,14 @@ export default function PrototypePage() {
           ))}
         </div>
 
-        <BottomSheet isOpen={!!openPack} onClose={handleClose}>
+        <BottomSheet isOpen={!!openPack} onClose={handleClose} dismissable={!isClosing}>
           {openPackData && (
             <PackOpener
               packName={openPackData.name}
               skills={openPackData.skills}
               origin={openPack!.origin}
+              isClosing={isClosing}
+              onCollapseComplete={handleCollapseComplete}
             />
           )}
         </BottomSheet>
