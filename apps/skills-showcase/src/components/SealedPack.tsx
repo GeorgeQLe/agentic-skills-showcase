@@ -133,7 +133,8 @@ export default function SealedPack({ name, skillCount, previewSkill, onOpen, onT
       hasCardTriggered.current = false;
       setCardElevated(true);
       cardDragY.set(0);
-      cardSlideY.set(-180);
+      cardSlideY.set(0);
+      animate(cardSlideY, -100, { duration: 3, ease: [0.42, 0, 0.58, 1] });
     }
     prevDrawerOpen.current = !!isDrawerOpen;
   }, [isDrawerOpen, cardDragY, cardSlideY]);
@@ -205,6 +206,7 @@ export default function SealedPack({ name, skillCount, previewSkill, onOpen, onT
           {previewSkill && (
             <motion.div
               layoutId={`pack-card-${name}`}
+              transition={{ layout: { duration: 3, ease: [0.42, 0, 0.58, 1] } }}
               className="absolute rounded-lg overflow-hidden shadow-md cursor-grab active:cursor-grabbing"
               style={{
                 left: 6,
@@ -227,12 +229,11 @@ export default function SealedPack({ name, skillCount, previewSkill, onOpen, onT
                 }
                 if (!isDrawerOpen && wasInDrawer.current) {
                   wasInDrawer.current = false;
-                  setCardElevated(false);
                   setPackBodyElevated(true);
                   animate(cardSlideY, 0, {
                     type: "spring",
-                    stiffness: 300,
-                    damping: 25,
+                    stiffness: 20,
+                    damping: 8,
                   }).then(() => {
                     setCardElevated(false);
                     setPackBodyElevated(false);
@@ -346,7 +347,7 @@ export default function SealedPack({ name, skillCount, previewSkill, onOpen, onT
         {/* Unified shimmer overlay */}
         <motion.div
           ref={sheenRef}
-          className="absolute inset-0 rounded-2xl shimmer-foil pointer-events-none"
+          className="absolute inset-0 rounded-2xl shimmer-foil pointer-events-none z-[2]"
           style={{ opacity: sheenOpacity }}
         />
 
