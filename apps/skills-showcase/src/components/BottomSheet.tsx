@@ -38,7 +38,7 @@ export default function BottomSheet({ isOpen, onClose, children }: BottomSheetPr
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 3 }}
+            transition={{ duration: 0.3 }}
             onClick={onClose}
           />
           <motion.div
@@ -53,7 +53,7 @@ export default function BottomSheet({ isOpen, onClose, children }: BottomSheetPr
             initial={{ y: "100%" }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ y: "100%" }}
-            transition={{ duration: 3 }}
+            transition={{ duration: 0.3 }}
             style={{ y: sheetY, overscrollBehavior: "contain" }}
           >
             <div

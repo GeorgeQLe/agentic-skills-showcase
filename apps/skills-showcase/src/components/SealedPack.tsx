@@ -74,6 +74,12 @@ export default function SealedPack({ name, skillCount, previewSkill, onOpen, onT
   function completeTear() {
     hasTriggered.current = true;
     pendingOpen.current = true;
+    pendingOpenTimer.current = setTimeout(() => {
+      if (pendingOpen.current) {
+        pendingOpen.current = false;
+        onOpen(getOrigin());
+      }
+    }, 600);
     animate(dragX, PACK_WIDTH, { duration: 0.3 });
     animate(curlOpacity, 0, { duration: 0.3 }).then(() => onTear?.());
   }
@@ -126,18 +132,24 @@ export default function SealedPack({ name, skillCount, previewSkill, onOpen, onT
 
   const prevDrawerOpen = useRef(false);
   const wasInDrawer = useRef(false);
+  const pendingOpenTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useLayoutEffect(() => {
     if (prevDrawerOpen.current && !isDrawerOpen) {
       wasInDrawer.current = true;
-      hasCardTriggered.current = false;
       setCardElevated(true);
+      setPackBodyElevated(true);
       cardDragY.set(0);
-      cardSlideY.set(0);
-      animate(cardSlideY, -100, { duration: 3, ease: [0.42, 0, 0.58, 1] });
+      cardSlideY.set(-100);
     }
     prevDrawerOpen.current = !!isDrawerOpen;
   }, [isDrawerOpen, cardDragY, cardSlideY]);
+
+  useEffect(() => {
+    return () => {
+      if (pendingOpenTimer.current) clearTimeout(pendingOpenTimer.current);
+    };
+  }, []);
 
   const combinedY = useTransform(
     [cardDragY, cardSlideY],
@@ -206,7 +218,7 @@ export default function SealedPack({ name, skillCount, previewSkill, onOpen, onT
           {previewSkill && (
             <motion.div
               layoutId={`pack-card-${name}`}
-              transition={{ layout: { duration: 3, ease: [0.42, 0, 0.58, 1] } }}
+              transition={{ layout: { duration: 0.3, ease: [0.42, 0, 0.58, 1] } }}
               className="absolute rounded-lg overflow-hidden shadow-md cursor-grab active:cursor-grabbing"
               style={{
                 left: 6,
@@ -222,21 +234,27 @@ export default function SealedPack({ name, skillCount, previewSkill, onOpen, onT
               onPointerUp={handleCardPointerUp}
               onLostPointerCapture={handleCardLostCapture}
               onLayoutAnimationComplete={() => {
+                if (pendingOpenTimer.current) {
+                  clearTimeout(pendingOpenTimer.current);
+                  pendingOpenTimer.current = null;
+                }
                 if (pendingOpen.current) {
                   pendingOpen.current = false;
-                  setTimeout(() => onOpen(getOrigin()), 200);
+                  if (!isDrawerOpen) {
+                    setTimeout(() => onOpen(getOrigin()), 80);
+                  }
                   return;
                 }
                 if (!isDrawerOpen && wasInDrawer.current) {
                   wasInDrawer.current = false;
-                  setPackBodyElevated(true);
                   animate(cardSlideY, 0, {
                     type: "spring",
-                    stiffness: 20,
-                    damping: 8,
+                    stiffness: 300,
+                    damping: 25,
                   }).then(() => {
                     setCardElevated(false);
                     setPackBodyElevated(false);
+                    hasCardTriggered.current = false;
                   });
                 }
               }}
