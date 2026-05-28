@@ -138,7 +138,7 @@ export default function SealedPack({ name, skillCount, previewSkill, onOpen, onT
       wasInDrawer.current = true;
       setCardElevated(true);
       cardDragY.set(0);
-      cardSlideY.set(-180);
+      cardSlideY.set(0);
     }
     prevDrawerOpen.current = !!isDrawerOpen;
   }, [isDrawerOpen, cardDragY, cardSlideY]);
@@ -254,16 +254,8 @@ export default function SealedPack({ name, skillCount, previewSkill, onOpen, onT
                 }
                 if (!isDrawerOpen && wasInDrawer.current) {
                   wasInDrawer.current = false;
-                  setTimeout(() => {
-                    setCardElevated(false);
-                    animate(cardSlideY, 0, {
-                      type: "spring",
-                      stiffness: 300,
-                      damping: 25,
-                    }).then(() => {
-                      hasCardTriggered.current = false;
-                    });
-                  }, 180);
+                  setCardElevated(false);
+                  hasCardTriggered.current = false;
                 }
               }}
             >
