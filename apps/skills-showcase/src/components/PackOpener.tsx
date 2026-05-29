@@ -4,6 +4,7 @@ import { useRef, useLayoutEffect, useState, useMemo, useCallback } from "react";
 import { motion, useMotionValue, animate } from "framer-motion";
 import SkillCard from "./SkillCard";
 import type { Skill } from "@/hooks/useSkillsData";
+import { useDebug } from "./debug/DebugController";
 
 interface PackOpenerProps {
   skills: Skill[];
@@ -19,6 +20,7 @@ interface CollapseState {
 }
 
 export default function PackOpener({ skills, packName, isClosing, onCollapseComplete }: PackOpenerProps) {
+  const dbg = useDebug();
   const containerRef = useRef<HTMLDivElement>(null);
   const [fanOffsets, setFanOffsets] = useState<Array<{ x: number; y: number }> | null>(null);
   const [collapseState, setCollapseState] = useState<CollapseState | null>(null);
@@ -30,6 +32,24 @@ export default function PackOpener({ skills, packName, isClosing, onCollapseComp
   const expectedCollapseRef = useRef(0);
   const onCollapseCompleteRef = useRef(onCollapseComplete);
   onCollapseCompleteRef.current = onCollapseComplete;
+
+  // Keep the latest debug context in a ref so callbacks running outside render
+  // (animation .then / onAnimationComplete) never read stale closures and the
+  // collapse useLayoutEffect doesn't churn on speed changes.
+  const dbgRef = useRef(dbg);
+  dbgRef.current = dbg;
+
+  // Count one collapsing card; when all have landed, gate the apex hand-off
+  // (collapse-complete) before notifying the page to tear the drawer down.
+  const dispatchCollapseComplete = useCallback(() => {
+    collapseCountRef.current += 1;
+    if (collapseCountRef.current >= expectedCollapseRef.current) {
+      void (async () => {
+        await dbgRef.current.gate("collapse-complete");
+        onCollapseCompleteRef.current?.();
+      })();
+    }
+  }, []);
 
   const rotations = useMemo(
     () => skills.map(() => -6 + Math.random() * 12),
@@ -54,6 +74,8 @@ export default function PackOpener({ skills, packName, isClosing, onCollapseComp
   // Collapse: measure positions and compute offsets when isClosing flips to true
   useLayoutEffect(() => {
     if (!isClosing || collapseState) return;
+
+    dbgRef.current.mark("collapse-measure");
 
     if (skills.length <= 1) {
       onCollapseCompleteRef.current?.();
@@ -113,26 +135,22 @@ export default function PackOpener({ skills, packName, isClosing, onCollapseComp
     collapseCountRef.current = 0;
     setCollapseState({ targetIndex, offsets });
 
+    dbgRef.current.mark("collapse-fan");
+
     // Card 0 uses layoutId so it can't use the animate prop —
     // drive its collapse imperatively via motion values
     if (targetIndex !== 0) {
-      const springConfig = { type: "spring" as const, stiffness: 200, damping: 25 };
+      const springConfig = dbgRef.current.scaleT({ type: "spring" as const, stiffness: 200, damping: 25 });
       animate(card0X, offsets[0].x, springConfig);
       animate(card0Y, offsets[0].y, springConfig).then(() => {
-        collapseCountRef.current += 1;
-        if (collapseCountRef.current >= expectedCollapseRef.current) {
-          onCollapseCompleteRef.current?.();
-        }
+        dispatchCollapseComplete();
       });
     }
-  }, [isClosing, collapseState, skills.length, card0X, card0Y]);
+  }, [isClosing, collapseState, skills.length, card0X, card0Y, dispatchCollapseComplete]);
 
   const handleCardCollapseComplete = useCallback(() => {
-    collapseCountRef.current += 1;
-    if (collapseCountRef.current >= expectedCollapseRef.current) {
-      onCollapseCompleteRef.current?.();
-    }
-  }, []);
+    dispatchCollapseComplete();
+  }, [dispatchCollapseComplete]);
 
   return (
     <div className="relative pt-4 pb-4">
@@ -153,9 +171,10 @@ export default function PackOpener({ skills, packName, isClosing, onCollapseComp
                 key={skill.id}
                 layoutId={`pack-card-${packName}`}
                 style={{ x: card0X, y: card0Y }}
-                transition={{
+                transition={dbg.scaleT({
                   layout: { type: "spring", stiffness: 200, damping: 25 },
-                }}
+                })}
+                onLayoutAnimationComplete={() => dbg.mark("layout-morph-in")}
               >
                 <SkillCard skill={skill} />
               </motion.div>
@@ -187,12 +206,12 @@ export default function PackOpener({ skills, packName, isClosing, onCollapseComp
                   scale: isTarget ? 1 : 0.6,
                   rotateZ: isTarget ? 0 : rotations[i],
                 }}
-                transition={{
+                transition={dbg.scaleT({
                   type: "spring",
                   stiffness: 200,
                   damping: 25,
                   delay: staggerDelay,
-                }}
+                })}
                 onAnimationComplete={isTarget ? undefined : handleCardCollapseComplete}
               >
                 <SkillCard skill={skill} />
@@ -202,6 +221,7 @@ export default function PackOpener({ skills, packName, isClosing, onCollapseComp
 
           const offset = fanOffsets![i];
           const staggerDelay = 0.3 + Math.min(i, 12) * 0.04;
+          const isLastFan = i === skills.length - 1;
 
           return (
             <motion.div
@@ -220,12 +240,13 @@ export default function PackOpener({ skills, packName, isClosing, onCollapseComp
                 scale: 1,
                 rotateZ: 0,
               }}
-              transition={{
+              transition={dbg.scaleT({
                 type: "spring",
                 stiffness: 200,
                 damping: 25,
                 delay: staggerDelay,
-              }}
+              })}
+              onAnimationComplete={isLastFan ? () => dbg.mark("fan-out") : undefined}
             >
               <SkillCard skill={skill} />
             </motion.div>

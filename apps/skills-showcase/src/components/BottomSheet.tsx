@@ -9,6 +9,7 @@ import {
   useDragControls,
   type PanInfo,
 } from "framer-motion";
+import { useDebug } from "./debug/DebugController";
 
 interface BottomSheetProps {
   isOpen: boolean;
@@ -18,6 +19,7 @@ interface BottomSheetProps {
 }
 
 export default function BottomSheet({ isOpen, onClose, children, dismissable = true }: BottomSheetProps) {
+  const dbg = useDebug();
   const sheetY = useMotionValue(0);
   const dragControls = useDragControls();
 
@@ -25,12 +27,12 @@ export default function BottomSheet({ isOpen, onClose, children, dismissable = t
     if (info.offset.y > 100 || info.velocity.y > 500) {
       onClose();
     } else {
-      animate(sheetY, 0, { type: "spring", stiffness: 300, damping: 30 });
+      animate(sheetY, 0, dbg.scaleT({ type: "spring", stiffness: 300, damping: 30 }));
     }
   }
 
   return (
-    <AnimatePresence>
+    <AnimatePresence onExitComplete={() => dbg.mark("sheet-exit")}>
       {isOpen && (
         <>
           <motion.div
@@ -39,7 +41,7 @@ export default function BottomSheet({ isOpen, onClose, children, dismissable = t
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
+            transition={dbg.scaleT({ duration: 0.3 })}
             onClick={dismissable ? onClose : undefined}
           />
           <motion.div
@@ -54,7 +56,8 @@ export default function BottomSheet({ isOpen, onClose, children, dismissable = t
             initial={{ y: "100%" }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ y: "100%" }}
-            transition={{ duration: 0.3 }}
+            transition={dbg.scaleT({ duration: 0.3 })}
+            onAnimationComplete={() => dbg.mark("sheet-open")}
             style={{ y: sheetY, overscrollBehavior: "contain" }}
           >
             <div

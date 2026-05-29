@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useRef, useEffect, useLayoutEffect } from "react";
+import { useState, useRef, useEffect, useLayoutEffect, forwardRef, useImperativeHandle } from "react";
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import { Package } from "lucide-react";
 import type { Skill } from "@/hooks/useSkillsData";
 import CardFace from "./CardFace";
+import { useDebug } from "./debug/DebugController";
 
 interface SealedPackProps {
   name: string;
@@ -14,6 +15,14 @@ interface SealedPackProps {
   onTear?: () => void;
   isOpened?: boolean;
   isDrawerOpen?: boolean;
+  /** When true, this pack mirrors its suspect state into the debug readout. */
+  debugTarget?: boolean;
+}
+
+export interface SealedPackHandle {
+  openViaClick: () => void;
+  openViaTear: () => void;
+  resetValues: () => void;
 }
 
 const PACK_WIDTH = 192;
@@ -26,7 +35,12 @@ function clamp(value: number, min: number, max: number) {
 
 const DRAG_UP_THRESHOLD = 80;
 
-export default function SealedPack({ name, skillCount, previewSkill, onOpen, onTear, isOpened, isDrawerOpen }: SealedPackProps) {
+const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function SealedPack(
+  { name, skillCount, previewSkill, onOpen, onTear, isOpened, isDrawerOpen, debugTarget },
+  ref
+) {
+  const dbg = useDebug();
+
   const dragX = useMotionValue(0);
   const curlOpacity = useMotionValue(1);
 
@@ -71,21 +85,41 @@ export default function SealedPack({ name, skillCount, previewSkill, onOpen, onT
     };
   }, [dragX, sheenOpacity]);
 
+  // Shared open continuation: elevate the card, then request the drawer open.
+  // In stepped mode the gates park the chain; in auto/disabled the 200ms
+  // setTimeout reproduces production timing exactly.
+  async function proceedToOpen() {
+    setCardElevated(true);
+    await dbg.gate("elevate-card");
+    await dbg.gate("request-open");
+    if (dbg.isStepping()) {
+      onOpen(getOrigin());
+    } else {
+      setTimeout(() => onOpen(getOrigin()), 200);
+    }
+  }
+
   function completeTear() {
     hasTriggered.current = true;
     pendingOpen.current = true;
-    pendingOpenTimer.current = setTimeout(() => {
-      if (pendingOpen.current) {
-        pendingOpen.current = false;
-        onOpen(getOrigin());
-      }
-    }, 600);
-    animate(dragX, PACK_WIDTH, { duration: 0.3 });
-    animate(curlOpacity, 0, { duration: 0.3 }).then(() => onTear?.());
+    // The 600ms fallback is armed only when it can't jump a breakpoint.
+    if (!dbg.isStepping()) {
+      pendingOpenTimer.current = setTimeout(() => {
+        if (pendingOpen.current) {
+          pendingOpen.current = false;
+          onOpen(getOrigin());
+        }
+      }, 600);
+    }
+    animate(dragX, PACK_WIDTH, dbg.scaleT({ duration: 0.3 }));
+    animate(curlOpacity, 0, dbg.scaleT({ duration: 0.3 })).then(async () => {
+      await dbg.gate("tear");
+      onTear?.();
+    });
   }
 
   function revertTear() {
-    animate(dragX, 0, { type: "spring", stiffness: 400, damping: 25 });
+    animate(dragX, 0, dbg.scaleT({ type: "spring", stiffness: 400, damping: 25 }));
   }
 
   function handlePointerDown(e: React.PointerEvent) {
@@ -175,36 +209,74 @@ export default function SealedPack({ name, skillCount, previewSkill, onOpen, onT
 
     if (current >= DRAG_UP_THRESHOLD) {
       hasCardTriggered.current = true;
-      animate(cardDragY, 180, { type: "spring", stiffness: 300, damping: 30 }).then(() => {
-        setCardElevated(true);
-        setTimeout(() => onOpen(getOrigin()), 200);
+      animate(cardDragY, 180, dbg.scaleT({ type: "spring", stiffness: 300, damping: 30 })).then(async () => {
+        await dbg.gate("card-lift");
+        await proceedToOpen();
       });
     } else {
-      animate(cardDragY, 0, { type: "spring", stiffness: 400, damping: 25 });
+      animate(cardDragY, 0, dbg.scaleT({ type: "spring", stiffness: 400, damping: 25 }));
     }
   }
 
   function handleCardLostCapture() {
     if (isCardDragging.current && !hasCardTriggered.current) {
       isCardDragging.current = false;
-      animate(cardDragY, 0, { type: "spring", stiffness: 400, damping: 25 });
+      animate(cardDragY, 0, dbg.scaleT({ type: "spring", stiffness: 400, damping: 25 }));
     }
   }
 
   function handlePackClick() {
     if (hasCardTriggered.current) return;
     hasCardTriggered.current = true;
-    animate(cardSlideY, -180, {
+    animate(cardSlideY, -180, dbg.scaleT({
       type: "spring",
       stiffness: 400,
       damping: 25,
-    }).then(() => {
-      setCardElevated(true);
-      setTimeout(() => onOpen(getOrigin()), 200);
+    })).then(async () => {
+      await dbg.gate("card-click-rise");
+      await proceedToOpen();
     });
   }
 
   const isClosingFromDrawer = prevDrawerOpen.current && !isDrawerOpen;
+
+  // Mirror the suspect state into the debug readout (target pack only).
+  useEffect(() => {
+    if (!debugTarget) return;
+    const z: number | "unset" = cardElevated || isClosingFromDrawer ? 60 : "unset";
+    dbg.report({
+      cardElevated,
+      cardZIndex: z,
+      isClosingFromDrawer,
+      isDrawerOpen: !!isDrawerOpen,
+    });
+  }, [debugTarget, cardElevated, isClosingFromDrawer, isDrawerOpen, dbg]);
+
+  useImperativeHandle(
+    ref,
+    (): SealedPackHandle => ({
+      openViaClick: () => handlePackClick(),
+      openViaTear: () => completeTear(),
+      resetValues: () => {
+        hasTriggered.current = false;
+        pendingOpen.current = false;
+        hasCardTriggered.current = false;
+        isDragging.current = false;
+        isCardDragging.current = false;
+        wasInDrawer.current = false;
+        if (pendingOpenTimer.current) {
+          clearTimeout(pendingOpenTimer.current);
+          pendingOpenTimer.current = null;
+        }
+        setCardElevated(false);
+        dragX.set(0);
+        curlOpacity.set(1);
+        cardDragY.set(0);
+        cardSlideY.set(0);
+        sheenOpacity.set(1);
+      },
+    })
+  );
 
   if (isOpened) {
     return (
@@ -218,7 +290,7 @@ export default function SealedPack({ name, skillCount, previewSkill, onOpen, onT
           {previewSkill && (
             <motion.div
               layoutId={`pack-card-${name}`}
-              transition={{ layout: { duration: 0.3, ease: [0.42, 0, 0.58, 1] } }}
+              transition={dbg.scaleT({ layout: { duration: 0.3, ease: [0.42, 0, 0.58, 1] } })}
               className="absolute rounded-lg overflow-hidden shadow-md cursor-grab active:cursor-grabbing"
               style={{
                 left: 6,
@@ -233,26 +305,31 @@ export default function SealedPack({ name, skillCount, previewSkill, onOpen, onT
               onPointerMove={handleCardPointerMove}
               onPointerUp={handleCardPointerUp}
               onLostPointerCapture={handleCardLostCapture}
-              onLayoutAnimationComplete={() => {
+              onLayoutAnimationComplete={async () => {
                 if (pendingOpenTimer.current) {
                   clearTimeout(pendingOpenTimer.current);
                   pendingOpenTimer.current = null;
                 }
+                // OPEN (tear) continuation — part of the open sequence.
                 if (pendingOpen.current) {
                   pendingOpen.current = false;
                   if (!isDrawerOpen) {
-                    animate(cardSlideY, -180, {
+                    animate(cardSlideY, -180, dbg.scaleT({
                       type: "spring",
                       stiffness: 400,
                       damping: 25,
-                    }).then(() => {
-                      setCardElevated(true);
-                      setTimeout(() => onOpen(getOrigin()), 200);
+                    })).then(() => {
+                      proceedToOpen();
                     });
                   }
                   return;
                 }
+                // CLOSE morph-back — THE APEX. Gate before touching elevation so
+                // the z-index-60 frame can be held and inspected. Never reorder
+                // the three statements below.
                 if (!isDrawerOpen && wasInDrawer.current) {
+                  await dbg.gate("layout-morph-out");
+                  await dbg.gate("drop-elevation");
                   wasInDrawer.current = false;
                   setCardElevated(false);
                   hasCardTriggered.current = false;
@@ -386,7 +463,9 @@ export default function SealedPack({ name, skillCount, previewSkill, onOpen, onT
       </div>
     </div>
   );
-}
+});
+
+export default SealedPack;
 
 function formatPackName(name: string): string {
   return name

@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { LayoutGroup } from "framer-motion";
 import { useSkillsData, getPackSkills, getGlobalSkills } from "@/hooks/useSkillsData";
-import SealedPack from "@/components/SealedPack";
+import SealedPack, { type SealedPackHandle } from "@/components/SealedPack";
 import PackOpener from "@/components/PackOpener";
 import BottomSheet from "@/components/BottomSheet";
+import { DebugProvider, useDebug } from "@/components/debug/DebugController";
+import DebugPanel from "@/components/debug/DebugPanel";
 
 const FEATURED_PACKS = ["global", "business-discovery", "devtool", "game"];
 
@@ -15,10 +17,24 @@ interface OpenPackState {
 }
 
 export default function PrototypePage() {
+  return (
+    <DebugProvider>
+      <PrototypeInner />
+      <DebugPanel />
+    </DebugProvider>
+  );
+}
+
+function PrototypeInner() {
+  const dbg = useDebug();
   const data = useSkillsData();
   const [openPack, setOpenPack] = useState<OpenPackState | null>(null);
   const [openedPacks, setOpenedPacks] = useState<Set<string>>(new Set());
   const [isClosing, setIsClosing] = useState(false);
+
+  // Debug harness drives the first pack ("global") through the exact
+  // production callbacks via this imperative handle.
+  const targetPackRef = useRef<SealedPackHandle>(null);
 
   const handleOpen = useCallback((packName: string, origin: { x: number; y: number }) => {
     setOpenPack({ packName, origin });
@@ -40,13 +56,29 @@ export default function PrototypePage() {
   }, []);
 
   const handleClose = useCallback(() => {
+    dbg.mark("close-trigger");
     setIsClosing(true);
-  }, []);
+  }, [dbg]);
 
   const handleCollapseComplete = useCallback(() => {
     setIsClosing(false);
     setOpenPack(null);
   }, []);
+
+  // Register imperative drivers for the debug panel.
+  useEffect(() => {
+    dbg.registerDrivers({
+      openClick: () => targetPackRef.current?.openViaClick(),
+      openTear: () => targetPackRef.current?.openViaTear(),
+      close: () => handleClose(),
+      reset: () => {
+        setIsClosing(false);
+        setOpenPack(null);
+        setOpenedPacks(new Set());
+        targetPackRef.current?.resetValues();
+      },
+    });
+  }, [dbg, handleClose]);
 
   if (!data) {
     return (
@@ -81,9 +113,11 @@ export default function PrototypePage() {
 
       <LayoutGroup>
         <div className="flex flex-wrap justify-center gap-6 mb-12">
-          {packs.map((pack) => (
+          {packs.map((pack, index) => (
             <SealedPack
               key={pack.name}
+              ref={index === 0 ? targetPackRef : undefined}
+              debugTarget={index === 0}
               name={pack.name}
               skillCount={pack.skills.length}
               previewSkill={pack.skills[0] ?? null}

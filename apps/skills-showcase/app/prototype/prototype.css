@@ -15,7 +15,9 @@
 }
 
 .tear-hint-arrow {
-  animation: arrow-pulse 2s ease-in-out infinite;
+  /* --debug-speed is set on :root only while the debug harness is enabled;
+     the `,1` fallback keeps the production 2s when off. */
+  animation: arrow-pulse calc(2s / var(--debug-speed, 1)) ease-in-out infinite;
 }
 
 .shimmer-foil {
@@ -28,5 +30,5 @@
     transparent 55%
   );
   background-size: 200% 100%;
-  animation: shimmer 3s ease-in-out infinite;
+  animation: shimmer calc(3s / var(--debug-speed, 1)) ease-in-out infinite;
 }
