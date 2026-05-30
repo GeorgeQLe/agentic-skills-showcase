@@ -28,7 +28,7 @@ describe("db/index", () => {
   beforeEach(() => {
     calls.length = 0;
     nextRows = [];
-    process.env.DATABASE_URL = "postgres://user:pass@host/db";
+    process.env.DATABASE_URL = "test-connection";
   });
 
   describe("insertSubscriber ON CONFLICT", () => {
