@@ -1,6 +1,12 @@
 import { TRPCError } from '@trpc/server';
 import { insertSubscriber, listSubscribers, exportSubscribers } from '@/db';
 import { router, publicProcedure, protectedProcedure, z } from './init';
+import {
+  SESSION_COOKIE_NAME,
+  SESSION_TTL_MS,
+  createSessionToken,
+  safeSecretEqual,
+} from './session';
 
 export const newsletterRouter = router({
   subscribe: publicProcedure
@@ -27,12 +33,13 @@ export const newsletterRouter = router({
     .input(z.object({ secret: z.string() }))
     .mutation(async ({ input, ctx }) => {
       const expected = process.env.NEWSLETTER_ADMIN_SECRET;
-      if (!expected || input.secret !== expected) {
+      if (!expected || !safeSecretEqual(input.secret, expected)) {
         throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Invalid secret.' });
       }
+      const token = createSessionToken(expected);
       ctx.resHeaders.set(
         'Set-Cookie',
-        `newsletter_admin_session=${expected}; HttpOnly; Path=/; SameSite=Strict; Secure; Max-Age=86400`,
+        `${SESSION_COOKIE_NAME}=${token}; HttpOnly; Path=/; SameSite=Strict; Secure; Max-Age=${SESSION_TTL_MS / 1000}`,
       );
       return { success: true as const };
     }),

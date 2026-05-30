@@ -10,6 +10,7 @@ vi.mock("@/db", () => ({
 import { insertSubscriber, listSubscribers, exportSubscribers } from "@/db";
 import { newsletterRouter } from "./newsletter";
 import { router, publicProcedure, protectedProcedure } from "./init";
+import { createSessionToken, verifySessionToken } from "./session";
 
 const caller = (ctx: { sessionToken: string; resHeaders: Headers }) =>
   router({ newsletter: newsletterRouter }).createCaller(ctx);
@@ -80,7 +81,10 @@ describe("newsletter router", () => {
       const ctx = makeCtx();
       const result = await caller(ctx).newsletter.adminLogin({ secret: "test-secret" });
       expect(result).toEqual({ success: true });
-      expect(ctx.resHeaders.get("Set-Cookie")).toContain("newsletter_admin_session=test-secret");
+      const setCookie = ctx.resHeaders.get("Set-Cookie") ?? "";
+      expect(setCookie.startsWith("newsletter_admin_session=v1.")).toBe(true);
+      const token = setCookie.split(";")[0].split("=")[1];
+      expect(verifySessionToken(token, "test-secret")).toBe(true);
     });
 
     it("throws UNAUTHORIZED with wrong secret", async () => {
@@ -107,7 +111,7 @@ describe("newsletter router", () => {
     it("returns subscribers for authenticated session", async () => {
       const subs = [fakeSub("a@b.com"), fakeSub("c@d.com")];
       vi.mocked(listSubscribers).mockResolvedValue(subs);
-      const result = await caller(makeCtx("test-secret")).newsletter.adminList();
+      const result = await caller(makeCtx(createSessionToken("test-secret"))).newsletter.adminList();
       expect(result).toEqual(subs);
     });
   });
@@ -119,7 +123,7 @@ describe("newsletter router", () => {
         fakeSub("has,comma@test.com", { source_page: 'page "quoted"' }),
       ];
       vi.mocked(exportSubscribers).mockResolvedValue(subs);
-      const csv = await caller(makeCtx("test-secret")).newsletter.adminExport();
+      const csv = await caller(makeCtx(createSessionToken("test-secret"))).newsletter.adminExport();
       const lines = csv.split("\n");
       expect(lines[0]).toBe("id,email,status,source_page,consent_text_version,created_at,updated_at");
       expect(lines).toHaveLength(3);

@@ -1,6 +1,7 @@
 import { initTRPC, TRPCError } from '@trpc/server';
 import type { FetchCreateContextFnOptions } from '@trpc/server/adapters/fetch';
 import { z } from 'zod';
+import { SESSION_COOKIE_NAME, verifySessionToken } from './session';
 
 export async function createContext(opts: FetchCreateContextFnOptions) {
   const cookieHeader = opts.req.headers.get('cookie') ?? '';
@@ -10,7 +11,7 @@ export async function createContext(opts: FetchCreateContextFnOptions) {
       return [key, rest.join('=')];
     }),
   );
-  const sessionToken = cookies['newsletter_admin_session'] ?? null;
+  const sessionToken = cookies[SESSION_COOKIE_NAME] ?? null;
   return { sessionToken, resHeaders: opts.resHeaders };
 }
 
@@ -23,7 +24,7 @@ export const publicProcedure = t.procedure;
 
 export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
   const secret = process.env.NEWSLETTER_ADMIN_SECRET;
-  if (!secret || ctx.sessionToken !== secret) {
+  if (!secret || !ctx.sessionToken || !verifySessionToken(ctx.sessionToken, secret)) {
     throw new TRPCError({ code: 'UNAUTHORIZED' });
   }
   return next({ ctx });
