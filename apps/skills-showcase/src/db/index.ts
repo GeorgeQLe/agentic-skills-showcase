@@ -23,11 +23,32 @@ export async function insertSubscriber(
     VALUES (${email}, ${sourcePage}, ${consentTextVersion})
     ON CONFLICT (email) DO UPDATE SET
       updated_at = now(),
-      source_page = EXCLUDED.source_page,
-      consent_text_version = EXCLUDED.consent_text_version
+      status = 'active'
     RETURNING *
   `;
   return rows[0] as NewsletterSubscriber;
+}
+
+export async function countRecentSubscribeAttempts(
+  ip: string,
+  windowMinutes: number,
+): Promise<number> {
+  const sql = getDb();
+  const rows = await sql`
+    SELECT count(*)::int AS count
+    FROM newsletter_subscribe_attempts
+    WHERE ip = ${ip}
+      AND created_at >= now() - make_interval(mins => ${windowMinutes})
+  `;
+  return (rows[0]?.count as number) ?? 0;
+}
+
+export async function recordSubscribeAttempt(ip: string): Promise<void> {
+  const sql = getDb();
+  await sql`
+    INSERT INTO newsletter_subscribe_attempts (ip)
+    VALUES (${ip})
+  `;
 }
 
 export async function findSubscriberByEmail(

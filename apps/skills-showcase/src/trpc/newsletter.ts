@@ -1,5 +1,11 @@
 import { TRPCError } from '@trpc/server';
-import { insertSubscriber, listSubscribers, exportSubscribers } from '@/db';
+import {
+  insertSubscriber,
+  listSubscribers,
+  exportSubscribers,
+  countRecentSubscribeAttempts,
+  recordSubscribeAttempt,
+} from '@/db';
 import { router, publicProcedure, protectedProcedure, z } from './init';
 import {
   SESSION_COOKIE_NAME,
@@ -7,6 +13,9 @@ import {
   createSessionToken,
   safeSecretEqual,
 } from './session';
+
+const SUBSCRIBE_RATE_LIMIT_WINDOW_MINUTES = 10;
+const SUBSCRIBE_RATE_LIMIT_MAX_ATTEMPTS = 5;
 
 export const newsletterRouter = router({
   subscribe: publicProcedure
@@ -17,11 +26,25 @@ export const newsletterRouter = router({
         consentTextVersion: z.string(),
       }),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      const recent = await countRecentSubscribeAttempts(
+        ctx.ip,
+        SUBSCRIBE_RATE_LIMIT_WINDOW_MINUTES,
+      );
+      if (recent >= SUBSCRIBE_RATE_LIMIT_MAX_ATTEMPTS) {
+        throw new TRPCError({
+          code: 'TOO_MANY_REQUESTS',
+          message: 'Too many subscription attempts. Please try again later.',
+        });
+      }
       try {
+        await recordSubscribeAttempt(ctx.ip);
         await insertSubscriber(input.email, input.sourcePage, input.consentTextVersion);
         return { success: true as const };
-      } catch {
+      } catch (err) {
+        if (err instanceof TRPCError) {
+          throw err;
+        }
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
           message: 'Unable to process subscription. Please try again.',

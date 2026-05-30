@@ -12,7 +12,12 @@ export async function createContext(opts: FetchCreateContextFnOptions) {
     }),
   );
   const sessionToken = cookies[SESSION_COOKIE_NAME] ?? null;
-  return { sessionToken, resHeaders: opts.resHeaders };
+  const forwardedFor = opts.req.headers.get('x-forwarded-for');
+  const ip =
+    forwardedFor?.split(',')[0]?.trim() ||
+    opts.req.headers.get('x-real-ip')?.trim() ||
+    'unknown';
+  return { sessionToken, ip, resHeaders: opts.resHeaders };
 }
 
 export type Context = Awaited<ReturnType<typeof createContext>>;

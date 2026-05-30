@@ -1,22 +1,34 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import type { NewsletterSubscriber } from "@/db";
 
-vi.mock("@/db", () => ({
-  insertSubscriber: vi.fn(),
-  listSubscribers: vi.fn(),
-  exportSubscribers: vi.fn(),
-}));
+vi.mock("@/db", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/db")>();
+  return {
+    ...actual,
+    insertSubscriber: vi.fn(),
+    listSubscribers: vi.fn(),
+    exportSubscribers: vi.fn(),
+    countRecentSubscribeAttempts: vi.fn(),
+    recordSubscribeAttempt: vi.fn(),
+  };
+});
 
-import { insertSubscriber, listSubscribers, exportSubscribers } from "@/db";
+import {
+  insertSubscriber,
+  listSubscribers,
+  exportSubscribers,
+  countRecentSubscribeAttempts,
+  recordSubscribeAttempt,
+} from "@/db";
 import { newsletterRouter } from "./newsletter";
 import { router, publicProcedure, protectedProcedure } from "./init";
 import { createSessionToken, verifySessionToken } from "./session";
 
-const caller = (ctx: { sessionToken: string; resHeaders: Headers }) =>
+const caller = (ctx: { sessionToken: string; ip: string; resHeaders: Headers }) =>
   router({ newsletter: newsletterRouter }).createCaller(ctx);
 
-function makeCtx(sessionToken = "") {
-  return { sessionToken, resHeaders: new Headers() };
+function makeCtx(sessionToken = "", ip = "1.2.3.4") {
+  return { sessionToken, ip, resHeaders: new Headers() };
 }
 
 const fakeSub = (email: string, overrides?: Partial<NewsletterSubscriber>): NewsletterSubscriber => ({
@@ -36,6 +48,8 @@ describe("newsletter router", () => {
   beforeEach(() => {
     process.env = { ...ORIGINAL_ENV, NEWSLETTER_ADMIN_SECRET: "test-secret" };
     vi.clearAllMocks();
+    vi.mocked(countRecentSubscribeAttempts).mockResolvedValue(0);
+    vi.mocked(recordSubscribeAttempt).mockResolvedValue(undefined);
   });
 
   afterEach(() => {
@@ -52,6 +66,49 @@ describe("newsletter router", () => {
       });
       expect(result).toEqual({ success: true });
       expect(insertSubscriber).toHaveBeenCalledWith("a@b.com", "/", "1.0");
+      expect(recordSubscribeAttempt).toHaveBeenCalledWith("1.2.3.4");
+    });
+
+    it("rejects with TOO_MANY_REQUESTS once the per-IP threshold is exceeded", async () => {
+      vi.mocked(insertSubscriber).mockResolvedValue(fakeSub("a@b.com"));
+      vi.mocked(countRecentSubscribeAttempts).mockResolvedValue(5);
+      await expect(
+        caller(makeCtx()).newsletter.subscribe({
+          email: "a@b.com",
+          sourcePage: "/",
+          consentTextVersion: "1.0",
+        })
+      ).rejects.toThrow(/too many/i);
+      expect(insertSubscriber).not.toHaveBeenCalled();
+      expect(recordSubscribeAttempt).not.toHaveBeenCalled();
+    });
+
+    it("allows a subscribe while still under the per-IP threshold", async () => {
+      vi.mocked(insertSubscriber).mockResolvedValue(fakeSub("a@b.com"));
+      vi.mocked(countRecentSubscribeAttempts).mockResolvedValue(4);
+      const result = await caller(makeCtx()).newsletter.subscribe({
+        email: "a@b.com",
+        sourcePage: "/",
+        consentTextVersion: "1.0",
+      });
+      expect(result).toEqual({ success: true });
+      expect(countRecentSubscribeAttempts).toHaveBeenCalledWith("1.2.3.4", 10);
+    });
+
+    it("does not pass consent metadata that would overwrite an existing record", async () => {
+      // The resolver forwards the caller-supplied consent fields verbatim; the
+      // DB layer (insertSubscriber ON CONFLICT) is responsible for not clobbering
+      // the originally recorded consent. Here we assert the resolver does not
+      // inject or mutate consent fields beyond what the caller supplied.
+      vi.mocked(insertSubscriber).mockResolvedValue(
+        fakeSub("a@b.com", { source_page: "/original", consent_text_version: "0.9" })
+      );
+      await caller(makeCtx()).newsletter.subscribe({
+        email: "a@b.com",
+        sourcePage: "/attacker",
+        consentTextVersion: "9.9",
+      });
+      expect(insertSubscriber).toHaveBeenCalledWith("a@b.com", "/attacker", "9.9");
     });
 
     it("rejects invalid email via Zod", async () => {

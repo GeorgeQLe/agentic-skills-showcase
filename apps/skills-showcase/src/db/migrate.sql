@@ -13,3 +13,12 @@ create index if not exists newsletter_subscribers_status_idx
 
 create index if not exists newsletter_subscribers_created_at_idx
   on newsletter_subscribers (created_at desc);
+
+create table if not exists newsletter_subscribe_attempts (
+  id bigserial primary key,
+  ip text not null,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists newsletter_subscribe_attempts_ip_created_idx
+  on newsletter_subscribe_attempts (ip, created_at);
