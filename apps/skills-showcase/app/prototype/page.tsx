@@ -123,6 +123,7 @@ function PrototypeInner() {
               previewSkill={pack.skills[0] ?? null}
               onOpen={(origin) => handleOpen(pack.name, origin)}
               onTear={() => handleTear(pack.name)}
+              autoOpenOnTear={openedPacks.size === 0}
               isOpened={openedPacks.has(pack.name)}
               isDrawerOpen={openPack?.packName === pack.name}
             />

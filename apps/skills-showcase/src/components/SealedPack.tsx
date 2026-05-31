@@ -13,6 +13,8 @@ interface SealedPackProps {
   previewSkill: Skill | null;
   onOpen: (origin: { x: number; y: number }) => void;
   onTear?: () => void;
+  /** When true, tearing this pack auto-opens the drawer (first-tear onboarding). */
+  autoOpenOnTear?: boolean;
   isOpened?: boolean;
   isDrawerOpen?: boolean;
   /** When true, this pack mirrors its suspect state into the debug readout. */
@@ -36,7 +38,7 @@ function clamp(value: number, min: number, max: number) {
 const DRAG_UP_THRESHOLD = 80;
 
 const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function SealedPack(
-  { name, skillCount, previewSkill, onOpen, onTear, isOpened, isDrawerOpen, debugTarget },
+  { name, skillCount, previewSkill, onOpen, onTear, autoOpenOnTear, isOpened, isDrawerOpen, debugTarget },
   ref
 ) {
   const dbg = useDebug();
@@ -101,9 +103,12 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
 
   function completeTear() {
     hasTriggered.current = true;
-    pendingOpen.current = true;
-    // The 600ms fallback is armed only when it can't jump a breakpoint.
-    if (!dbg.isStepping()) {
+    // Tearing only unseals the pack. Auto-open is a one-time onboarding
+    // affordance reserved for the very first tear on the page.
+    pendingOpen.current = !!autoOpenOnTear;
+    // The 600ms fallback is armed only when we intend to auto-open and it
+    // can't jump a breakpoint.
+    if (autoOpenOnTear && !dbg.isStepping()) {
       pendingOpenTimer.current = setTimeout(() => {
         if (pendingOpen.current) {
           pendingOpen.current = false;

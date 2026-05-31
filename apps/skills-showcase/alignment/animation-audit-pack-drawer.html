@@ -140,7 +140,7 @@
         <h2>Overview</h2>
         <div class="feedback" data-section="Overview"></div>
       </div>
-      <p>A sealed <strong>pack</strong> (a foil-wrapped card box) sits on the grid. The user opens it one of three ways — <em>tear</em> the perforation, <em>drag</em> the top card up, or <em>click</em> the pack. A single preview <strong>card</strong> lifts out and, via a shared-layout <code>layoutId</code> morph, becomes card&nbsp;0 inside a bottom-sheet <strong>drawer</strong> that fans the rest of the pack's cards out with a staggered spring. Dismissing the drawer reverses it: the fanned cards collapse back into card&nbsp;0, the card morphs back into the pack, the sheet slides away.</p>
+      <p>A sealed <strong>pack</strong> (a foil-wrapped card box) sits on the grid. Opening it is a two-stage model: <em>tearing</em> the perforation only <strong>unseals</strong> the pack (a prerequisite), then the user opens the drawer one of two ways — <em>drag</em> the top card up, or <em>click</em> the pack. <strong>Exception:</strong> the very first tear on the page auto-opens the drawer as a one-time onboarding affordance (scoped per browser session; re-arms on reload and on debug Reset). A single preview <strong>card</strong> lifts out and, via a shared-layout <code>layoutId</code> morph, becomes card&nbsp;0 inside a bottom-sheet <strong>drawer</strong> that fans the rest of the pack's cards out with a staggered spring. Dismissing the drawer reverses it: the fanned cards collapse back into card&nbsp;0, the card morphs back into the pack, the sheet slides away.</p>
       <div class="callout apex">
         <strong>The recurring bug.</strong> A one-frame <span style="color:var(--orange)">card flash / z-index pop</span> clusters at the <strong>apex</strong> — the moment the <code>layoutId</code> card morphs back from drawer into the pack during close. Two prior fixes (<span class="mono">558a9873</span>, <span class="mono">fcc302a5</span>) addressed it; it keeps returning because the animation is too fast to see what actually goes wrong. Section&nbsp;5 dissects it.
       </div>
@@ -224,16 +224,16 @@
         <h2>3 · OPEN sequence <span class="badge open">open</span></h2>
         <div class="feedback" data-section="OPEN sequence"></div>
       </div>
-      <p>Three entry paths converge on a common continuation. Once <code>onOpen</code> fires, the drawer mounts and the sheet slide-up, the <code>layoutId</code> morph-in, and the fan-out all run as <em>concurrent reactions</em> — they are not a single awaitable chain.</p>
+      <p>Tear is a prerequisite that only unseals; the two real open gestures (drag-up, click) and the first-tear auto-open exception converge on a common continuation. Once <code>onOpen</code> fires, the drawer mounts and the sheet slide-up, the <code>layoutId</code> morph-in, and the fan-out all run as <em>concurrent reactions</em> — they are not a single awaitable chain.</p>
 
       <h3>Entry paths</h3>
       <table>
         <thead><tr><th>#</th><th>Path</th><th>Trigger</th><th>Motion</th></tr></thead>
         <tbody>
           <tr>
-            <td>A</td><td>Tear</td>
+            <td>A</td><td>Tear (unseal)</td>
             <td class="mono">completeTear() <span class="ref">SealedPack:102</span></td>
-            <td>Sets <code>hasTriggered</code> + <code>pendingOpen</code>; <code>animate(dragX → 192, duration 0.3)</code> <span class="ref">(:114)</span> and <code>animate(curlOpacity → 0, duration 0.3)</code> <span class="ref">(:115)</span>; on curl-fade-complete calls <code>onTear()</code> <span class="ref">(:117)</span>. A <strong>600 ms</strong> <code>pendingOpen</code> fallback timer is armed <span class="ref">(:107)</span> in case the layout animation never completes.</td>
+            <td>Tearing now only <strong>unseals</strong> the pack: it always sets <code>hasTriggered</code>, runs <code>animate(dragX → 192, duration 0.3)</code> and <code>animate(curlOpacity → 0, duration 0.3)</code>, and on curl-fade-complete calls <code>onTear()</code> — leaving the pack resting in the unsealed branch where drag-up (B) or click (C) opens it. It auto-opens <strong>only on the first tear of the page</strong>: <code>pendingOpen</code> is set to <code>autoOpenOnTear</code> (true only while <code>openedPacks.size === 0</code>), and the <strong>600 ms</strong> <code>pendingOpen</code> fallback timer is armed only when auto-opening. Per-session scope: <code>openedPacks</code> is React state, so the first-tear exception re-arms on reload and on debug Reset.</td>
           </tr>
           <tr>
             <td>B</td><td>Drag-up</td>
@@ -261,7 +261,7 @@
         </tbody>
       </table>
       <div class="callout">
-        <strong>Tear path nuance.</strong> On the tear path there is no separate slide; instead the same <code>onLayoutAnimationComplete</code> handler fires after the card settles into the opened branch and, seeing <code>pendingOpen</code>, springs <code>cardSlideY → −180</code> and then runs the common continuation <span class="ref">(SealedPack:317-326)</span>. The 600 ms timer is the safety net if that layout-complete never arrives.
+        <strong>Tear path nuance.</strong> Tear only unseals; auto-open is the first-tear exception. When <code>pendingOpen</code> was set (first tear only), the same <code>onLayoutAnimationComplete</code> handler fires after the card settles into the opened branch and, seeing <code>pendingOpen</code>, springs <code>cardSlideY → −180</code> and then runs the common continuation <span class="ref">(SealedPack:317-326)</span>; the 600 ms timer is the safety net if that layout-complete never arrives. On every <em>subsequent</em> tear <code>pendingOpen</code> stays <code>false</code>, the handler's branch self-gates off, and the card simply rests unsealed until the user drags it up or clicks it.
       </div>
     </section>
 
@@ -392,7 +392,7 @@ const isClosingFromDrawer = prevDrawerOpen.current &amp;&amp; !isDrawerOpen;</co
         <li><strong>Slow motion</strong> at 1× / 0.5× / 0.25× / 0.1× — implemented by scaling each authored <code>transition</code> (tween durations ×1/speed; springs via <code>stiffness×speed²</code>, <code>damping×speed</code>, which preserves the damping ratio so overshoot is identical, just slower) plus the <code>--debug-speed</code> CSS variable for the keyframes.</li>
         <li><strong>Stepped mode</strong> — park the close chain at each boundary (especially <code>layout-morph-out</code> and <code>drop-elevation</code>) and advance one step at a time, holding the apex frame.</li>
         <li><strong>Live readout</strong> — <code>cardElevated</code>, the card's computed <code>zIndex</code> (60 vs unset), <code>isClosingFromDrawer</code>, <code>isDrawerOpen</code>, current step, current speed.</li>
-        <li><strong>Drivers</strong> — Open (click) / Open (tear) / Close run the exact production callbacks on pack&nbsp;0, so the real bug reproduces deterministically.</li>
+        <li><strong>Drivers</strong> — Open (click) / Open (tear) / Close run the exact production callbacks on pack&nbsp;0, so the real bug reproduces deterministically. <em>Open (tear)</em> still drives a full open because it runs after Reset (which clears <code>openedPacks</code>), making pack&nbsp;0's tear the first tear of the page — so the first-tear auto-open exception applies.</li>
       </ul>
       <p class="note-banner">To catch the flash: enable → <em>Open (tear)</em> → <em>Close</em> in <strong>Stepped</strong> at <strong>0.1×</strong>, step to <code>sheet-exit</code> → <code>layout-morph-out</code>, and pause <em>before</em> <code>drop-elevation</code> — the card is held mid-morph with <code>cardElevated=true</code> / z-60. Advance one step to watch the elevation drop and confirm whether the stacking order pops.</p>
     </section>
