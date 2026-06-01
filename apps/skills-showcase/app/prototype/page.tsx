@@ -30,14 +30,20 @@ function PrototypeInner() {
   const data = useSkillsData();
   const [openPack, setOpenPack] = useState<OpenPackState | null>(null);
   const [openedPacks, setOpenedPacks] = useState<Set<string>>(new Set());
-  const [isClosing, setIsClosing] = useState(false);
+  const [isDrawerClosing, setIsDrawerClosing] = useState(false);
+  const [isSheetMounted, setIsSheetMounted] = useState(false);
+  const isDrawerClosingRef = useRef(false);
 
   // Debug harness drives the first pack ("global") through the exact
   // production callbacks via this imperative handle.
   const targetPackRef = useRef<SealedPackHandle>(null);
 
   const handleOpen = useCallback((packName: string, origin: { x: number; y: number }) => {
-    setOpenPack({ packName, origin });
+    const nextOpenPack = { packName, origin };
+    isDrawerClosingRef.current = false;
+    setOpenPack(nextOpenPack);
+    setIsDrawerClosing(false);
+    setIsSheetMounted(true);
     setOpenedPacks((prev) => {
       if (prev.has(packName)) return prev;
       const next = new Set(prev);
@@ -56,12 +62,20 @@ function PrototypeInner() {
   }, []);
 
   const handleClose = useCallback(() => {
+    if (isDrawerClosingRef.current) return;
     dbg.mark("close-trigger");
-    setIsClosing(true);
+    isDrawerClosingRef.current = true;
+    setIsDrawerClosing(true);
   }, [dbg]);
 
   const handleCollapseComplete = useCallback(() => {
-    setIsClosing(false);
+    dbg.mark("drawer-teardown");
+    setIsSheetMounted(false);
+  }, [dbg]);
+
+  const handleSheetExited = useCallback(() => {
+    isDrawerClosingRef.current = false;
+    setIsDrawerClosing(false);
     setOpenPack(null);
   }, []);
 
@@ -72,7 +86,9 @@ function PrototypeInner() {
       openTear: () => targetPackRef.current?.openViaTear(),
       close: () => handleClose(),
       reset: () => {
-        setIsClosing(false);
+        isDrawerClosingRef.current = false;
+        setIsDrawerClosing(false);
+        setIsSheetMounted(false);
         setOpenPack(null);
         setOpenedPacks(new Set());
         targetPackRef.current?.resetValues();
@@ -130,13 +146,18 @@ function PrototypeInner() {
           ))}
         </div>
 
-        <BottomSheet isOpen={!!openPack} onClose={handleClose} dismissable={!isClosing}>
+        <BottomSheet
+          isOpen={isSheetMounted}
+          onClose={handleClose}
+          onExitComplete={handleSheetExited}
+          dismissable={!isDrawerClosing}
+        >
           {openPackData && (
             <PackOpener
               packName={openPackData.name}
               skills={openPackData.skills}
               origin={openPack!.origin}
-              isClosing={isClosing}
+              isClosing={isDrawerClosing}
               onCollapseComplete={handleCollapseComplete}
             />
           )}

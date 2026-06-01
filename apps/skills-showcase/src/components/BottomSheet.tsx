@@ -14,11 +14,18 @@ import { useDebug } from "./debug/DebugController";
 interface BottomSheetProps {
   isOpen: boolean;
   onClose: () => void;
+  onExitComplete?: () => void;
   children: ReactNode;
   dismissable?: boolean;
 }
 
-export default function BottomSheet({ isOpen, onClose, children, dismissable = true }: BottomSheetProps) {
+export default function BottomSheet({
+  isOpen,
+  onClose,
+  onExitComplete,
+  children,
+  dismissable = true,
+}: BottomSheetProps) {
   const dbg = useDebug();
   const sheetY = useMotionValue(0);
   const dragControls = useDragControls();
@@ -32,7 +39,12 @@ export default function BottomSheet({ isOpen, onClose, children, dismissable = t
   }
 
   return (
-    <AnimatePresence onExitComplete={() => dbg.mark("sheet-exit")}>
+    <AnimatePresence
+      onExitComplete={() => {
+        dbg.mark("sheet-exit");
+        onExitComplete?.();
+      }}
+    >
       {isOpen && (
         <>
           <motion.div

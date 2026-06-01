@@ -30,6 +30,7 @@ export default function PackOpener({ skills, packName, isClosing, onCollapseComp
 
   const collapseCountRef = useRef(0);
   const expectedCollapseRef = useRef(0);
+  const collapseCompleteFiredRef = useRef(false);
   const onCollapseCompleteRef = useRef(onCollapseComplete);
   onCollapseCompleteRef.current = onCollapseComplete;
 
@@ -39,17 +40,24 @@ export default function PackOpener({ skills, packName, isClosing, onCollapseComp
   const dbgRef = useRef(dbg);
   dbgRef.current = dbg;
 
+  const completeCollapse = useCallback(() => {
+    if (collapseCompleteFiredRef.current) return;
+    collapseCompleteFiredRef.current = true;
+    void (async () => {
+      await dbgRef.current.gate("collapse-complete");
+      onCollapseCompleteRef.current?.();
+    })();
+  }, []);
+
   // Count one collapsing card; when all have landed, gate the apex hand-off
   // (collapse-complete) before notifying the page to tear the drawer down.
   const dispatchCollapseComplete = useCallback(() => {
+    if (collapseCompleteFiredRef.current) return;
     collapseCountRef.current += 1;
     if (collapseCountRef.current >= expectedCollapseRef.current) {
-      void (async () => {
-        await dbgRef.current.gate("collapse-complete");
-        onCollapseCompleteRef.current?.();
-      })();
+      completeCollapse();
     }
-  }, []);
+  }, [completeCollapse]);
 
   const rotations = useMemo(
     () => skills.map(() => -6 + Math.random() * 12),
@@ -78,13 +86,19 @@ export default function PackOpener({ skills, packName, isClosing, onCollapseComp
     dbgRef.current.mark("collapse-measure");
 
     if (skills.length <= 1) {
-      onCollapseCompleteRef.current?.();
+      expectedCollapseRef.current = 0;
+      collapseCountRef.current = 0;
+      collapseCompleteFiredRef.current = false;
+      completeCollapse();
       return;
     }
 
     const container = containerRef.current;
     if (!container) {
-      onCollapseCompleteRef.current?.();
+      expectedCollapseRef.current = 0;
+      collapseCountRef.current = 0;
+      collapseCompleteFiredRef.current = false;
+      completeCollapse();
       return;
     }
 
@@ -131,8 +145,9 @@ export default function PackOpener({ skills, packName, isClosing, onCollapseComp
       return { x: targetRect.left - rect.left, y: targetRect.top - rect.top };
     });
 
-    expectedCollapseRef.current = skills.length - 1;
     collapseCountRef.current = 0;
+    collapseCompleteFiredRef.current = false;
+    expectedCollapseRef.current = skills.length - 1;
     setCollapseState({ targetIndex, offsets });
 
     dbgRef.current.mark("collapse-fan");
@@ -146,7 +161,7 @@ export default function PackOpener({ skills, packName, isClosing, onCollapseComp
         dispatchCollapseComplete();
       });
     }
-  }, [isClosing, collapseState, skills.length, card0X, card0Y, dispatchCollapseComplete]);
+  }, [isClosing, collapseState, skills.length, card0X, card0Y, dispatchCollapseComplete, completeCollapse]);
 
   const handleCardCollapseComplete = useCallback(() => {
     dispatchCollapseComplete();

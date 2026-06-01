@@ -170,6 +170,7 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
 
   const prevDrawerOpen = useRef(false);
   const wasInDrawer = useRef(false);
+  const isCloseMorphBackInFlight = useRef(false);
   const pendingOpenTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useLayoutEffect(() => {
@@ -177,7 +178,7 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
       wasInDrawer.current = true;
       setCardElevated(true);
       cardDragY.set(0);
-      cardSlideY.set(0);
+      cardSlideY.set(-180);
     }
     prevDrawerOpen.current = !!isDrawerOpen;
   }, [isDrawerOpen, cardDragY, cardSlideY]);
@@ -269,6 +270,7 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
         isDragging.current = false;
         isCardDragging.current = false;
         wasInDrawer.current = false;
+        isCloseMorphBackInFlight.current = false;
         if (pendingOpenTimer.current) {
           clearTimeout(pendingOpenTimer.current);
           pendingOpenTimer.current = null;
@@ -330,14 +332,25 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
                   return;
                 }
                 // CLOSE morph-back — THE APEX. Gate before touching elevation so
-                // the z-index-60 frame can be held and inspected. Never reorder
-                // the three statements below.
-                if (!isDrawerOpen && wasInDrawer.current) {
+                // the z-index-60 frame can be held and inspected.
+                if (!isDrawerOpen && wasInDrawer.current && !isCloseMorphBackInFlight.current) {
+                  isCloseMorphBackInFlight.current = true;
                   await dbg.gate("layout-morph-out");
                   await dbg.gate("drop-elevation");
                   wasInDrawer.current = false;
                   setCardElevated(false);
-                  hasCardTriggered.current = false;
+                  animate(
+                    cardSlideY,
+                    0,
+                    dbg.scaleT({
+                      type: "spring",
+                      stiffness: 300,
+                      damping: 25,
+                    })
+                  ).then(() => {
+                    hasCardTriggered.current = false;
+                    isCloseMorphBackInFlight.current = false;
+                  });
                 }
               }}
             >
