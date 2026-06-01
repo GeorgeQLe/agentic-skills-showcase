@@ -27,6 +27,7 @@ export default function PrototypePage() {
 
 function PrototypeInner() {
   const dbg = useDebug();
+  const debugReport = dbg.report;
   const data = useSkillsData();
   const [openPack, setOpenPack] = useState<OpenPackState | null>(null);
   const [openedPacks, setOpenedPacks] = useState<Set<string>>(new Set());
@@ -95,6 +96,19 @@ function PrototypeInner() {
       },
     });
   }, [dbg, handleClose]);
+
+  useEffect(() => {
+    debugReport({
+      machine: {
+        page: {
+          openPack: openPack?.packName ?? null,
+          openedPacks: [...openedPacks],
+          isDrawerClosing,
+          isSheetMounted,
+        },
+      },
+    });
+  }, [debugReport, openPack, openedPacks, isDrawerClosing, isSheetMounted]);
 
   if (!data) {
     return (

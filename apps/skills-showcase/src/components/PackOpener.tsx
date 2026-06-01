@@ -21,6 +21,8 @@ interface CollapseState {
 
 export default function PackOpener({ skills, packName, isClosing, onCollapseComplete }: PackOpenerProps) {
   const dbg = useDebug();
+  const debugEnabled = dbg.enabled;
+  const debugReport = dbg.report;
   const containerRef = useRef<HTMLDivElement>(null);
   const [fanOffsets, setFanOffsets] = useState<Array<{ x: number; y: number }> | null>(null);
   const [collapseState, setCollapseState] = useState<CollapseState | null>(null);
@@ -43,21 +45,38 @@ export default function PackOpener({ skills, packName, isClosing, onCollapseComp
   const completeCollapse = useCallback(() => {
     if (collapseCompleteFiredRef.current) return;
     collapseCompleteFiredRef.current = true;
+    debugReport({
+      machine: {
+        drawer: {
+          collapseCompleteFiredRef: true,
+          collapseCount: collapseCountRef.current,
+          expectedCollapseCount: expectedCollapseRef.current,
+        },
+      },
+    });
     void (async () => {
       await dbgRef.current.gate("collapse-complete");
       onCollapseCompleteRef.current?.();
     })();
-  }, []);
+  }, [debugReport]);
 
   // Count one collapsing card; when all have landed, gate the apex hand-off
   // (collapse-complete) before notifying the page to tear the drawer down.
   const dispatchCollapseComplete = useCallback(() => {
     if (collapseCompleteFiredRef.current) return;
     collapseCountRef.current += 1;
+    debugReport({
+      machine: {
+        drawer: {
+          collapseCount: collapseCountRef.current,
+          expectedCollapseCount: expectedCollapseRef.current,
+        },
+      },
+    });
     if (collapseCountRef.current >= expectedCollapseRef.current) {
       completeCollapse();
     }
-  }, [completeCollapse]);
+  }, [completeCollapse, debugReport]);
 
   const rotations = useMemo(
     () => skills.map(() => -6 + Math.random() * 12),
@@ -149,6 +168,17 @@ export default function PackOpener({ skills, packName, isClosing, onCollapseComp
     collapseCompleteFiredRef.current = false;
     expectedCollapseRef.current = skills.length - 1;
     setCollapseState({ targetIndex, offsets });
+    debugReport({
+      machine: {
+        drawer: {
+          collapseState: { targetIndex, offsets },
+          targetIndex,
+          collapseCount: 0,
+          expectedCollapseCount: skills.length - 1,
+          collapseCompleteFiredRef: false,
+        },
+      },
+    });
 
     dbgRef.current.mark("collapse-fan");
 
@@ -166,6 +196,46 @@ export default function PackOpener({ skills, packName, isClosing, onCollapseComp
   const handleCardCollapseComplete = useCallback(() => {
     dispatchCollapseComplete();
   }, [dispatchCollapseComplete]);
+
+  useLayoutEffect(() => {
+    debugReport({
+      machine: {
+        drawer: {
+          fanOffsets,
+          collapseState,
+          targetIndex: collapseState?.targetIndex ?? null,
+          collapseCount: collapseCountRef.current,
+          expectedCollapseCount: expectedCollapseRef.current,
+          collapseCompleteFiredRef: collapseCompleteFiredRef.current,
+        },
+      },
+    });
+  }, [debugReport, fanOffsets, collapseState]);
+
+  useLayoutEffect(() => {
+    if (!debugEnabled) return;
+
+    const reportCard0 = () => {
+      debugReport({
+        machine: {
+          drawer: {
+            card0X: roundMotionValue(card0X.get()),
+            card0Y: roundMotionValue(card0Y.get()),
+          },
+        },
+      });
+    };
+
+    reportCard0();
+    const unsubscribers = [
+      card0X.on("change", reportCard0),
+      card0Y.on("change", reportCard0),
+    ];
+
+    return () => {
+      unsubscribers.forEach((unsub) => unsub());
+    };
+  }, [debugEnabled, debugReport, card0X, card0Y]);
 
   return (
     <div className="relative pt-4 pb-4">
@@ -278,4 +348,8 @@ function formatPackName(name: string): string {
     .split("-")
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ");
+}
+
+function roundMotionValue(value: number): number {
+  return Math.round(value * 100) / 100;
 }

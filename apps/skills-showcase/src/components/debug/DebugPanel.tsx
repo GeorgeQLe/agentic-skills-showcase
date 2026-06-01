@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { useDebug } from "./DebugController";
 import { ALL_STEPS, OPEN_STEPS, CLOSE_STEPS, type StepDef } from "./steps";
 import { SLOWMO_MECHANISM } from "./manualClock";
+import AnimationMachineGraph from "./AnimationMachineGraph";
 
 const SPEED_PRESETS = [1, 0.5, 0.25, 0.1];
 
@@ -18,6 +20,11 @@ const PURPLE = "#bc8cff";
 
 export default function DebugPanel() {
   const dbg = useDebug();
+  const [machineExpanded, setMachineExpanded] = useState(() =>
+    typeof window === "undefined" || typeof window.matchMedia !== "function"
+      ? true
+      : !window.matchMedia("(max-width: 640px)").matches
+  );
 
   if (!dbg.enabled) {
     return (
@@ -57,7 +64,7 @@ export default function DebugPanel() {
         bottom: 16,
         right: 16,
         zIndex: 100,
-        width: 320,
+        width: "min(92vw, 460px)",
         maxHeight: "85vh",
         overflowY: "auto",
         borderRadius: 12,
@@ -201,6 +208,47 @@ export default function DebugPanel() {
           />
           <Readout label="isDrawerOpen" value={String(dbg.readout.isDrawerOpen)} />
           <Readout label="speed" value={`${dbg.speed}x`} />
+        </Section>
+
+        {/* State machine */}
+        <Section title="State machine">
+          <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
+            <button
+              onClick={() => setMachineExpanded((value) => !value)}
+              style={{ ...chip, flex: 1 }}
+            >
+              {machineExpanded ? "Hide graph" : "Show graph"}
+            </button>
+            <span
+              style={{
+                ...chip,
+                cursor: "default",
+                color: dbg.pausedAtStep ? ORANGE : MUTED,
+              }}
+            >
+              {dbg.pausedAtStep ?? "running"}
+            </span>
+          </div>
+          <Readout
+            label="reached"
+            value={`${dbg.reachedSteps.length}/${ALL_STEPS.length}`}
+            highlight={dbg.reachedSteps.length > 0}
+          />
+          <Readout
+            label="active nodes"
+            value={String(dbg.readout.machine.activeNodeIds.length)}
+            highlight={dbg.readout.machine.activeNodeIds.length > 0}
+          />
+          <Readout
+            label="active transitions"
+            value={String(dbg.readout.machine.activeTransitionIds.length)}
+            highlight={dbg.readout.machine.activeTransitionIds.length > 0}
+          />
+          {machineExpanded && (
+            <div style={{ marginTop: 8 }}>
+              <AnimationMachineGraph snapshot={dbg.readout.machine} />
+            </div>
+          )}
         </Section>
 
         {/* Timeline */}

@@ -42,6 +42,8 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
   ref
 ) {
   const dbg = useDebug();
+  const debugEnabled = dbg.enabled;
+  const debugReport = dbg.report;
 
   const dragX = useMotionValue(0);
   const curlOpacity = useMotionValue(1);
@@ -106,12 +108,14 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
     // Tearing only unseals the pack. Auto-open is a one-time onboarding
     // affordance reserved for the very first tear on the page.
     pendingOpen.current = !!autoOpenOnTear;
+    debugReport({ machine: { pack: { pendingOpen: pendingOpen.current } } });
     // The 600ms fallback is armed only when we intend to auto-open and it
     // can't jump a breakpoint.
     if (autoOpenOnTear && !dbg.isStepping()) {
       pendingOpenTimer.current = setTimeout(() => {
         if (pendingOpen.current) {
           pendingOpen.current = false;
+          debugReport({ machine: { pack: { pendingOpen: false } } });
           onOpen(getOrigin());
         }
       }, 600);
@@ -179,9 +183,21 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
       setCardElevated(true);
       cardDragY.set(0);
       cardSlideY.set(-180);
+      if (debugTarget) {
+        debugReport({
+          machine: {
+            pack: {
+              wasInDrawer: true,
+              cardElevated: true,
+              cardDragY: 0,
+              cardSlideY: -180,
+            },
+          },
+        });
+      }
     }
     prevDrawerOpen.current = !!isDrawerOpen;
-  }, [isDrawerOpen, cardDragY, cardSlideY]);
+  }, [isDrawerOpen, cardDragY, cardSlideY, debugTarget, debugReport]);
 
   useEffect(() => {
     return () => {
@@ -250,13 +266,53 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
   useEffect(() => {
     if (!debugTarget) return;
     const z: number | "unset" = cardElevated || isClosingFromDrawer ? 60 : "unset";
-    dbg.report({
+    debugReport({
       cardElevated,
       cardZIndex: z,
       isClosingFromDrawer,
       isDrawerOpen: !!isDrawerOpen,
+      machine: {
+        pack: {
+          pendingOpen: pendingOpen.current,
+          cardElevated,
+          wasInDrawer: wasInDrawer.current,
+          isCloseMorphBackInFlight: isCloseMorphBackInFlight.current,
+          isDrawerOpen: !!isDrawerOpen,
+          isClosingFromDrawer,
+          cardZIndex: z,
+        },
+      },
     });
-  }, [debugTarget, cardElevated, isClosingFromDrawer, isDrawerOpen, dbg]);
+  }, [debugTarget, cardElevated, isClosingFromDrawer, isDrawerOpen, debugReport]);
+
+  useEffect(() => {
+    if (!debugTarget || !debugEnabled) return;
+
+    const reportMotionValues = () => {
+      debugReport({
+        machine: {
+          pack: {
+            dragX: roundMotionValue(dragX.get()),
+            curlOpacity: roundMotionValue(curlOpacity.get()),
+            cardDragY: roundMotionValue(cardDragY.get()),
+            cardSlideY: roundMotionValue(cardSlideY.get()),
+          },
+        },
+      });
+    };
+
+    reportMotionValues();
+    const unsubscribers = [
+      dragX.on("change", reportMotionValues),
+      curlOpacity.on("change", reportMotionValues),
+      cardDragY.on("change", reportMotionValues),
+      cardSlideY.on("change", reportMotionValues),
+    ];
+
+    return () => {
+      unsubscribers.forEach((unsub) => unsub());
+    };
+  }, [debugTarget, debugEnabled, debugReport, dragX, curlOpacity, cardDragY, cardSlideY]);
 
   useImperativeHandle(
     ref,
@@ -281,6 +337,23 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
         cardDragY.set(0);
         cardSlideY.set(0);
         sheenOpacity.set(1);
+        debugReport({
+          machine: {
+            pack: {
+              dragX: 0,
+              curlOpacity: 1,
+              pendingOpen: false,
+              cardDragY: 0,
+              cardSlideY: 0,
+              cardElevated: false,
+              wasInDrawer: false,
+              isCloseMorphBackInFlight: false,
+              isDrawerOpen: false,
+              isClosingFromDrawer: false,
+              cardZIndex: "unset",
+            },
+          },
+        });
       },
     })
   );
@@ -320,6 +393,7 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
                 // OPEN (tear) continuation — part of the open sequence.
                 if (pendingOpen.current) {
                   pendingOpen.current = false;
+                  debugReport({ machine: { pack: { pendingOpen: false } } });
                   if (!isDrawerOpen) {
                     animate(cardSlideY, -180, dbg.scaleT({
                       type: "spring",
@@ -335,10 +409,19 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
                 // the z-index-60 frame can be held and inspected.
                 if (!isDrawerOpen && wasInDrawer.current && !isCloseMorphBackInFlight.current) {
                   isCloseMorphBackInFlight.current = true;
+                  debugReport({ machine: { pack: { isCloseMorphBackInFlight: true } } });
                   await dbg.gate("layout-morph-out");
                   await dbg.gate("drop-elevation");
                   wasInDrawer.current = false;
                   setCardElevated(false);
+                  debugReport({
+                    machine: {
+                      pack: {
+                        wasInDrawer: false,
+                        cardElevated: false,
+                      },
+                    },
+                  });
                   animate(
                     cardSlideY,
                     0,
@@ -350,6 +433,7 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
                   ).then(() => {
                     hasCardTriggered.current = false;
                     isCloseMorphBackInFlight.current = false;
+                    debugReport({ machine: { pack: { isCloseMorphBackInFlight: false } } });
                   });
                 }
               }}
@@ -484,6 +568,10 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
 });
 
 export default SealedPack;
+
+function roundMotionValue(value: number): number {
+  return Math.round(value * 100) / 100;
+}
 
 function formatPackName(name: string): string {
   return name

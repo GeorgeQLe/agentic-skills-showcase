@@ -8,6 +8,7 @@ const debugHarness = vi.hoisted(() => ({
   drivers: {} as Record<string, (() => void) | undefined>,
   debug: {
     mark: vi.fn(),
+    report: vi.fn(),
     registerDrivers: vi.fn((drivers: Record<string, (() => void) | undefined>) => {
       Object.assign(debugHarness.drivers, drivers);
     }),
@@ -115,6 +116,7 @@ import PrototypePage from "../../app/prototype/page";
 describe("prototype close sequence", () => {
   beforeEach(() => {
     debugHarness.debug.mark.mockClear();
+    debugHarness.debug.report.mockClear();
     debugHarness.debug.registerDrivers.mockClear();
     for (const key of Object.keys(debugHarness.drivers)) {
       delete debugHarness.drivers[key];
@@ -168,6 +170,49 @@ describe("prototype close sequence", () => {
     expect(screen.getByTestId("bottom-sheet")).toHaveAttribute("data-open", "true");
     expect(screen.getByTestId("pack-opener")).toHaveAttribute("data-closing", "true");
     expect(screen.getByTestId("pack-global")).toHaveAttribute("data-drawer-open", "true");
+  });
+
+  it("reports page machine state through close and reset", () => {
+    render(<PrototypePage />);
+
+    fireEvent.click(screen.getByTestId("pack-global"));
+
+    expect(debugHarness.debug.report).toHaveBeenCalledWith({
+      machine: {
+        page: expect.objectContaining({
+          openPack: "global",
+          isSheetMounted: true,
+          isDrawerClosing: false,
+        }),
+      },
+    });
+
+    fireEvent.click(screen.getByTestId("sheet-close"));
+
+    expect(debugHarness.debug.report).toHaveBeenCalledWith({
+      machine: {
+        page: expect.objectContaining({
+          openPack: "global",
+          isSheetMounted: true,
+          isDrawerClosing: true,
+        }),
+      },
+    });
+
+    act(() => {
+      debugHarness.drivers.reset?.();
+    });
+
+    expect(debugHarness.debug.report).toHaveBeenCalledWith({
+      machine: {
+        page: {
+          openPack: null,
+          openedPacks: [],
+          isDrawerClosing: false,
+          isSheetMounted: false,
+        },
+      },
+    });
   });
 
   it("keeps the close apex debug gates before elevation drops", () => {

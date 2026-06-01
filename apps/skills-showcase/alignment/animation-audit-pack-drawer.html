@@ -124,6 +124,7 @@
     <a href="#apex" class="apex-link">5 · Apex / z-index ⚠</a>
     <a href="#timing">6 · Timing reference</a>
     <a href="#harness">Appendix · Debug harness</a>
+    <a href="animation-state-machine.html">State-machine map</a>
   </nav>
 
   <main>
@@ -132,6 +133,7 @@
       <p>A line-by-line reference for the <code>/prototype</code> card-pack opening animation in <code>apps/skills-showcase</code>.</p>
       <p style="font-size:13px;">Report only — this document changes no application code. It carries lightweight per-section feedback controls (👍 / 👎 / clarification) so you can flag any line that is wrong; there are no blocking approval gates and no compile-to-YAML.</p>
       <p style="font-size:13px;color:var(--text-muted);">File line numbers reflect the repository <em>after</em> the debug-harness work landed. The animation logic, motion values, and z-index behavior are unchanged — every <code>transition</code> is now wrapped in <code>dbg.scaleT(...)</code>, which is an identity pass at speed 1×, and callback boundaries carry <code>dbg.gate(...)</code> / <code>dbg.mark(...)</code> that resolve synchronously when the harness is off. See the appendix.</p>
+      <p style="font-size:13px;color:var(--text-muted);">State-machine reference: <a href="animation-state-machine.html">animation-state-machine.html</a>.</p>
     </header>
 
     <!-- OVERVIEW -->

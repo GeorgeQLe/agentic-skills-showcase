@@ -12,6 +12,15 @@ import {
 } from "react";
 import { scaleTransition } from "./manualClock";
 import { stepIndex } from "./steps";
+import {
+  DEFAULT_ANIMATION_MACHINE_RUNTIME,
+  DEFAULT_ANIMATION_MACHINE_SNAPSHOT,
+  buildAnimationMachineSnapshot,
+  mergeAnimationMachineRuntime,
+  type AnimationMachineRuntimePatch,
+  type AnimationMachineRuntimeState,
+  type AnimationMachineSnapshot,
+} from "./animationMachine";
 
 export type DebugMode = "auto" | "stepped";
 
@@ -20,7 +29,12 @@ export interface DebugReadout {
   cardZIndex: number | "unset";
   isClosingFromDrawer: boolean;
   isDrawerOpen: boolean;
+  machine: AnimationMachineSnapshot;
 }
+
+export type DebugReportPatch = Partial<Omit<DebugReadout, "machine">> & {
+  machine?: AnimationMachineRuntimePatch;
+};
 
 export interface DebugDrivers {
   openClick?: () => void;
@@ -44,7 +58,7 @@ export interface DebugContextValue {
   /** Non-blocking timeline marker for synchronous boundaries. */
   mark: (id: string) => void;
   scaleT: <T>(transition: T) => T;
-  report: (patch: Partial<DebugReadout>) => void;
+  report: (patch: DebugReportPatch) => void;
   isStepping: () => boolean;
 
   // actions used by the panel
@@ -65,6 +79,7 @@ const DEFAULT_READOUT: DebugReadout = {
   cardZIndex: "unset",
   isClosingFromDrawer: false,
   isDrawerOpen: false,
+  machine: DEFAULT_ANIMATION_MACHINE_SNAPSHOT,
 };
 
 /**
@@ -109,7 +124,16 @@ export function DebugProvider({ children }: { children: ReactNode }) {
   const [pausedAtStep, setPausedAtStep] = useState<string | null>(null);
   const [reachedSteps, setReachedSteps] = useState<string[]>([]);
   const [currentStepIndex, setCurrentStepIndex] = useState(-1);
-  const [readout, setReadout] = useState<DebugReadout>(DEFAULT_READOUT);
+  const [legacyReadout, setLegacyReadout] = useState<
+    Omit<DebugReadout, "machine">
+  >({
+    cardElevated: DEFAULT_READOUT.cardElevated,
+    cardZIndex: DEFAULT_READOUT.cardZIndex,
+    isClosingFromDrawer: DEFAULT_READOUT.isClosingFromDrawer,
+    isDrawerOpen: DEFAULT_READOUT.isDrawerOpen,
+  });
+  const [machineRuntime, setMachineRuntime] =
+    useState<AnimationMachineRuntimeState>(DEFAULT_ANIMATION_MACHINE_RUNTIME);
 
   // Refs mirror the latest values so gate()/scaleT(), which run inside
   // animation callbacks (outside React render), never read stale closures.
@@ -176,18 +200,29 @@ export function DebugProvider({ children }: { children: ReactNode }) {
     return scaleTransition(transition as never, speedRef.current);
   }, []);
 
-  const report = useCallback((patch: Partial<DebugReadout>) => {
-    setReadout((prev) => {
-      // Avoid churn when nothing actually changed.
-      let changed = false;
-      for (const k of Object.keys(patch) as (keyof DebugReadout)[]) {
-        if (prev[k] !== patch[k]) {
-          changed = true;
-          break;
+  const report = useCallback((patch: DebugReportPatch) => {
+    const { machine, ...legacyPatch } = patch;
+
+    if (Object.keys(legacyPatch).length > 0) {
+      setLegacyReadout((prev) => {
+        // Avoid churn when nothing actually changed.
+        let changed = false;
+        for (const k of Object.keys(legacyPatch) as (keyof Omit<
+          DebugReadout,
+          "machine"
+        >)[]) {
+          if (prev[k] !== legacyPatch[k]) {
+            changed = true;
+            break;
+          }
         }
-      }
-      return changed ? { ...prev, ...patch } : prev;
-    });
+        return changed ? { ...prev, ...legacyPatch } : prev;
+      });
+    }
+
+    if (machine) {
+      setMachineRuntime((prev) => mergeAnimationMachineRuntime(prev, machine));
+    }
   }, []);
 
   const setEnabled = useCallback(
@@ -229,7 +264,13 @@ export function DebugProvider({ children }: { children: ReactNode }) {
     setPausedAtStep(null);
     setReachedSteps([]);
     setCurrentStepIndex(-1);
-    setReadout(DEFAULT_READOUT);
+    setLegacyReadout({
+      cardElevated: DEFAULT_READOUT.cardElevated,
+      cardZIndex: DEFAULT_READOUT.cardZIndex,
+      isClosingFromDrawer: DEFAULT_READOUT.isClosingFromDrawer,
+      isDrawerOpen: DEFAULT_READOUT.isDrawerOpen,
+    });
+    setMachineRuntime(DEFAULT_ANIMATION_MACHINE_RUNTIME);
     driversRef.current.reset?.();
   }, []);
 
@@ -274,6 +315,23 @@ export function DebugProvider({ children }: { children: ReactNode }) {
       root.style.removeProperty("--debug-speed");
     };
   }, [enabled, speed]);
+
+  const machineSnapshot = useMemo(
+    () =>
+      buildAnimationMachineSnapshot(machineRuntime, {
+        enabled,
+        mode,
+        pausedAtStep,
+        reachedSteps,
+        currentStepIndex,
+      }),
+    [machineRuntime, enabled, mode, pausedAtStep, reachedSteps, currentStepIndex]
+  );
+
+  const readout = useMemo<DebugReadout>(
+    () => ({ ...legacyReadout, machine: machineSnapshot }),
+    [legacyReadout, machineSnapshot]
+  );
 
   const value = useMemo<DebugContextValue>(
     () => ({

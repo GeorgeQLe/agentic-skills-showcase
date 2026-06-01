@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   motion,
   AnimatePresence,
@@ -27,8 +27,12 @@ export default function BottomSheet({
   dismissable = true,
 }: BottomSheetProps) {
   const dbg = useDebug();
+  const debugEnabled = dbg.enabled;
+  const debugReport = dbg.report;
   const sheetY = useMotionValue(0);
   const dragControls = useDragControls();
+  const [isExiting, setIsExiting] = useState(false);
+  const wasOpenRef = useRef(isOpen);
 
   function handleDragEnd(_: unknown, info: PanInfo) {
     if (info.offset.y > 100 || info.velocity.y > 500) {
@@ -38,10 +42,62 @@ export default function BottomSheet({
     }
   }
 
+  useEffect(() => {
+    if (wasOpenRef.current && !isOpen) {
+      setIsExiting(true);
+    }
+    if (isOpen) {
+      setIsExiting(false);
+    }
+    wasOpenRef.current = isOpen;
+  }, [isOpen]);
+
+  useEffect(() => {
+    debugReport({
+      machine: {
+        sheet: {
+          mounted: isOpen,
+          open: isOpen && !isExiting,
+          exiting: isExiting,
+          dismissable,
+        },
+      },
+    });
+  }, [debugReport, isOpen, isExiting, dismissable]);
+
+  useEffect(() => {
+    if (!debugEnabled) return;
+
+    const reportSheetY = () => {
+      debugReport({
+        machine: {
+          sheet: {
+            sheetY: roundMotionValue(sheetY.get()),
+          },
+        },
+      });
+    };
+
+    reportSheetY();
+    const unsubscribe = sheetY.on("change", reportSheetY);
+    return () => unsubscribe();
+  }, [debugEnabled, debugReport, sheetY]);
+
   return (
     <AnimatePresence
       onExitComplete={() => {
+        setIsExiting(false);
         dbg.mark("sheet-exit");
+        debugReport({
+          machine: {
+            sheet: {
+              mounted: false,
+              open: false,
+              exiting: false,
+              sheetY: 0,
+            },
+          },
+        });
         onExitComplete?.();
       }}
     >
@@ -69,7 +125,19 @@ export default function BottomSheet({
             animate={{ opacity: 1, y: 0 }}
             exit={{ y: "100%" }}
             transition={dbg.scaleT({ duration: 0.3 })}
-            onAnimationComplete={() => dbg.mark("sheet-open")}
+            onAnimationComplete={() => {
+              dbg.mark("sheet-open");
+              debugReport({
+                machine: {
+                  sheet: {
+                    mounted: true,
+                    open: true,
+                    exiting: false,
+                    sheetY: 0,
+                  },
+                },
+              });
+            }}
             style={{ y: sheetY, overscrollBehavior: "contain" }}
           >
             <div
@@ -87,4 +155,8 @@ export default function BottomSheet({
       )}
     </AnimatePresence>
   );
+}
+
+function roundMotionValue(value: number): number {
+  return Math.round(value * 100) / 100;
 }

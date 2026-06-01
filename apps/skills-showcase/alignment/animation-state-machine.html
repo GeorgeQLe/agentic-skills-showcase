@@ -1,0 +1,2386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Animation State Machine - Pack Drawer Prototype</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --text: #c9d1d9;
+    --text-muted: #8b949e;
+    --accent: #58a6ff;
+    --green: #3fb950;
+    --red: #f85149;
+    --orange: #d29922;
+    --purple: #bc8cff;
+    --code-bg: #1c2128;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  main { max-width: 1180px; margin: 0 auto; padding: 28px 22px 80px; overflow-wrap: break-word; }
+  h1, h2, h3 { color: #fff; line-height: 1.2; }
+  h1 { font-size: 2rem; margin: 0 0 8px; }
+  h2 { color: var(--accent); margin-top: 34px; }
+  a { color: var(--accent); }
+  code { background: var(--code-bg); border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; color: #e6edf3; }
+  .muted { color: var(--text-muted); }
+  .toc, .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
+  .toc ul { columns: 2; padding-left: 20px; margin: 8px 0 0; }
+  .graph-shell { border: 1px solid var(--border); border-radius: 8px; overflow-x: auto; background: #0b1017; }
+  svg { display: block; max-width: none; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  th, td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; }
+  th { background: var(--surface); color: #fff; }
+  tr:nth-child(even) td { background: #11161d; }
+  .table-wrap { overflow-x: auto; }
+  .badge { display: inline-block; border: 1px solid var(--border); border-radius: 999px; padding: 1px 8px; font-size: 0.75rem; color: var(--text-muted); }
+  .badge.apex { color: var(--orange); border-color: var(--orange); }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 14px; color: var(--text-muted); font-size: 0.85rem; margin-top: 10px; }
+  .dot { width: 9px; height: 9px; border-radius: 999px; display: inline-block; margin-right: 5px; }
+  @media (max-width: 860px) {
+    .toc ul { columns: 1; }
+    main { padding: 22px 14px 64px; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <p class="muted">Static reference generated from <code>src/components/debug/animationMachine.ts</code>.</p>
+    <h1>Animation State Machine - Pack Drawer Prototype</h1>
+    <p>The live <code>/prototype</code> debug panel and this static page share the same canonical model export. The model maps page state, SealedPack refs and motion values, BottomSheet state, PackOpener collapse internals, and every existing debug gate from <code>OPEN_STEPS</code> / <code>CLOSE_STEPS</code>.</p>
+  </header>
+
+  <section class="toc" id="toc">
+    <strong>Table of Contents</strong>
+    <ul>
+      <li><a href="#graph">State Machine Graph</a></li>
+      <li><a href="#steps">Debug Step Boundaries</a></li>
+      <li><a href="#transitions">Transitions</a></li>
+      <li><a href="#model-data">Embedded Model Data</a></li>
+      <li><a href="animation-audit-pack-drawer.html">Animation Audit</a></li>
+    </ul>
+  </section>
+
+  <section id="graph">
+    <h2>State Machine Graph</h2>
+    <p class="muted">Lanes match runtime owners: Page, SealedPack, BottomSheet, PackOpener, and Debug Gates. Purple nodes are apex gates; orange transition labels identify close-path boundaries that can be paused in stepped mode.</p>
+    <div class="graph-shell">
+      <svg viewBox="0 0 1600 620" width="1600" height="620" role="img" aria-label="Pack drawer animation state machine">
+  <defs>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#8b949e" /></marker>
+    <marker id="arrow-close" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#d29922" /></marker>
+  </defs>
+  <rect width="1600" height="620" fill="#0d1117" />
+  <g>
+        <rect x="12" y="32" width="1576" height="92" rx="8" fill="#111827" stroke="#30363d" />
+        <text x="24" y="52" fill="#8b949e" font-size="13" font-weight="700">Page</text>
+      </g>
+<g>
+        <rect x="12" y="142" width="1576" height="92" rx="8" fill="#111827" stroke="#30363d" />
+        <text x="24" y="162" fill="#8b949e" font-size="13" font-weight="700">SealedPack</text>
+      </g>
+<g>
+        <rect x="12" y="252" width="1576" height="92" rx="8" fill="#111827" stroke="#30363d" />
+        <text x="24" y="272" fill="#8b949e" font-size="13" font-weight="700">BottomSheet</text>
+      </g>
+<g>
+        <rect x="12" y="362" width="1576" height="92" rx="8" fill="#111827" stroke="#30363d" />
+        <text x="24" y="382" fill="#8b949e" font-size="13" font-weight="700">PackOpener</text>
+      </g>
+<g>
+        <rect x="12" y="482" width="1576" height="92" rx="8" fill="#111827" stroke="#30363d" />
+        <text x="24" y="502" fill="#8b949e" font-size="13" font-weight="700">Debug Gates</text>
+      </g>
+  <g>
+    <path d="M 146 209 C 224 185, 224 185, 302 209" fill="none" stroke="#8b949e" stroke-width="1.1" stroke-opacity="0.44" marker-end="url(#arrow)" />
+    
+  </g>
+<g>
+    <path d="M 302 209 C 385 185, 385 185, 468 209" fill="none" stroke="#8b949e" stroke-width="1.1" stroke-opacity="0.44" marker-end="url(#arrow)" />
+    
+  </g>
+<g>
+    <path d="M 636 209 C 806 185, 806 185, 976 209" fill="none" stroke="#8b949e" stroke-width="1.1" stroke-opacity="0.44" marker-end="url(#arrow)" />
+    
+  </g>
+<g>
+    <path d="M 804 209 C 890 185, 890 185, 976 209" fill="none" stroke="#8b949e" stroke-width="1.1" stroke-opacity="0.44" marker-end="url(#arrow)" />
+    
+  </g>
+<g>
+    <path d="M 976 209 C 561 209, 561 99, 146 99" fill="none" stroke="#8b949e" stroke-width="1.1" stroke-opacity="0.44" marker-end="url(#arrow)" />
+    
+  </g>
+<g>
+    <path d="M 146 99 C 415 75, 415 75, 684 99" fill="none" stroke="#8b949e" stroke-width="1.1" stroke-opacity="0.44" marker-end="url(#arrow)" />
+    
+  </g>
+<g>
+    <path d="M 684 99 C 575 99, 575 319, 466 319" fill="none" stroke="#8b949e" stroke-width="1.1" stroke-opacity="0.44" marker-end="url(#arrow)" />
+    
+  </g>
+<g>
+    <path d="M 976 209 C 833 209, 833 429, 690 429" fill="none" stroke="#8b949e" stroke-width="1.1" stroke-opacity="0.44" marker-end="url(#arrow)" />
+    
+  </g>
+<g>
+    <path d="M 690 429 C 418 405, 418 405, 146 429" fill="none" stroke="#8b949e" stroke-width="1.1" stroke-opacity="0.44" marker-end="url(#arrow)" />
+    
+  </g>
+<g>
+    <path d="M 800 319 C 644 319, 644 99, 488 99" fill="none" stroke="#d29922" stroke-width="1.9" stroke-opacity="0.82" marker-end="url(#arrow-close)" />
+    <text x="650" y="203" fill="#d29922" font-size="10" font-weight="700">close-trigger</text>
+  </g>
+<g>
+    <path d="M 488 99 C 407 99, 407 429, 326 429" fill="none" stroke="#d29922" stroke-width="1.9" stroke-opacity="0.82" marker-end="url(#arrow-close)" />
+    <text x="413" y="258" fill="#d29922" font-size="10" font-weight="700">collapse-measure</text>
+  </g>
+<g>
+    <path d="M 326 429 C 508 405, 508 405, 690 429" fill="none" stroke="#d29922" stroke-width="1.9" stroke-opacity="0.82" marker-end="url(#arrow-close)" />
+    <text x="514" y="399" fill="#d29922" font-size="10" font-weight="700">collapse-fan</text>
+  </g>
+<g>
+    <path d="M 884 429 C 991 405, 991 405, 1098 429" fill="none" stroke="#d29922" stroke-width="1.9" stroke-opacity="0.82" marker-end="url(#arrow-close)" />
+    <text x="997" y="399" fill="#d29922" font-size="10" font-weight="700">collapse-complete</text>
+  </g>
+<g>
+    <path d="M 1098 429 C 891 429, 891 99, 684 99" fill="none" stroke="#d29922" stroke-width="1.9" stroke-opacity="0.82" marker-end="url(#arrow-close)" />
+    <text x="897" y="258" fill="#d29922" font-size="10" font-weight="700">drawer-teardown</text>
+  </g>
+<g>
+    <path d="M 684 99 C 655 99, 655 319, 626 319" fill="none" stroke="#d29922" stroke-width="1.9" stroke-opacity="0.82" marker-end="url(#arrow-close)" />
+    <text x="661" y="203" fill="#d29922" font-size="10" font-weight="700">sheet-exit</text>
+  </g>
+<g>
+    <path d="M 626 319 C 890 319, 890 209, 1154 209" fill="none" stroke="#d29922" stroke-width="1.9" stroke-opacity="0.82" marker-end="url(#arrow-close)" />
+    <text x="896" y="258" fill="#d29922" font-size="10" font-weight="700">layout-morph-out</text>
+  </g>
+<g>
+    <path d="M 1154 209 C 1065 185, 1065 185, 976 209" fill="none" stroke="#d29922" stroke-width="1.9" stroke-opacity="0.82" marker-end="url(#arrow-close)" />
+    <text x="1071" y="179" fill="#d29922" font-size="10" font-weight="700">drop-elevation</text>
+  </g>
+<g>
+    <path d="M 1522 549 C 834 549, 834 99, 146 99" fill="none" stroke="#8b949e" stroke-width="1.1" stroke-opacity="0.44" marker-end="url(#arrow)" />
+    
+  </g>
+  <g>
+    <rect x="88" y="78" width="116" height="42" rx="8" fill="#161b22" stroke="#58a6ff" />
+    <text x="96" y="95" fill="#fff" font-size="11" font-weight="700">openPack</text>
+    <text x="96" y="109" fill="#8b949e" font-size="9">state</text>
+  </g>
+<g>
+    <rect x="248" y="78" width="116" height="42" rx="8" fill="#161b22" stroke="#58a6ff" />
+    <text x="256" y="95" fill="#fff" font-size="11" font-weight="700">openedPacks</text>
+    <text x="256" y="109" fill="#8b949e" font-size="9">state</text>
+  </g>
+<g>
+    <rect x="430" y="78" width="116" height="42" rx="8" fill="#161b22" stroke="#58a6ff" />
+    <text x="438" y="95" fill="#fff" font-size="11" font-weight="700">isDrawerClosing</text>
+    <text x="438" y="109" fill="#8b949e" font-size="9">state</text>
+  </g>
+<g>
+    <rect x="626" y="78" width="116" height="42" rx="8" fill="#161b22" stroke="#58a6ff" />
+    <text x="634" y="95" fill="#fff" font-size="11" font-weight="700">isSheetMounted</text>
+    <text x="634" y="109" fill="#8b949e" font-size="9">state</text>
+  </g>
+<g>
+    <rect x="88" y="188" width="116" height="42" rx="8" fill="#161b22" stroke="#58a6ff" />
+    <text x="96" y="205" fill="#fff" font-size="11" font-weight="700">dragX</text>
+    <text x="96" y="219" fill="#8b949e" font-size="9">motion</text>
+  </g>
+<g>
+    <rect x="244" y="188" width="116" height="42" rx="8" fill="#161b22" stroke="#58a6ff" />
+    <text x="252" y="205" fill="#fff" font-size="11" font-weight="700">curlOpacity</text>
+    <text x="252" y="219" fill="#8b949e" font-size="9">motion</text>
+  </g>
+<g>
+    <rect x="410" y="188" width="116" height="42" rx="8" fill="#161b22" stroke="#58a6ff" />
+    <text x="418" y="205" fill="#fff" font-size="11" font-weight="700">pendingOpen</text>
+    <text x="418" y="219" fill="#8b949e" font-size="9">ref</text>
+  </g>
+<g>
+    <rect x="578" y="188" width="116" height="42" rx="8" fill="#161b22" stroke="#58a6ff" />
+    <text x="586" y="205" fill="#fff" font-size="11" font-weight="700">cardDragY</text>
+    <text x="586" y="219" fill="#8b949e" font-size="9">motion</text>
+  </g>
+<g>
+    <rect x="746" y="188" width="116" height="42" rx="8" fill="#161b22" stroke="#58a6ff" />
+    <text x="754" y="205" fill="#fff" font-size="11" font-weight="700">cardSlideY</text>
+    <text x="754" y="219" fill="#8b949e" font-size="9">motion</text>
+  </g>
+<g>
+    <rect x="918" y="188" width="116" height="42" rx="8" fill="#161b22" stroke="#58a6ff" />
+    <text x="926" y="205" fill="#fff" font-size="11" font-weight="700">cardElevated</text>
+    <text x="926" y="219" fill="#8b949e" font-size="9">state</text>
+  </g>
+<g>
+    <rect x="1096" y="188" width="116" height="42" rx="8" fill="#161b22" stroke="#58a6ff" />
+    <text x="1104" y="205" fill="#fff" font-size="11" font-weight="700">wasInDrawer</text>
+    <text x="1104" y="219" fill="#8b949e" font-size="9">ref</text>
+  </g>
+<g>
+    <rect x="1292" y="188" width="116" height="42" rx="8" fill="#161b22" stroke="#58a6ff" />
+    <text x="1300" y="205" fill="#fff" font-size="11" font-weight="700">closeMorphBack</text>
+    <text x="1300" y="219" fill="#8b949e" font-size="9">ref</text>
+  </g>
+<g>
+    <rect x="88" y="298" width="116" height="42" rx="8" fill="#161b22" stroke="#58a6ff" />
+    <text x="96" y="315" fill="#fff" font-size="11" font-weight="700">sheetY</text>
+    <text x="96" y="329" fill="#8b949e" font-size="9">motion</text>
+  </g>
+<g>
+    <rect x="248" y="298" width="116" height="42" rx="8" fill="#161b22" stroke="#58a6ff" />
+    <text x="256" y="315" fill="#fff" font-size="11" font-weight="700">mounted</text>
+    <text x="256" y="329" fill="#8b949e" font-size="9">state</text>
+  </g>
+<g>
+    <rect x="408" y="298" width="116" height="42" rx="8" fill="#161b22" stroke="#58a6ff" />
+    <text x="416" y="315" fill="#fff" font-size="11" font-weight="700">open</text>
+    <text x="416" y="329" fill="#8b949e" font-size="9">state</text>
+  </g>
+<g>
+    <rect x="568" y="298" width="116" height="42" rx="8" fill="#161b22" stroke="#58a6ff" />
+    <text x="576" y="315" fill="#fff" font-size="11" font-weight="700">exiting</text>
+    <text x="576" y="329" fill="#8b949e" font-size="9">state</text>
+  </g>
+<g>
+    <rect x="742" y="298" width="116" height="42" rx="8" fill="#161b22" stroke="#58a6ff" />
+    <text x="750" y="315" fill="#fff" font-size="11" font-weight="700">dismissable</text>
+    <text x="750" y="329" fill="#8b949e" font-size="9">state</text>
+  </g>
+<g>
+    <rect x="88" y="408" width="116" height="42" rx="8" fill="#161b22" stroke="#58a6ff" />
+    <text x="96" y="425" fill="#fff" font-size="11" font-weight="700">fanOffsets</text>
+    <text x="96" y="439" fill="#8b949e" font-size="9">state</text>
+  </g>
+<g>
+    <rect x="268" y="408" width="116" height="42" rx="8" fill="#161b22" stroke="#58a6ff" />
+    <text x="276" y="425" fill="#fff" font-size="11" font-weight="700">collapseState</text>
+    <text x="276" y="439" fill="#8b949e" font-size="9">state</text>
+  </g>
+<g>
+    <rect x="456" y="408" width="116" height="42" rx="8" fill="#161b22" stroke="#58a6ff" />
+    <text x="464" y="425" fill="#fff" font-size="11" font-weight="700">targetIndex</text>
+    <text x="464" y="439" fill="#8b949e" font-size="9">state</text>
+  </g>
+<g>
+    <rect x="632" y="408" width="116" height="42" rx="8" fill="#161b22" stroke="#58a6ff" />
+    <text x="640" y="425" fill="#fff" font-size="11" font-weight="700">card0X/Y</text>
+    <text x="640" y="439" fill="#8b949e" font-size="9">motion</text>
+  </g>
+<g>
+    <rect x="826" y="408" width="116" height="42" rx="8" fill="#161b22" stroke="#58a6ff" />
+    <text x="834" y="425" fill="#fff" font-size="11" font-weight="700">collapse counters</text>
+    <text x="834" y="439" fill="#8b949e" font-size="9">ref</text>
+  </g>
+<g>
+    <rect x="1040" y="408" width="116" height="42" rx="8" fill="#161b22" stroke="#58a6ff" />
+    <text x="1048" y="425" fill="#fff" font-size="11" font-weight="700">complete fired</text>
+    <text x="1048" y="439" fill="#8b949e" font-size="9">ref</text>
+  </g>
+<g>
+    <rect x="1464" y="528" width="116" height="42" rx="8" fill="#102818" stroke="#8b949e" />
+    <text x="1472" y="545" fill="#fff" font-size="11" font-weight="700">reset</text>
+    <text x="1472" y="559" fill="#8b949e" font-size="9">gate</text>
+  </g>
+<g>
+    <rect x="88" y="528" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="96" y="545" fill="#fff" font-size="11" font-weight="700">Tear edge</text>
+    <text x="96" y="559" fill="#8b949e" font-size="9">gate</text>
+  </g>
+<g>
+    <rect x="174" y="528" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="182" y="545" fill="#fff" font-size="11" font-weight="700">Card lift (drag-up)</text>
+    <text x="182" y="559" fill="#8b949e" font-size="9">gate</text>
+  </g>
+<g>
+    <rect x="260" y="528" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="268" y="545" fill="#fff" font-size="11" font-weight="700">Card rise (click)</text>
+    <text x="268" y="559" fill="#8b949e" font-size="9">gate</text>
+  </g>
+<g>
+    <rect x="346" y="528" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="354" y="545" fill="#fff" font-size="11" font-weight="700">Elevate card</text>
+    <text x="354" y="559" fill="#8b949e" font-size="9">gate</text>
+  </g>
+<g>
+    <rect x="432" y="528" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="440" y="545" fill="#fff" font-size="11" font-weight="700">Request drawer open</text>
+    <text x="440" y="559" fill="#8b949e" font-size="9">gate</text>
+  </g>
+<g>
+    <rect x="518" y="528" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="526" y="545" fill="#fff" font-size="11" font-weight="700">Sheet slide-up</text>
+    <text x="526" y="559" fill="#8b949e" font-size="9">gate</text>
+  </g>
+<g>
+    <rect x="604" y="528" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="612" y="545" fill="#fff" font-size="11" font-weight="700">layoutId morph in</text>
+    <text x="612" y="559" fill="#8b949e" font-size="9">gate</text>
+  </g>
+<g>
+    <rect x="690" y="528" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="698" y="545" fill="#fff" font-size="11" font-weight="700">Fan-out springs</text>
+    <text x="698" y="559" fill="#8b949e" font-size="9">gate</text>
+  </g>
+<g>
+    <rect x="776" y="528" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="784" y="545" fill="#fff" font-size="11" font-weight="700">Close trigger</text>
+    <text x="784" y="559" fill="#8b949e" font-size="9">gate</text>
+  </g>
+<g>
+    <rect x="862" y="528" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="870" y="545" fill="#fff" font-size="11" font-weight="700">Collapse measure</text>
+    <text x="870" y="559" fill="#8b949e" font-size="9">gate</text>
+  </g>
+<g>
+    <rect x="948" y="528" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="956" y="545" fill="#fff" font-size="11" font-weight="700">Collapse fan-in</text>
+    <text x="956" y="559" fill="#8b949e" font-size="9">gate</text>
+  </g>
+<g>
+    <rect x="1034" y="528" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="1042" y="545" fill="#fff" font-size="11" font-weight="700">Collapse complete</text>
+    <text x="1042" y="559" fill="#8b949e" font-size="9">gate</text>
+  </g>
+<g>
+    <rect x="1120" y="528" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="1128" y="545" fill="#fff" font-size="11" font-weight="700">Drawer teardown</text>
+    <text x="1128" y="559" fill="#8b949e" font-size="9">gate</text>
+  </g>
+<g>
+    <rect x="1206" y="528" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="1214" y="545" fill="#fff" font-size="11" font-weight="700">Sheet exit</text>
+    <text x="1214" y="559" fill="#8b949e" font-size="9">gate</text>
+  </g>
+<g>
+    <rect x="1292" y="528" width="116" height="42" rx="8" fill="#241c33" stroke="#bc8cff" />
+    <text x="1300" y="545" fill="#fff" font-size="11" font-weight="700">layoutId morph back (APEX)</text>
+    <text x="1300" y="559" fill="#8b949e" font-size="9">gate - apex</text>
+  </g>
+<g>
+    <rect x="1378" y="528" width="116" height="42" rx="8" fill="#241c33" stroke="#bc8cff" />
+    <text x="1386" y="545" fill="#fff" font-size="11" font-weight="700">Drop elevation / z-index (APEX)</text>
+    <text x="1386" y="559" fill="#8b949e" font-size="9">gate - apex</text>
+  </g>
+</svg>
+    </div>
+    <div class="legend">
+      <span><span class="dot" style="background:var(--accent)"></span>runtime state</span>
+      <span><span class="dot" style="background:var(--green)"></span>debug step</span>
+      <span><span class="dot" style="background:var(--orange)"></span>close transition</span>
+      <span><span class="dot" style="background:var(--purple)"></span>apex</span>
+      <span><span class="dot" style="background:var(--text-muted)"></span>reset</span>
+    </div>
+  </section>
+
+  <section id="steps">
+    <h2>Debug Step Boundaries</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Step id</th><th>Label</th><th>Phase</th><th>Apex</th><th>Boundary</th></tr></thead>
+        <tbody>
+<tr>
+        <td><code>tear</code></td>
+        <td>Tear edge</td>
+        <td>open</td>
+        <td></td>
+        <td>SealedPack.completeTear</td>
+      </tr>
+<tr>
+        <td><code>card-lift</code></td>
+        <td>Card lift (drag-up)</td>
+        <td>open</td>
+        <td></td>
+        <td>SealedPack.handleCardPointerUp</td>
+      </tr>
+<tr>
+        <td><code>card-click-rise</code></td>
+        <td>Card rise (click)</td>
+        <td>open</td>
+        <td></td>
+        <td>SealedPack.handlePackClick</td>
+      </tr>
+<tr>
+        <td><code>elevate-card</code></td>
+        <td>Elevate card</td>
+        <td>open</td>
+        <td></td>
+        <td>setCardElevated(true)</td>
+      </tr>
+<tr>
+        <td><code>request-open</code></td>
+        <td>Request drawer open</td>
+        <td>open</td>
+        <td></td>
+        <td>onOpen(getOrigin())</td>
+      </tr>
+<tr>
+        <td><code>sheet-open</code></td>
+        <td>Sheet slide-up</td>
+        <td>open</td>
+        <td></td>
+        <td>BottomSheet sheet onAnimationComplete</td>
+      </tr>
+<tr>
+        <td><code>layout-morph-in</code></td>
+        <td>layoutId morph in</td>
+        <td>open</td>
+        <td></td>
+        <td>PackOpener card0 onLayoutAnimationComplete</td>
+      </tr>
+<tr>
+        <td><code>fan-out</code></td>
+        <td>Fan-out springs</td>
+        <td>open</td>
+        <td></td>
+        <td>PackOpener last card onAnimationComplete</td>
+      </tr>
+<tr>
+        <td><code>close-trigger</code></td>
+        <td>Close trigger</td>
+        <td>close</td>
+        <td></td>
+        <td>page.handleClose → isClosing=true</td>
+      </tr>
+<tr>
+        <td><code>collapse-measure</code></td>
+        <td>Collapse measure</td>
+        <td>close</td>
+        <td></td>
+        <td>PackOpener collapse useLayoutEffect</td>
+      </tr>
+<tr>
+        <td><code>collapse-fan</code></td>
+        <td>Collapse fan-in</td>
+        <td>close</td>
+        <td></td>
+        <td>PackOpener collapse springs</td>
+      </tr>
+<tr>
+        <td><code>collapse-complete</code></td>
+        <td>Collapse complete</td>
+        <td>close</td>
+        <td></td>
+        <td>PackOpener onCollapseComplete</td>
+      </tr>
+<tr>
+        <td><code>drawer-teardown</code></td>
+        <td>Drawer teardown</td>
+        <td>close</td>
+        <td></td>
+        <td>page.handleCollapseComplete → isSheetMounted=false</td>
+      </tr>
+<tr>
+        <td><code>sheet-exit</code></td>
+        <td>Sheet exit</td>
+        <td>close</td>
+        <td></td>
+        <td>BottomSheet AnimatePresence onExitComplete</td>
+      </tr>
+<tr>
+        <td><code>layout-morph-out</code></td>
+        <td>layoutId morph back (APEX)</td>
+        <td>close</td>
+        <td><span class="badge apex">apex</span></td>
+        <td>SealedPack onLayoutAnimationComplete (pre-body)</td>
+      </tr>
+<tr>
+        <td><code>drop-elevation</code></td>
+        <td>Drop elevation / z-index (APEX)</td>
+        <td>close</td>
+        <td><span class="badge apex">apex</span></td>
+        <td>SealedPack setCardElevated(false)</td>
+      </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="transitions">
+    <h2>Transitions</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Transition id</th><th>Endpoints</th><th>Trigger</th><th>Source</th><th>Guard</th><th>Effect</th></tr></thead>
+        <tbody>
+<tr>
+        <td><code>open-tear</code></td>
+        <td><code>pack-dragX</code> -> <code>pack-curlOpacity</code></td>
+        <td>open-tear</td>
+        <td>SealedPack.completeTear</td>
+        <td></td>
+        <td>Animate dragX to PACK_WIDTH and fade curlOpacity</td>
+      </tr>
+<tr>
+        <td><code>tear-pending-open</code></td>
+        <td><code>pack-curlOpacity</code> -> <code>pack-pendingOpen</code></td>
+        <td>first tear auto-open</td>
+        <td>SealedPack.completeTear</td>
+        <td>autoOpenOnTear</td>
+        <td>Arm pendingOpen and fallback timer</td>
+      </tr>
+<tr>
+        <td><code>drag-up</code></td>
+        <td><code>pack-cardDragY</code> -> <code>pack-cardElevated</code></td>
+        <td>drag-up</td>
+        <td>SealedPack.handleCardPointerUp</td>
+        <td>cardDragY &gt;= DRAG_UP_THRESHOLD</td>
+        <td>Lift card before requesting drawer open</td>
+      </tr>
+<tr>
+        <td><code>open-click</code></td>
+        <td><code>pack-cardSlideY</code> -> <code>pack-cardElevated</code></td>
+        <td>open-click</td>
+        <td>SealedPack.handlePackClick</td>
+        <td></td>
+        <td>Slide card to the apex before requesting drawer open</td>
+      </tr>
+<tr>
+        <td><code>elevate-card</code></td>
+        <td><code>pack-cardElevated</code> -> <code>page-openPack</code></td>
+        <td>elevate-card</td>
+        <td>SealedPack.proceedToOpen</td>
+        <td></td>
+        <td>Set cardElevated before page open request</td>
+      </tr>
+<tr>
+        <td><code>request-open</code></td>
+        <td><code>page-openPack</code> -> <code>page-isSheetMounted</code></td>
+        <td>request-open</td>
+        <td>PrototypePage.handleOpen</td>
+        <td></td>
+        <td>Set openPack, isSheetMounted, and openedPacks</td>
+      </tr>
+<tr>
+        <td><code>sheet-open</code></td>
+        <td><code>page-isSheetMounted</code> -> <code>sheet-open</code></td>
+        <td>sheet-open</td>
+        <td>BottomSheet onAnimationComplete</td>
+        <td></td>
+        <td>Mark sheet enter complete</td>
+      </tr>
+<tr>
+        <td><code>layout-morph-in</code></td>
+        <td><code>pack-cardElevated</code> -> <code>drawer-card0</code></td>
+        <td>layout-morph-in</td>
+        <td>PackOpener card0 onLayoutAnimationComplete</td>
+        <td></td>
+        <td>Shared-layout card lands in the drawer</td>
+      </tr>
+<tr>
+        <td><code>fan-out</code></td>
+        <td><code>drawer-card0</code> -> <code>drawer-fanOffsets</code></td>
+        <td>fan-out</td>
+        <td>PackOpener last card onAnimationComplete</td>
+        <td></td>
+        <td>Drawer cards fan out from the measured offsets</td>
+      </tr>
+<tr>
+        <td><code>close-trigger</code></td>
+        <td><code>sheet-dismissable</code> -> <code>page-isDrawerClosing</code></td>
+        <td>close</td>
+        <td>PrototypePage.handleClose</td>
+        <td></td>
+        <td>Mark close-trigger and set isDrawerClosing</td>
+      </tr>
+<tr>
+        <td><code>collapse-measure</code></td>
+        <td><code>page-isDrawerClosing</code> -> <code>drawer-collapseState</code></td>
+        <td>collapse</td>
+        <td>PackOpener collapse useLayoutEffect</td>
+        <td></td>
+        <td>Measure visible top-left target and card offsets</td>
+      </tr>
+<tr>
+        <td><code>collapse-fan</code></td>
+        <td><code>drawer-collapseState</code> -> <code>drawer-card0</code></td>
+        <td>collapse-fan</td>
+        <td>PackOpener collapse springs</td>
+        <td></td>
+        <td>Animate drawer cards into the target card</td>
+      </tr>
+<tr>
+        <td><code>collapse-complete</code></td>
+        <td><code>drawer-collapseCounters</code> -> <code>drawer-collapseCompleteFired</code></td>
+        <td>collapse-complete</td>
+        <td>PackOpener.completeCollapse</td>
+        <td></td>
+        <td>Gate the one-shot handoff before notifying the page</td>
+      </tr>
+<tr>
+        <td><code>drawer-teardown</code></td>
+        <td><code>drawer-collapseCompleteFired</code> -> <code>page-isSheetMounted</code></td>
+        <td>drawer-teardown</td>
+        <td>PrototypePage.handleCollapseComplete</td>
+        <td></td>
+        <td>Unmount sheet content without clearing openPack</td>
+      </tr>
+<tr>
+        <td><code>sheet-exit</code></td>
+        <td><code>page-isSheetMounted</code> -> <code>sheet-exiting</code></td>
+        <td>sheet-exit</td>
+        <td>BottomSheet AnimatePresence onExitComplete</td>
+        <td></td>
+        <td>Mark sheet-exit and then clear openPack</td>
+      </tr>
+<tr>
+        <td><code>layout-morph-out</code></td>
+        <td><code>sheet-exiting</code> -> <code>pack-wasInDrawer</code></td>
+        <td>morph-out</td>
+        <td>SealedPack close onLayoutAnimationComplete</td>
+        <td></td>
+        <td>Hold the apex z-index frame before body/elevation state changes</td>
+      </tr>
+<tr>
+        <td><code>drop-elevation</code></td>
+        <td><code>pack-wasInDrawer</code> -> <code>pack-cardElevated</code></td>
+        <td>drop-elevation</td>
+        <td>SealedPack close onLayoutAnimationComplete</td>
+        <td></td>
+        <td>Drop card elevation only after the close apex is inspectable</td>
+      </tr>
+<tr>
+        <td><code>reset-state</code></td>
+        <td><code>debug-reset</code> -> <code>page-openPack</code></td>
+        <td>reset</td>
+        <td>DebugProvider.reset</td>
+        <td></td>
+        <td>Clear page, pack, drawer, sheet, reached, paused, and active graph state</td>
+      </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="model-data">
+    <h2>Embedded Model Data</h2>
+    <p class="muted">Tests compare this JSON with the TypeScript export to prevent static/live drift.</p>
+    <script id="animation-machine-data" type="application/json" data-model-source="src/components/debug/animationMachine.ts">{
+  "lanes": [
+    {
+      "id": "page",
+      "label": "Page",
+      "y": 32
+    },
+    {
+      "id": "sealed-pack",
+      "label": "SealedPack",
+      "y": 142
+    },
+    {
+      "id": "bottom-sheet",
+      "label": "BottomSheet",
+      "y": 252
+    },
+    {
+      "id": "pack-opener",
+      "label": "PackOpener",
+      "y": 362
+    },
+    {
+      "id": "debug-gates",
+      "label": "Debug Gates",
+      "y": 482
+    }
+  ],
+  "nodes": [
+    {
+      "id": "page-openPack",
+      "label": "openPack",
+      "lane": "page",
+      "phase": "open",
+      "kind": "state",
+      "trackedFields": [
+        "page.openPack"
+      ],
+      "description": "The page-level identity for the pack that owns the drawer and shared-layout morph.",
+      "x": 88,
+      "y": 78
+    },
+    {
+      "id": "page-openedPacks",
+      "label": "openedPacks",
+      "lane": "page",
+      "phase": "open",
+      "kind": "state",
+      "trackedFields": [
+        "page.openedPacks"
+      ],
+      "description": "Session-local pack names that have been unsealed, which gates first-tear auto-open behavior.",
+      "x": 248,
+      "y": 78
+    },
+    {
+      "id": "page-isDrawerClosing",
+      "label": "isDrawerClosing",
+      "lane": "page",
+      "phase": "close",
+      "kind": "state",
+      "trackedFields": [
+        "page.isDrawerClosing"
+      ],
+      "description": "Close-phase state that tells PackOpener to collapse cards while the sheet remains mounted.",
+      "x": 430,
+      "y": 78
+    },
+    {
+      "id": "page-isSheetMounted",
+      "label": "isSheetMounted",
+      "lane": "page",
+      "phase": "open",
+      "kind": "state",
+      "trackedFields": [
+        "page.isSheetMounted"
+      ],
+      "description": "The sheet lifetime flag, intentionally separate from openPack during close exit.",
+      "x": 626,
+      "y": 78
+    },
+    {
+      "id": "pack-dragX",
+      "label": "dragX",
+      "lane": "sealed-pack",
+      "phase": "open",
+      "kind": "motion",
+      "trackedFields": [
+        "pack.dragX"
+      ],
+      "description": "Horizontal tear progress across the sealed pack.",
+      "x": 88,
+      "y": 188
+    },
+    {
+      "id": "pack-curlOpacity",
+      "label": "curlOpacity",
+      "lane": "sealed-pack",
+      "phase": "open",
+      "kind": "motion",
+      "trackedFields": [
+        "pack.curlOpacity"
+      ],
+      "description": "Opacity of the foil curl during the tear completion.",
+      "x": 244,
+      "y": 188
+    },
+    {
+      "id": "pack-pendingOpen",
+      "label": "pendingOpen",
+      "lane": "sealed-pack",
+      "phase": "open",
+      "kind": "ref",
+      "trackedFields": [
+        "pack.pendingOpen"
+      ],
+      "description": "First-tear auto-open continuation waiting for the layout animation boundary.",
+      "x": 410,
+      "y": 188
+    },
+    {
+      "id": "pack-cardDragY",
+      "label": "cardDragY",
+      "lane": "sealed-pack",
+      "phase": "open",
+      "kind": "motion",
+      "trackedFields": [
+        "pack.cardDragY"
+      ],
+      "description": "Upward card-drag distance for the drag-up open path.",
+      "x": 578,
+      "y": 188
+    },
+    {
+      "id": "pack-cardSlideY",
+      "label": "cardSlideY",
+      "lane": "sealed-pack",
+      "phase": "open",
+      "kind": "motion",
+      "trackedFields": [
+        "pack.cardSlideY"
+      ],
+      "description": "Card slide offset for click open and close morph-back travel.",
+      "x": 746,
+      "y": 188
+    },
+    {
+      "id": "pack-cardElevated",
+      "label": "cardElevated",
+      "lane": "sealed-pack",
+      "phase": "open",
+      "kind": "state",
+      "trackedFields": [
+        "pack.cardElevated",
+        "pack.cardZIndex"
+      ],
+      "description": "Elevation state that raises the shared-layout card over the pack body.",
+      "x": 918,
+      "y": 188
+    },
+    {
+      "id": "pack-wasInDrawer",
+      "label": "wasInDrawer",
+      "lane": "sealed-pack",
+      "phase": "close",
+      "kind": "ref",
+      "trackedFields": [
+        "pack.wasInDrawer"
+      ],
+      "description": "Close morph-back guard set when the drawer identity leaves the pack.",
+      "x": 1096,
+      "y": 188
+    },
+    {
+      "id": "pack-closeMorph",
+      "label": "closeMorphBack",
+      "lane": "sealed-pack",
+      "phase": "close",
+      "kind": "ref",
+      "trackedFields": [
+        "pack.isCloseMorphBackInFlight"
+      ],
+      "description": "One-shot ref that prevents repeated close morph-back/elevation gates.",
+      "x": 1292,
+      "y": 188
+    },
+    {
+      "id": "sheet-sheetY",
+      "label": "sheetY",
+      "lane": "bottom-sheet",
+      "phase": "open",
+      "kind": "motion",
+      "trackedFields": [
+        "sheet.sheetY"
+      ],
+      "description": "Drag-to-dismiss motion value for the bottom sheet.",
+      "x": 88,
+      "y": 298
+    },
+    {
+      "id": "sheet-mounted",
+      "label": "mounted",
+      "lane": "bottom-sheet",
+      "phase": "open",
+      "kind": "state",
+      "trackedFields": [
+        "sheet.mounted"
+      ],
+      "description": "Whether AnimatePresence is currently rendering the sheet subtree.",
+      "x": 248,
+      "y": 298
+    },
+    {
+      "id": "sheet-open",
+      "label": "open",
+      "lane": "bottom-sheet",
+      "phase": "open",
+      "kind": "state",
+      "stepId": "sheet-open",
+      "trackedFields": [
+        "sheet.open"
+      ],
+      "description": "The sheet has completed its slide-up enter animation.",
+      "x": 408,
+      "y": 298
+    },
+    {
+      "id": "sheet-exiting",
+      "label": "exiting",
+      "lane": "bottom-sheet",
+      "phase": "close",
+      "kind": "state",
+      "stepId": "sheet-exit",
+      "trackedFields": [
+        "sheet.exiting"
+      ],
+      "description": "The sheet is exiting; openPack is intentionally still retained until exit completion.",
+      "x": 568,
+      "y": 298
+    },
+    {
+      "id": "sheet-dismissable",
+      "label": "dismissable",
+      "lane": "bottom-sheet",
+      "phase": "close",
+      "kind": "state",
+      "trackedFields": [
+        "sheet.dismissable"
+      ],
+      "description": "Dismissal guard disabled while drawer collapse and sheet exit are in flight.",
+      "x": 742,
+      "y": 298
+    },
+    {
+      "id": "drawer-fanOffsets",
+      "label": "fanOffsets",
+      "lane": "pack-opener",
+      "phase": "open",
+      "kind": "state",
+      "trackedFields": [
+        "drawer.fanOffsets"
+      ],
+      "description": "Measured fan-out offsets from card 0 to each drawer card.",
+      "x": 88,
+      "y": 408
+    },
+    {
+      "id": "drawer-collapseState",
+      "label": "collapseState",
+      "lane": "pack-opener",
+      "phase": "close",
+      "kind": "state",
+      "trackedFields": [
+        "drawer.collapseState"
+      ],
+      "description": "Collapse target and per-card offsets used during close fan-in.",
+      "x": 268,
+      "y": 408
+    },
+    {
+      "id": "drawer-targetIndex",
+      "label": "targetIndex",
+      "lane": "pack-opener",
+      "phase": "close",
+      "kind": "state",
+      "trackedFields": [
+        "drawer.targetIndex"
+      ],
+      "description": "Visible top-left card index that the drawer collapses into.",
+      "x": 456,
+      "y": 408
+    },
+    {
+      "id": "drawer-card0",
+      "label": "card0X/Y",
+      "lane": "pack-opener",
+      "phase": "close",
+      "kind": "motion",
+      "trackedFields": [
+        "drawer.card0X",
+        "drawer.card0Y"
+      ],
+      "description": "Imperative card 0 collapse motion values; card 0 cannot use animate because it owns layoutId.",
+      "x": 632,
+      "y": 408
+    },
+    {
+      "id": "drawer-collapseCounters",
+      "label": "collapse counters",
+      "lane": "pack-opener",
+      "phase": "close",
+      "kind": "ref",
+      "trackedFields": [
+        "drawer.collapseCount",
+        "drawer.expectedCollapseCount"
+      ],
+      "description": "Count of completed card-collapse animations versus the expected handoff count.",
+      "x": 826,
+      "y": 408
+    },
+    {
+      "id": "drawer-collapseCompleteFired",
+      "label": "complete fired",
+      "lane": "pack-opener",
+      "phase": "close",
+      "kind": "ref",
+      "trackedFields": [
+        "drawer.collapseCompleteFiredRef"
+      ],
+      "description": "One-shot ref that prevents duplicate collapse-complete handoffs.",
+      "x": 1040,
+      "y": 408
+    },
+    {
+      "id": "debug-reset",
+      "label": "reset",
+      "lane": "debug-gates",
+      "phase": "reset",
+      "kind": "gate",
+      "trackedFields": [
+        "debug.reachedSteps",
+        "page.openPack"
+      ],
+      "description": "Reset clears reached/paused graph state, page state, and target pack motion values.",
+      "x": 1464,
+      "y": 528
+    },
+    {
+      "id": "step-tear",
+      "label": "Tear edge",
+      "lane": "debug-gates",
+      "phase": "open",
+      "kind": "gate",
+      "stepId": "tear",
+      "trackedFields": [
+        "debug.pausedAtStep",
+        "debug.reachedSteps"
+      ],
+      "description": "SealedPack.completeTear",
+      "x": 88,
+      "y": 528
+    },
+    {
+      "id": "step-card-lift",
+      "label": "Card lift (drag-up)",
+      "lane": "debug-gates",
+      "phase": "open",
+      "kind": "gate",
+      "stepId": "card-lift",
+      "trackedFields": [
+        "debug.pausedAtStep",
+        "debug.reachedSteps"
+      ],
+      "description": "SealedPack.handleCardPointerUp",
+      "x": 174,
+      "y": 528
+    },
+    {
+      "id": "step-card-click-rise",
+      "label": "Card rise (click)",
+      "lane": "debug-gates",
+      "phase": "open",
+      "kind": "gate",
+      "stepId": "card-click-rise",
+      "trackedFields": [
+        "debug.pausedAtStep",
+        "debug.reachedSteps"
+      ],
+      "description": "SealedPack.handlePackClick",
+      "x": 260,
+      "y": 528
+    },
+    {
+      "id": "step-elevate-card",
+      "label": "Elevate card",
+      "lane": "debug-gates",
+      "phase": "open",
+      "kind": "gate",
+      "stepId": "elevate-card",
+      "trackedFields": [
+        "debug.pausedAtStep",
+        "debug.reachedSteps"
+      ],
+      "description": "setCardElevated(true)",
+      "x": 346,
+      "y": 528
+    },
+    {
+      "id": "step-request-open",
+      "label": "Request drawer open",
+      "lane": "debug-gates",
+      "phase": "open",
+      "kind": "gate",
+      "stepId": "request-open",
+      "trackedFields": [
+        "debug.pausedAtStep",
+        "debug.reachedSteps"
+      ],
+      "description": "onOpen(getOrigin())",
+      "x": 432,
+      "y": 528
+    },
+    {
+      "id": "step-sheet-open",
+      "label": "Sheet slide-up",
+      "lane": "debug-gates",
+      "phase": "open",
+      "kind": "gate",
+      "stepId": "sheet-open",
+      "trackedFields": [
+        "debug.pausedAtStep",
+        "debug.reachedSteps"
+      ],
+      "description": "BottomSheet sheet onAnimationComplete",
+      "x": 518,
+      "y": 528
+    },
+    {
+      "id": "step-layout-morph-in",
+      "label": "layoutId morph in",
+      "lane": "debug-gates",
+      "phase": "open",
+      "kind": "gate",
+      "stepId": "layout-morph-in",
+      "trackedFields": [
+        "debug.pausedAtStep",
+        "debug.reachedSteps"
+      ],
+      "description": "PackOpener card0 onLayoutAnimationComplete",
+      "x": 604,
+      "y": 528
+    },
+    {
+      "id": "step-fan-out",
+      "label": "Fan-out springs",
+      "lane": "debug-gates",
+      "phase": "open",
+      "kind": "gate",
+      "stepId": "fan-out",
+      "trackedFields": [
+        "debug.pausedAtStep",
+        "debug.reachedSteps"
+      ],
+      "description": "PackOpener last card onAnimationComplete",
+      "x": 690,
+      "y": 528
+    },
+    {
+      "id": "step-close-trigger",
+      "label": "Close trigger",
+      "lane": "debug-gates",
+      "phase": "close",
+      "kind": "gate",
+      "stepId": "close-trigger",
+      "trackedFields": [
+        "debug.pausedAtStep",
+        "debug.reachedSteps"
+      ],
+      "description": "page.handleClose → isClosing=true",
+      "x": 776,
+      "y": 528
+    },
+    {
+      "id": "step-collapse-measure",
+      "label": "Collapse measure",
+      "lane": "debug-gates",
+      "phase": "close",
+      "kind": "gate",
+      "stepId": "collapse-measure",
+      "trackedFields": [
+        "debug.pausedAtStep",
+        "debug.reachedSteps"
+      ],
+      "description": "PackOpener collapse useLayoutEffect",
+      "x": 862,
+      "y": 528
+    },
+    {
+      "id": "step-collapse-fan",
+      "label": "Collapse fan-in",
+      "lane": "debug-gates",
+      "phase": "close",
+      "kind": "gate",
+      "stepId": "collapse-fan",
+      "trackedFields": [
+        "debug.pausedAtStep",
+        "debug.reachedSteps"
+      ],
+      "description": "PackOpener collapse springs",
+      "x": 948,
+      "y": 528
+    },
+    {
+      "id": "step-collapse-complete",
+      "label": "Collapse complete",
+      "lane": "debug-gates",
+      "phase": "close",
+      "kind": "gate",
+      "stepId": "collapse-complete",
+      "trackedFields": [
+        "debug.pausedAtStep",
+        "debug.reachedSteps"
+      ],
+      "description": "PackOpener onCollapseComplete",
+      "x": 1034,
+      "y": 528
+    },
+    {
+      "id": "step-drawer-teardown",
+      "label": "Drawer teardown",
+      "lane": "debug-gates",
+      "phase": "close",
+      "kind": "gate",
+      "stepId": "drawer-teardown",
+      "trackedFields": [
+        "debug.pausedAtStep",
+        "debug.reachedSteps"
+      ],
+      "description": "page.handleCollapseComplete → isSheetMounted=false",
+      "x": 1120,
+      "y": 528
+    },
+    {
+      "id": "step-sheet-exit",
+      "label": "Sheet exit",
+      "lane": "debug-gates",
+      "phase": "close",
+      "kind": "gate",
+      "stepId": "sheet-exit",
+      "trackedFields": [
+        "debug.pausedAtStep",
+        "debug.reachedSteps"
+      ],
+      "description": "BottomSheet AnimatePresence onExitComplete",
+      "x": 1206,
+      "y": 528
+    },
+    {
+      "id": "step-layout-morph-out",
+      "label": "layoutId morph back (APEX)",
+      "lane": "debug-gates",
+      "phase": "close",
+      "kind": "gate",
+      "stepId": "layout-morph-out",
+      "apex": true,
+      "trackedFields": [
+        "debug.pausedAtStep",
+        "debug.reachedSteps"
+      ],
+      "description": "SealedPack onLayoutAnimationComplete (pre-body)",
+      "x": 1292,
+      "y": 528
+    },
+    {
+      "id": "step-drop-elevation",
+      "label": "Drop elevation / z-index (APEX)",
+      "lane": "debug-gates",
+      "phase": "close",
+      "kind": "gate",
+      "stepId": "drop-elevation",
+      "apex": true,
+      "trackedFields": [
+        "debug.pausedAtStep",
+        "debug.reachedSteps"
+      ],
+      "description": "SealedPack setCardElevated(false)",
+      "x": 1378,
+      "y": 528
+    }
+  ],
+  "transitions": [
+    {
+      "id": "open-tear",
+      "from": "pack-dragX",
+      "to": "pack-curlOpacity",
+      "trigger": "open-tear",
+      "source": "SealedPack.completeTear",
+      "effect": "Animate dragX to PACK_WIDTH and fade curlOpacity",
+      "stepId": "tear"
+    },
+    {
+      "id": "tear-pending-open",
+      "from": "pack-curlOpacity",
+      "to": "pack-pendingOpen",
+      "trigger": "first tear auto-open",
+      "source": "SealedPack.completeTear",
+      "guard": "autoOpenOnTear",
+      "effect": "Arm pendingOpen and fallback timer",
+      "stepId": "tear"
+    },
+    {
+      "id": "drag-up",
+      "from": "pack-cardDragY",
+      "to": "pack-cardElevated",
+      "trigger": "drag-up",
+      "source": "SealedPack.handleCardPointerUp",
+      "guard": "cardDragY >= DRAG_UP_THRESHOLD",
+      "effect": "Lift card before requesting drawer open",
+      "stepId": "card-lift"
+    },
+    {
+      "id": "open-click",
+      "from": "pack-cardSlideY",
+      "to": "pack-cardElevated",
+      "trigger": "open-click",
+      "source": "SealedPack.handlePackClick",
+      "effect": "Slide card to the apex before requesting drawer open",
+      "stepId": "card-click-rise"
+    },
+    {
+      "id": "elevate-card",
+      "from": "pack-cardElevated",
+      "to": "page-openPack",
+      "trigger": "elevate-card",
+      "source": "SealedPack.proceedToOpen",
+      "effect": "Set cardElevated before page open request",
+      "stepId": "elevate-card"
+    },
+    {
+      "id": "request-open",
+      "from": "page-openPack",
+      "to": "page-isSheetMounted",
+      "trigger": "request-open",
+      "source": "PrototypePage.handleOpen",
+      "effect": "Set openPack, isSheetMounted, and openedPacks",
+      "stepId": "request-open"
+    },
+    {
+      "id": "sheet-open",
+      "from": "page-isSheetMounted",
+      "to": "sheet-open",
+      "trigger": "sheet-open",
+      "source": "BottomSheet onAnimationComplete",
+      "effect": "Mark sheet enter complete",
+      "stepId": "sheet-open"
+    },
+    {
+      "id": "layout-morph-in",
+      "from": "pack-cardElevated",
+      "to": "drawer-card0",
+      "trigger": "layout-morph-in",
+      "source": "PackOpener card0 onLayoutAnimationComplete",
+      "effect": "Shared-layout card lands in the drawer",
+      "stepId": "layout-morph-in"
+    },
+    {
+      "id": "fan-out",
+      "from": "drawer-card0",
+      "to": "drawer-fanOffsets",
+      "trigger": "fan-out",
+      "source": "PackOpener last card onAnimationComplete",
+      "effect": "Drawer cards fan out from the measured offsets",
+      "stepId": "fan-out"
+    },
+    {
+      "id": "close-trigger",
+      "from": "sheet-dismissable",
+      "to": "page-isDrawerClosing",
+      "trigger": "close",
+      "source": "PrototypePage.handleClose",
+      "effect": "Mark close-trigger and set isDrawerClosing",
+      "stepId": "close-trigger"
+    },
+    {
+      "id": "collapse-measure",
+      "from": "page-isDrawerClosing",
+      "to": "drawer-collapseState",
+      "trigger": "collapse",
+      "source": "PackOpener collapse useLayoutEffect",
+      "effect": "Measure visible top-left target and card offsets",
+      "stepId": "collapse-measure"
+    },
+    {
+      "id": "collapse-fan",
+      "from": "drawer-collapseState",
+      "to": "drawer-card0",
+      "trigger": "collapse-fan",
+      "source": "PackOpener collapse springs",
+      "effect": "Animate drawer cards into the target card",
+      "stepId": "collapse-fan"
+    },
+    {
+      "id": "collapse-complete",
+      "from": "drawer-collapseCounters",
+      "to": "drawer-collapseCompleteFired",
+      "trigger": "collapse-complete",
+      "source": "PackOpener.completeCollapse",
+      "effect": "Gate the one-shot handoff before notifying the page",
+      "stepId": "collapse-complete"
+    },
+    {
+      "id": "drawer-teardown",
+      "from": "drawer-collapseCompleteFired",
+      "to": "page-isSheetMounted",
+      "trigger": "drawer-teardown",
+      "source": "PrototypePage.handleCollapseComplete",
+      "effect": "Unmount sheet content without clearing openPack",
+      "stepId": "drawer-teardown"
+    },
+    {
+      "id": "sheet-exit",
+      "from": "page-isSheetMounted",
+      "to": "sheet-exiting",
+      "trigger": "sheet-exit",
+      "source": "BottomSheet AnimatePresence onExitComplete",
+      "effect": "Mark sheet-exit and then clear openPack",
+      "stepId": "sheet-exit"
+    },
+    {
+      "id": "layout-morph-out",
+      "from": "sheet-exiting",
+      "to": "pack-wasInDrawer",
+      "trigger": "morph-out",
+      "source": "SealedPack close onLayoutAnimationComplete",
+      "effect": "Hold the apex z-index frame before body/elevation state changes",
+      "stepId": "layout-morph-out"
+    },
+    {
+      "id": "drop-elevation",
+      "from": "pack-wasInDrawer",
+      "to": "pack-cardElevated",
+      "trigger": "drop-elevation",
+      "source": "SealedPack close onLayoutAnimationComplete",
+      "effect": "Drop card elevation only after the close apex is inspectable",
+      "stepId": "drop-elevation"
+    },
+    {
+      "id": "reset-state",
+      "from": "debug-reset",
+      "to": "page-openPack",
+      "trigger": "reset",
+      "source": "DebugProvider.reset",
+      "effect": "Clear page, pack, drawer, sheet, reached, paused, and active graph state"
+    }
+  ],
+  "openSteps": [
+    {
+      "id": "tear",
+      "label": "Tear edge",
+      "phase": "open",
+      "boundary": "SealedPack.completeTear"
+    },
+    {
+      "id": "card-lift",
+      "label": "Card lift (drag-up)",
+      "phase": "open",
+      "boundary": "SealedPack.handleCardPointerUp"
+    },
+    {
+      "id": "card-click-rise",
+      "label": "Card rise (click)",
+      "phase": "open",
+      "boundary": "SealedPack.handlePackClick"
+    },
+    {
+      "id": "elevate-card",
+      "label": "Elevate card",
+      "phase": "open",
+      "boundary": "setCardElevated(true)"
+    },
+    {
+      "id": "request-open",
+      "label": "Request drawer open",
+      "phase": "open",
+      "boundary": "onOpen(getOrigin())"
+    },
+    {
+      "id": "sheet-open",
+      "label": "Sheet slide-up",
+      "phase": "open",
+      "boundary": "BottomSheet sheet onAnimationComplete"
+    },
+    {
+      "id": "layout-morph-in",
+      "label": "layoutId morph in",
+      "phase": "open",
+      "boundary": "PackOpener card0 onLayoutAnimationComplete"
+    },
+    {
+      "id": "fan-out",
+      "label": "Fan-out springs",
+      "phase": "open",
+      "boundary": "PackOpener last card onAnimationComplete"
+    }
+  ],
+  "closeSteps": [
+    {
+      "id": "close-trigger",
+      "label": "Close trigger",
+      "phase": "close",
+      "boundary": "page.handleClose → isClosing=true"
+    },
+    {
+      "id": "collapse-measure",
+      "label": "Collapse measure",
+      "phase": "close",
+      "boundary": "PackOpener collapse useLayoutEffect"
+    },
+    {
+      "id": "collapse-fan",
+      "label": "Collapse fan-in",
+      "phase": "close",
+      "boundary": "PackOpener collapse springs"
+    },
+    {
+      "id": "collapse-complete",
+      "label": "Collapse complete",
+      "phase": "close",
+      "boundary": "PackOpener onCollapseComplete"
+    },
+    {
+      "id": "drawer-teardown",
+      "label": "Drawer teardown",
+      "phase": "close",
+      "boundary": "page.handleCollapseComplete → isSheetMounted=false"
+    },
+    {
+      "id": "sheet-exit",
+      "label": "Sheet exit",
+      "phase": "close",
+      "boundary": "BottomSheet AnimatePresence onExitComplete"
+    },
+    {
+      "id": "layout-morph-out",
+      "label": "layoutId morph back (APEX)",
+      "phase": "close",
+      "boundary": "SealedPack onLayoutAnimationComplete (pre-body)",
+      "apex": true
+    },
+    {
+      "id": "drop-elevation",
+      "label": "Drop elevation / z-index (APEX)",
+      "phase": "close",
+      "boundary": "SealedPack setCardElevated(false)",
+      "apex": true
+    }
+  ]
+}</script>
+    <pre><code>{
+  &quot;lanes&quot;: [
+    {
+      &quot;id&quot;: &quot;page&quot;,
+      &quot;label&quot;: &quot;Page&quot;,
+      &quot;y&quot;: 32
+    },
+    {
+      &quot;id&quot;: &quot;sealed-pack&quot;,
+      &quot;label&quot;: &quot;SealedPack&quot;,
+      &quot;y&quot;: 142
+    },
+    {
+      &quot;id&quot;: &quot;bottom-sheet&quot;,
+      &quot;label&quot;: &quot;BottomSheet&quot;,
+      &quot;y&quot;: 252
+    },
+    {
+      &quot;id&quot;: &quot;pack-opener&quot;,
+      &quot;label&quot;: &quot;PackOpener&quot;,
+      &quot;y&quot;: 362
+    },
+    {
+      &quot;id&quot;: &quot;debug-gates&quot;,
+      &quot;label&quot;: &quot;Debug Gates&quot;,
+      &quot;y&quot;: 482
+    }
+  ],
+  &quot;nodes&quot;: [
+    {
+      &quot;id&quot;: &quot;page-openPack&quot;,
+      &quot;label&quot;: &quot;openPack&quot;,
+      &quot;lane&quot;: &quot;page&quot;,
+      &quot;phase&quot;: &quot;open&quot;,
+      &quot;kind&quot;: &quot;state&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;page.openPack&quot;
+      ],
+      &quot;description&quot;: &quot;The page-level identity for the pack that owns the drawer and shared-layout morph.&quot;,
+      &quot;x&quot;: 88,
+      &quot;y&quot;: 78
+    },
+    {
+      &quot;id&quot;: &quot;page-openedPacks&quot;,
+      &quot;label&quot;: &quot;openedPacks&quot;,
+      &quot;lane&quot;: &quot;page&quot;,
+      &quot;phase&quot;: &quot;open&quot;,
+      &quot;kind&quot;: &quot;state&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;page.openedPacks&quot;
+      ],
+      &quot;description&quot;: &quot;Session-local pack names that have been unsealed, which gates first-tear auto-open behavior.&quot;,
+      &quot;x&quot;: 248,
+      &quot;y&quot;: 78
+    },
+    {
+      &quot;id&quot;: &quot;page-isDrawerClosing&quot;,
+      &quot;label&quot;: &quot;isDrawerClosing&quot;,
+      &quot;lane&quot;: &quot;page&quot;,
+      &quot;phase&quot;: &quot;close&quot;,
+      &quot;kind&quot;: &quot;state&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;page.isDrawerClosing&quot;
+      ],
+      &quot;description&quot;: &quot;Close-phase state that tells PackOpener to collapse cards while the sheet remains mounted.&quot;,
+      &quot;x&quot;: 430,
+      &quot;y&quot;: 78
+    },
+    {
+      &quot;id&quot;: &quot;page-isSheetMounted&quot;,
+      &quot;label&quot;: &quot;isSheetMounted&quot;,
+      &quot;lane&quot;: &quot;page&quot;,
+      &quot;phase&quot;: &quot;open&quot;,
+      &quot;kind&quot;: &quot;state&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;page.isSheetMounted&quot;
+      ],
+      &quot;description&quot;: &quot;The sheet lifetime flag, intentionally separate from openPack during close exit.&quot;,
+      &quot;x&quot;: 626,
+      &quot;y&quot;: 78
+    },
+    {
+      &quot;id&quot;: &quot;pack-dragX&quot;,
+      &quot;label&quot;: &quot;dragX&quot;,
+      &quot;lane&quot;: &quot;sealed-pack&quot;,
+      &quot;phase&quot;: &quot;open&quot;,
+      &quot;kind&quot;: &quot;motion&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;pack.dragX&quot;
+      ],
+      &quot;description&quot;: &quot;Horizontal tear progress across the sealed pack.&quot;,
+      &quot;x&quot;: 88,
+      &quot;y&quot;: 188
+    },
+    {
+      &quot;id&quot;: &quot;pack-curlOpacity&quot;,
+      &quot;label&quot;: &quot;curlOpacity&quot;,
+      &quot;lane&quot;: &quot;sealed-pack&quot;,
+      &quot;phase&quot;: &quot;open&quot;,
+      &quot;kind&quot;: &quot;motion&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;pack.curlOpacity&quot;
+      ],
+      &quot;description&quot;: &quot;Opacity of the foil curl during the tear completion.&quot;,
+      &quot;x&quot;: 244,
+      &quot;y&quot;: 188
+    },
+    {
+      &quot;id&quot;: &quot;pack-pendingOpen&quot;,
+      &quot;label&quot;: &quot;pendingOpen&quot;,
+      &quot;lane&quot;: &quot;sealed-pack&quot;,
+      &quot;phase&quot;: &quot;open&quot;,
+      &quot;kind&quot;: &quot;ref&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;pack.pendingOpen&quot;
+      ],
+      &quot;description&quot;: &quot;First-tear auto-open continuation waiting for the layout animation boundary.&quot;,
+      &quot;x&quot;: 410,
+      &quot;y&quot;: 188
+    },
+    {
+      &quot;id&quot;: &quot;pack-cardDragY&quot;,
+      &quot;label&quot;: &quot;cardDragY&quot;,
+      &quot;lane&quot;: &quot;sealed-pack&quot;,
+      &quot;phase&quot;: &quot;open&quot;,
+      &quot;kind&quot;: &quot;motion&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;pack.cardDragY&quot;
+      ],
+      &quot;description&quot;: &quot;Upward card-drag distance for the drag-up open path.&quot;,
+      &quot;x&quot;: 578,
+      &quot;y&quot;: 188
+    },
+    {
+      &quot;id&quot;: &quot;pack-cardSlideY&quot;,
+      &quot;label&quot;: &quot;cardSlideY&quot;,
+      &quot;lane&quot;: &quot;sealed-pack&quot;,
+      &quot;phase&quot;: &quot;open&quot;,
+      &quot;kind&quot;: &quot;motion&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;pack.cardSlideY&quot;
+      ],
+      &quot;description&quot;: &quot;Card slide offset for click open and close morph-back travel.&quot;,
+      &quot;x&quot;: 746,
+      &quot;y&quot;: 188
+    },
+    {
+      &quot;id&quot;: &quot;pack-cardElevated&quot;,
+      &quot;label&quot;: &quot;cardElevated&quot;,
+      &quot;lane&quot;: &quot;sealed-pack&quot;,
+      &quot;phase&quot;: &quot;open&quot;,
+      &quot;kind&quot;: &quot;state&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;pack.cardElevated&quot;,
+        &quot;pack.cardZIndex&quot;
+      ],
+      &quot;description&quot;: &quot;Elevation state that raises the shared-layout card over the pack body.&quot;,
+      &quot;x&quot;: 918,
+      &quot;y&quot;: 188
+    },
+    {
+      &quot;id&quot;: &quot;pack-wasInDrawer&quot;,
+      &quot;label&quot;: &quot;wasInDrawer&quot;,
+      &quot;lane&quot;: &quot;sealed-pack&quot;,
+      &quot;phase&quot;: &quot;close&quot;,
+      &quot;kind&quot;: &quot;ref&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;pack.wasInDrawer&quot;
+      ],
+      &quot;description&quot;: &quot;Close morph-back guard set when the drawer identity leaves the pack.&quot;,
+      &quot;x&quot;: 1096,
+      &quot;y&quot;: 188
+    },
+    {
+      &quot;id&quot;: &quot;pack-closeMorph&quot;,
+      &quot;label&quot;: &quot;closeMorphBack&quot;,
+      &quot;lane&quot;: &quot;sealed-pack&quot;,
+      &quot;phase&quot;: &quot;close&quot;,
+      &quot;kind&quot;: &quot;ref&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;pack.isCloseMorphBackInFlight&quot;
+      ],
+      &quot;description&quot;: &quot;One-shot ref that prevents repeated close morph-back/elevation gates.&quot;,
+      &quot;x&quot;: 1292,
+      &quot;y&quot;: 188
+    },
+    {
+      &quot;id&quot;: &quot;sheet-sheetY&quot;,
+      &quot;label&quot;: &quot;sheetY&quot;,
+      &quot;lane&quot;: &quot;bottom-sheet&quot;,
+      &quot;phase&quot;: &quot;open&quot;,
+      &quot;kind&quot;: &quot;motion&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;sheet.sheetY&quot;
+      ],
+      &quot;description&quot;: &quot;Drag-to-dismiss motion value for the bottom sheet.&quot;,
+      &quot;x&quot;: 88,
+      &quot;y&quot;: 298
+    },
+    {
+      &quot;id&quot;: &quot;sheet-mounted&quot;,
+      &quot;label&quot;: &quot;mounted&quot;,
+      &quot;lane&quot;: &quot;bottom-sheet&quot;,
+      &quot;phase&quot;: &quot;open&quot;,
+      &quot;kind&quot;: &quot;state&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;sheet.mounted&quot;
+      ],
+      &quot;description&quot;: &quot;Whether AnimatePresence is currently rendering the sheet subtree.&quot;,
+      &quot;x&quot;: 248,
+      &quot;y&quot;: 298
+    },
+    {
+      &quot;id&quot;: &quot;sheet-open&quot;,
+      &quot;label&quot;: &quot;open&quot;,
+      &quot;lane&quot;: &quot;bottom-sheet&quot;,
+      &quot;phase&quot;: &quot;open&quot;,
+      &quot;kind&quot;: &quot;state&quot;,
+      &quot;stepId&quot;: &quot;sheet-open&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;sheet.open&quot;
+      ],
+      &quot;description&quot;: &quot;The sheet has completed its slide-up enter animation.&quot;,
+      &quot;x&quot;: 408,
+      &quot;y&quot;: 298
+    },
+    {
+      &quot;id&quot;: &quot;sheet-exiting&quot;,
+      &quot;label&quot;: &quot;exiting&quot;,
+      &quot;lane&quot;: &quot;bottom-sheet&quot;,
+      &quot;phase&quot;: &quot;close&quot;,
+      &quot;kind&quot;: &quot;state&quot;,
+      &quot;stepId&quot;: &quot;sheet-exit&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;sheet.exiting&quot;
+      ],
+      &quot;description&quot;: &quot;The sheet is exiting; openPack is intentionally still retained until exit completion.&quot;,
+      &quot;x&quot;: 568,
+      &quot;y&quot;: 298
+    },
+    {
+      &quot;id&quot;: &quot;sheet-dismissable&quot;,
+      &quot;label&quot;: &quot;dismissable&quot;,
+      &quot;lane&quot;: &quot;bottom-sheet&quot;,
+      &quot;phase&quot;: &quot;close&quot;,
+      &quot;kind&quot;: &quot;state&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;sheet.dismissable&quot;
+      ],
+      &quot;description&quot;: &quot;Dismissal guard disabled while drawer collapse and sheet exit are in flight.&quot;,
+      &quot;x&quot;: 742,
+      &quot;y&quot;: 298
+    },
+    {
+      &quot;id&quot;: &quot;drawer-fanOffsets&quot;,
+      &quot;label&quot;: &quot;fanOffsets&quot;,
+      &quot;lane&quot;: &quot;pack-opener&quot;,
+      &quot;phase&quot;: &quot;open&quot;,
+      &quot;kind&quot;: &quot;state&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;drawer.fanOffsets&quot;
+      ],
+      &quot;description&quot;: &quot;Measured fan-out offsets from card 0 to each drawer card.&quot;,
+      &quot;x&quot;: 88,
+      &quot;y&quot;: 408
+    },
+    {
+      &quot;id&quot;: &quot;drawer-collapseState&quot;,
+      &quot;label&quot;: &quot;collapseState&quot;,
+      &quot;lane&quot;: &quot;pack-opener&quot;,
+      &quot;phase&quot;: &quot;close&quot;,
+      &quot;kind&quot;: &quot;state&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;drawer.collapseState&quot;
+      ],
+      &quot;description&quot;: &quot;Collapse target and per-card offsets used during close fan-in.&quot;,
+      &quot;x&quot;: 268,
+      &quot;y&quot;: 408
+    },
+    {
+      &quot;id&quot;: &quot;drawer-targetIndex&quot;,
+      &quot;label&quot;: &quot;targetIndex&quot;,
+      &quot;lane&quot;: &quot;pack-opener&quot;,
+      &quot;phase&quot;: &quot;close&quot;,
+      &quot;kind&quot;: &quot;state&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;drawer.targetIndex&quot;
+      ],
+      &quot;description&quot;: &quot;Visible top-left card index that the drawer collapses into.&quot;,
+      &quot;x&quot;: 456,
+      &quot;y&quot;: 408
+    },
+    {
+      &quot;id&quot;: &quot;drawer-card0&quot;,
+      &quot;label&quot;: &quot;card0X/Y&quot;,
+      &quot;lane&quot;: &quot;pack-opener&quot;,
+      &quot;phase&quot;: &quot;close&quot;,
+      &quot;kind&quot;: &quot;motion&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;drawer.card0X&quot;,
+        &quot;drawer.card0Y&quot;
+      ],
+      &quot;description&quot;: &quot;Imperative card 0 collapse motion values; card 0 cannot use animate because it owns layoutId.&quot;,
+      &quot;x&quot;: 632,
+      &quot;y&quot;: 408
+    },
+    {
+      &quot;id&quot;: &quot;drawer-collapseCounters&quot;,
+      &quot;label&quot;: &quot;collapse counters&quot;,
+      &quot;lane&quot;: &quot;pack-opener&quot;,
+      &quot;phase&quot;: &quot;close&quot;,
+      &quot;kind&quot;: &quot;ref&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;drawer.collapseCount&quot;,
+        &quot;drawer.expectedCollapseCount&quot;
+      ],
+      &quot;description&quot;: &quot;Count of completed card-collapse animations versus the expected handoff count.&quot;,
+      &quot;x&quot;: 826,
+      &quot;y&quot;: 408
+    },
+    {
+      &quot;id&quot;: &quot;drawer-collapseCompleteFired&quot;,
+      &quot;label&quot;: &quot;complete fired&quot;,
+      &quot;lane&quot;: &quot;pack-opener&quot;,
+      &quot;phase&quot;: &quot;close&quot;,
+      &quot;kind&quot;: &quot;ref&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;drawer.collapseCompleteFiredRef&quot;
+      ],
+      &quot;description&quot;: &quot;One-shot ref that prevents duplicate collapse-complete handoffs.&quot;,
+      &quot;x&quot;: 1040,
+      &quot;y&quot;: 408
+    },
+    {
+      &quot;id&quot;: &quot;debug-reset&quot;,
+      &quot;label&quot;: &quot;reset&quot;,
+      &quot;lane&quot;: &quot;debug-gates&quot;,
+      &quot;phase&quot;: &quot;reset&quot;,
+      &quot;kind&quot;: &quot;gate&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;debug.reachedSteps&quot;,
+        &quot;page.openPack&quot;
+      ],
+      &quot;description&quot;: &quot;Reset clears reached/paused graph state, page state, and target pack motion values.&quot;,
+      &quot;x&quot;: 1464,
+      &quot;y&quot;: 528
+    },
+    {
+      &quot;id&quot;: &quot;step-tear&quot;,
+      &quot;label&quot;: &quot;Tear edge&quot;,
+      &quot;lane&quot;: &quot;debug-gates&quot;,
+      &quot;phase&quot;: &quot;open&quot;,
+      &quot;kind&quot;: &quot;gate&quot;,
+      &quot;stepId&quot;: &quot;tear&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;debug.pausedAtStep&quot;,
+        &quot;debug.reachedSteps&quot;
+      ],
+      &quot;description&quot;: &quot;SealedPack.completeTear&quot;,
+      &quot;x&quot;: 88,
+      &quot;y&quot;: 528
+    },
+    {
+      &quot;id&quot;: &quot;step-card-lift&quot;,
+      &quot;label&quot;: &quot;Card lift (drag-up)&quot;,
+      &quot;lane&quot;: &quot;debug-gates&quot;,
+      &quot;phase&quot;: &quot;open&quot;,
+      &quot;kind&quot;: &quot;gate&quot;,
+      &quot;stepId&quot;: &quot;card-lift&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;debug.pausedAtStep&quot;,
+        &quot;debug.reachedSteps&quot;
+      ],
+      &quot;description&quot;: &quot;SealedPack.handleCardPointerUp&quot;,
+      &quot;x&quot;: 174,
+      &quot;y&quot;: 528
+    },
+    {
+      &quot;id&quot;: &quot;step-card-click-rise&quot;,
+      &quot;label&quot;: &quot;Card rise (click)&quot;,
+      &quot;lane&quot;: &quot;debug-gates&quot;,
+      &quot;phase&quot;: &quot;open&quot;,
+      &quot;kind&quot;: &quot;gate&quot;,
+      &quot;stepId&quot;: &quot;card-click-rise&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;debug.pausedAtStep&quot;,
+        &quot;debug.reachedSteps&quot;
+      ],
+      &quot;description&quot;: &quot;SealedPack.handlePackClick&quot;,
+      &quot;x&quot;: 260,
+      &quot;y&quot;: 528
+    },
+    {
+      &quot;id&quot;: &quot;step-elevate-card&quot;,
+      &quot;label&quot;: &quot;Elevate card&quot;,
+      &quot;lane&quot;: &quot;debug-gates&quot;,
+      &quot;phase&quot;: &quot;open&quot;,
+      &quot;kind&quot;: &quot;gate&quot;,
+      &quot;stepId&quot;: &quot;elevate-card&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;debug.pausedAtStep&quot;,
+        &quot;debug.reachedSteps&quot;
+      ],
+      &quot;description&quot;: &quot;setCardElevated(true)&quot;,
+      &quot;x&quot;: 346,
+      &quot;y&quot;: 528
+    },
+    {
+      &quot;id&quot;: &quot;step-request-open&quot;,
+      &quot;label&quot;: &quot;Request drawer open&quot;,
+      &quot;lane&quot;: &quot;debug-gates&quot;,
+      &quot;phase&quot;: &quot;open&quot;,
+      &quot;kind&quot;: &quot;gate&quot;,
+      &quot;stepId&quot;: &quot;request-open&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;debug.pausedAtStep&quot;,
+        &quot;debug.reachedSteps&quot;
+      ],
+      &quot;description&quot;: &quot;onOpen(getOrigin())&quot;,
+      &quot;x&quot;: 432,
+      &quot;y&quot;: 528
+    },
+    {
+      &quot;id&quot;: &quot;step-sheet-open&quot;,
+      &quot;label&quot;: &quot;Sheet slide-up&quot;,
+      &quot;lane&quot;: &quot;debug-gates&quot;,
+      &quot;phase&quot;: &quot;open&quot;,
+      &quot;kind&quot;: &quot;gate&quot;,
+      &quot;stepId&quot;: &quot;sheet-open&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;debug.pausedAtStep&quot;,
+        &quot;debug.reachedSteps&quot;
+      ],
+      &quot;description&quot;: &quot;BottomSheet sheet onAnimationComplete&quot;,
+      &quot;x&quot;: 518,
+      &quot;y&quot;: 528
+    },
+    {
+      &quot;id&quot;: &quot;step-layout-morph-in&quot;,
+      &quot;label&quot;: &quot;layoutId morph in&quot;,
+      &quot;lane&quot;: &quot;debug-gates&quot;,
+      &quot;phase&quot;: &quot;open&quot;,
+      &quot;kind&quot;: &quot;gate&quot;,
+      &quot;stepId&quot;: &quot;layout-morph-in&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;debug.pausedAtStep&quot;,
+        &quot;debug.reachedSteps&quot;
+      ],
+      &quot;description&quot;: &quot;PackOpener card0 onLayoutAnimationComplete&quot;,
+      &quot;x&quot;: 604,
+      &quot;y&quot;: 528
+    },
+    {
+      &quot;id&quot;: &quot;step-fan-out&quot;,
+      &quot;label&quot;: &quot;Fan-out springs&quot;,
+      &quot;lane&quot;: &quot;debug-gates&quot;,
+      &quot;phase&quot;: &quot;open&quot;,
+      &quot;kind&quot;: &quot;gate&quot;,
+      &quot;stepId&quot;: &quot;fan-out&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;debug.pausedAtStep&quot;,
+        &quot;debug.reachedSteps&quot;
+      ],
+      &quot;description&quot;: &quot;PackOpener last card onAnimationComplete&quot;,
+      &quot;x&quot;: 690,
+      &quot;y&quot;: 528
+    },
+    {
+      &quot;id&quot;: &quot;step-close-trigger&quot;,
+      &quot;label&quot;: &quot;Close trigger&quot;,
+      &quot;lane&quot;: &quot;debug-gates&quot;,
+      &quot;phase&quot;: &quot;close&quot;,
+      &quot;kind&quot;: &quot;gate&quot;,
+      &quot;stepId&quot;: &quot;close-trigger&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;debug.pausedAtStep&quot;,
+        &quot;debug.reachedSteps&quot;
+      ],
+      &quot;description&quot;: &quot;page.handleClose → isClosing=true&quot;,
+      &quot;x&quot;: 776,
+      &quot;y&quot;: 528
+    },
+    {
+      &quot;id&quot;: &quot;step-collapse-measure&quot;,
+      &quot;label&quot;: &quot;Collapse measure&quot;,
+      &quot;lane&quot;: &quot;debug-gates&quot;,
+      &quot;phase&quot;: &quot;close&quot;,
+      &quot;kind&quot;: &quot;gate&quot;,
+      &quot;stepId&quot;: &quot;collapse-measure&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;debug.pausedAtStep&quot;,
+        &quot;debug.reachedSteps&quot;
+      ],
+      &quot;description&quot;: &quot;PackOpener collapse useLayoutEffect&quot;,
+      &quot;x&quot;: 862,
+      &quot;y&quot;: 528
+    },
+    {
+      &quot;id&quot;: &quot;step-collapse-fan&quot;,
+      &quot;label&quot;: &quot;Collapse fan-in&quot;,
+      &quot;lane&quot;: &quot;debug-gates&quot;,
+      &quot;phase&quot;: &quot;close&quot;,
+      &quot;kind&quot;: &quot;gate&quot;,
+      &quot;stepId&quot;: &quot;collapse-fan&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;debug.pausedAtStep&quot;,
+        &quot;debug.reachedSteps&quot;
+      ],
+      &quot;description&quot;: &quot;PackOpener collapse springs&quot;,
+      &quot;x&quot;: 948,
+      &quot;y&quot;: 528
+    },
+    {
+      &quot;id&quot;: &quot;step-collapse-complete&quot;,
+      &quot;label&quot;: &quot;Collapse complete&quot;,
+      &quot;lane&quot;: &quot;debug-gates&quot;,
+      &quot;phase&quot;: &quot;close&quot;,
+      &quot;kind&quot;: &quot;gate&quot;,
+      &quot;stepId&quot;: &quot;collapse-complete&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;debug.pausedAtStep&quot;,
+        &quot;debug.reachedSteps&quot;
+      ],
+      &quot;description&quot;: &quot;PackOpener onCollapseComplete&quot;,
+      &quot;x&quot;: 1034,
+      &quot;y&quot;: 528
+    },
+    {
+      &quot;id&quot;: &quot;step-drawer-teardown&quot;,
+      &quot;label&quot;: &quot;Drawer teardown&quot;,
+      &quot;lane&quot;: &quot;debug-gates&quot;,
+      &quot;phase&quot;: &quot;close&quot;,
+      &quot;kind&quot;: &quot;gate&quot;,
+      &quot;stepId&quot;: &quot;drawer-teardown&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;debug.pausedAtStep&quot;,
+        &quot;debug.reachedSteps&quot;
+      ],
+      &quot;description&quot;: &quot;page.handleCollapseComplete → isSheetMounted=false&quot;,
+      &quot;x&quot;: 1120,
+      &quot;y&quot;: 528
+    },
+    {
+      &quot;id&quot;: &quot;step-sheet-exit&quot;,
+      &quot;label&quot;: &quot;Sheet exit&quot;,
+      &quot;lane&quot;: &quot;debug-gates&quot;,
+      &quot;phase&quot;: &quot;close&quot;,
+      &quot;kind&quot;: &quot;gate&quot;,
+      &quot;stepId&quot;: &quot;sheet-exit&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;debug.pausedAtStep&quot;,
+        &quot;debug.reachedSteps&quot;
+      ],
+      &quot;description&quot;: &quot;BottomSheet AnimatePresence onExitComplete&quot;,
+      &quot;x&quot;: 1206,
+      &quot;y&quot;: 528
+    },
+    {
+      &quot;id&quot;: &quot;step-layout-morph-out&quot;,
+      &quot;label&quot;: &quot;layoutId morph back (APEX)&quot;,
+      &quot;lane&quot;: &quot;debug-gates&quot;,
+      &quot;phase&quot;: &quot;close&quot;,
+      &quot;kind&quot;: &quot;gate&quot;,
+      &quot;stepId&quot;: &quot;layout-morph-out&quot;,
+      &quot;apex&quot;: true,
+      &quot;trackedFields&quot;: [
+        &quot;debug.pausedAtStep&quot;,
+        &quot;debug.reachedSteps&quot;
+      ],
+      &quot;description&quot;: &quot;SealedPack onLayoutAnimationComplete (pre-body)&quot;,
+      &quot;x&quot;: 1292,
+      &quot;y&quot;: 528
+    },
+    {
+      &quot;id&quot;: &quot;step-drop-elevation&quot;,
+      &quot;label&quot;: &quot;Drop elevation / z-index (APEX)&quot;,
+      &quot;lane&quot;: &quot;debug-gates&quot;,
+      &quot;phase&quot;: &quot;close&quot;,
+      &quot;kind&quot;: &quot;gate&quot;,
+      &quot;stepId&quot;: &quot;drop-elevation&quot;,
+      &quot;apex&quot;: true,
+      &quot;trackedFields&quot;: [
+        &quot;debug.pausedAtStep&quot;,
+        &quot;debug.reachedSteps&quot;
+      ],
+      &quot;description&quot;: &quot;SealedPack setCardElevated(false)&quot;,
+      &quot;x&quot;: 1378,
+      &quot;y&quot;: 528
+    }
+  ],
+  &quot;transitions&quot;: [
+    {
+      &quot;id&quot;: &quot;open-tear&quot;,
+      &quot;from&quot;: &quot;pack-dragX&quot;,
+      &quot;to&quot;: &quot;pack-curlOpacity&quot;,
+      &quot;trigger&quot;: &quot;open-tear&quot;,
+      &quot;source&quot;: &quot;SealedPack.completeTear&quot;,
+      &quot;effect&quot;: &quot;Animate dragX to PACK_WIDTH and fade curlOpacity&quot;,
+      &quot;stepId&quot;: &quot;tear&quot;
+    },
+    {
+      &quot;id&quot;: &quot;tear-pending-open&quot;,
+      &quot;from&quot;: &quot;pack-curlOpacity&quot;,
+      &quot;to&quot;: &quot;pack-pendingOpen&quot;,
+      &quot;trigger&quot;: &quot;first tear auto-open&quot;,
+      &quot;source&quot;: &quot;SealedPack.completeTear&quot;,
+      &quot;guard&quot;: &quot;autoOpenOnTear&quot;,
+      &quot;effect&quot;: &quot;Arm pendingOpen and fallback timer&quot;,
+      &quot;stepId&quot;: &quot;tear&quot;
+    },
+    {
+      &quot;id&quot;: &quot;drag-up&quot;,
+      &quot;from&quot;: &quot;pack-cardDragY&quot;,
+      &quot;to&quot;: &quot;pack-cardElevated&quot;,
+      &quot;trigger&quot;: &quot;drag-up&quot;,
+      &quot;source&quot;: &quot;SealedPack.handleCardPointerUp&quot;,
+      &quot;guard&quot;: &quot;cardDragY &gt;= DRAG_UP_THRESHOLD&quot;,
+      &quot;effect&quot;: &quot;Lift card before requesting drawer open&quot;,
+      &quot;stepId&quot;: &quot;card-lift&quot;
+    },
+    {
+      &quot;id&quot;: &quot;open-click&quot;,
+      &quot;from&quot;: &quot;pack-cardSlideY&quot;,
+      &quot;to&quot;: &quot;pack-cardElevated&quot;,
+      &quot;trigger&quot;: &quot;open-click&quot;,
+      &quot;source&quot;: &quot;SealedPack.handlePackClick&quot;,
+      &quot;effect&quot;: &quot;Slide card to the apex before requesting drawer open&quot;,
+      &quot;stepId&quot;: &quot;card-click-rise&quot;
+    },
+    {
+      &quot;id&quot;: &quot;elevate-card&quot;,
+      &quot;from&quot;: &quot;pack-cardElevated&quot;,
+      &quot;to&quot;: &quot;page-openPack&quot;,
+      &quot;trigger&quot;: &quot;elevate-card&quot;,
+      &quot;source&quot;: &quot;SealedPack.proceedToOpen&quot;,
+      &quot;effect&quot;: &quot;Set cardElevated before page open request&quot;,
+      &quot;stepId&quot;: &quot;elevate-card&quot;
+    },
+    {
+      &quot;id&quot;: &quot;request-open&quot;,
+      &quot;from&quot;: &quot;page-openPack&quot;,
+      &quot;to&quot;: &quot;page-isSheetMounted&quot;,
+      &quot;trigger&quot;: &quot;request-open&quot;,
+      &quot;source&quot;: &quot;PrototypePage.handleOpen&quot;,
+      &quot;effect&quot;: &quot;Set openPack, isSheetMounted, and openedPacks&quot;,
+      &quot;stepId&quot;: &quot;request-open&quot;
+    },
+    {
+      &quot;id&quot;: &quot;sheet-open&quot;,
+      &quot;from&quot;: &quot;page-isSheetMounted&quot;,
+      &quot;to&quot;: &quot;sheet-open&quot;,
+      &quot;trigger&quot;: &quot;sheet-open&quot;,
+      &quot;source&quot;: &quot;BottomSheet onAnimationComplete&quot;,
+      &quot;effect&quot;: &quot;Mark sheet enter complete&quot;,
+      &quot;stepId&quot;: &quot;sheet-open&quot;
+    },
+    {
+      &quot;id&quot;: &quot;layout-morph-in&quot;,
+      &quot;from&quot;: &quot;pack-cardElevated&quot;,
+      &quot;to&quot;: &quot;drawer-card0&quot;,
+      &quot;trigger&quot;: &quot;layout-morph-in&quot;,
+      &quot;source&quot;: &quot;PackOpener card0 onLayoutAnimationComplete&quot;,
+      &quot;effect&quot;: &quot;Shared-layout card lands in the drawer&quot;,
+      &quot;stepId&quot;: &quot;layout-morph-in&quot;
+    },
+    {
+      &quot;id&quot;: &quot;fan-out&quot;,
+      &quot;from&quot;: &quot;drawer-card0&quot;,
+      &quot;to&quot;: &quot;drawer-fanOffsets&quot;,
+      &quot;trigger&quot;: &quot;fan-out&quot;,
+      &quot;source&quot;: &quot;PackOpener last card onAnimationComplete&quot;,
+      &quot;effect&quot;: &quot;Drawer cards fan out from the measured offsets&quot;,
+      &quot;stepId&quot;: &quot;fan-out&quot;
+    },
+    {
+      &quot;id&quot;: &quot;close-trigger&quot;,
+      &quot;from&quot;: &quot;sheet-dismissable&quot;,
+      &quot;to&quot;: &quot;page-isDrawerClosing&quot;,
+      &quot;trigger&quot;: &quot;close&quot;,
+      &quot;source&quot;: &quot;PrototypePage.handleClose&quot;,
+      &quot;effect&quot;: &quot;Mark close-trigger and set isDrawerClosing&quot;,
+      &quot;stepId&quot;: &quot;close-trigger&quot;
+    },
+    {
+      &quot;id&quot;: &quot;collapse-measure&quot;,
+      &quot;from&quot;: &quot;page-isDrawerClosing&quot;,
+      &quot;to&quot;: &quot;drawer-collapseState&quot;,
+      &quot;trigger&quot;: &quot;collapse&quot;,
+      &quot;source&quot;: &quot;PackOpener collapse useLayoutEffect&quot;,
+      &quot;effect&quot;: &quot;Measure visible top-left target and card offsets&quot;,
+      &quot;stepId&quot;: &quot;collapse-measure&quot;
+    },
+    {
+      &quot;id&quot;: &quot;collapse-fan&quot;,
+      &quot;from&quot;: &quot;drawer-collapseState&quot;,
+      &quot;to&quot;: &quot;drawer-card0&quot;,
+      &quot;trigger&quot;: &quot;collapse-fan&quot;,
+      &quot;source&quot;: &quot;PackOpener collapse springs&quot;,
+      &quot;effect&quot;: &quot;Animate drawer cards into the target card&quot;,
+      &quot;stepId&quot;: &quot;collapse-fan&quot;
+    },
+    {
+      &quot;id&quot;: &quot;collapse-complete&quot;,
+      &quot;from&quot;: &quot;drawer-collapseCounters&quot;,
+      &quot;to&quot;: &quot;drawer-collapseCompleteFired&quot;,
+      &quot;trigger&quot;: &quot;collapse-complete&quot;,
+      &quot;source&quot;: &quot;PackOpener.completeCollapse&quot;,
+      &quot;effect&quot;: &quot;Gate the one-shot handoff before notifying the page&quot;,
+      &quot;stepId&quot;: &quot;collapse-complete&quot;
+    },
+    {
+      &quot;id&quot;: &quot;drawer-teardown&quot;,
+      &quot;from&quot;: &quot;drawer-collapseCompleteFired&quot;,
+      &quot;to&quot;: &quot;page-isSheetMounted&quot;,
+      &quot;trigger&quot;: &quot;drawer-teardown&quot;,
+      &quot;source&quot;: &quot;PrototypePage.handleCollapseComplete&quot;,
+      &quot;effect&quot;: &quot;Unmount sheet content without clearing openPack&quot;,
+      &quot;stepId&quot;: &quot;drawer-teardown&quot;
+    },
+    {
+      &quot;id&quot;: &quot;sheet-exit&quot;,
+      &quot;from&quot;: &quot;page-isSheetMounted&quot;,
+      &quot;to&quot;: &quot;sheet-exiting&quot;,
+      &quot;trigger&quot;: &quot;sheet-exit&quot;,
+      &quot;source&quot;: &quot;BottomSheet AnimatePresence onExitComplete&quot;,
+      &quot;effect&quot;: &quot;Mark sheet-exit and then clear openPack&quot;,
+      &quot;stepId&quot;: &quot;sheet-exit&quot;
+    },
+    {
+      &quot;id&quot;: &quot;layout-morph-out&quot;,
+      &quot;from&quot;: &quot;sheet-exiting&quot;,
+      &quot;to&quot;: &quot;pack-wasInDrawer&quot;,
+      &quot;trigger&quot;: &quot;morph-out&quot;,
+      &quot;source&quot;: &quot;SealedPack close onLayoutAnimationComplete&quot;,
+      &quot;effect&quot;: &quot;Hold the apex z-index frame before body/elevation state changes&quot;,
+      &quot;stepId&quot;: &quot;layout-morph-out&quot;
+    },
+    {
+      &quot;id&quot;: &quot;drop-elevation&quot;,
+      &quot;from&quot;: &quot;pack-wasInDrawer&quot;,
+      &quot;to&quot;: &quot;pack-cardElevated&quot;,
+      &quot;trigger&quot;: &quot;drop-elevation&quot;,
+      &quot;source&quot;: &quot;SealedPack close onLayoutAnimationComplete&quot;,
+      &quot;effect&quot;: &quot;Drop card elevation only after the close apex is inspectable&quot;,
+      &quot;stepId&quot;: &quot;drop-elevation&quot;
+    },
+    {
+      &quot;id&quot;: &quot;reset-state&quot;,
+      &quot;from&quot;: &quot;debug-reset&quot;,
+      &quot;to&quot;: &quot;page-openPack&quot;,
+      &quot;trigger&quot;: &quot;reset&quot;,
+      &quot;source&quot;: &quot;DebugProvider.reset&quot;,
+      &quot;effect&quot;: &quot;Clear page, pack, drawer, sheet, reached, paused, and active graph state&quot;
+    }
+  ],
+  &quot;openSteps&quot;: [
+    {
+      &quot;id&quot;: &quot;tear&quot;,
+      &quot;label&quot;: &quot;Tear edge&quot;,
+      &quot;phase&quot;: &quot;open&quot;,
+      &quot;boundary&quot;: &quot;SealedPack.completeTear&quot;
+    },
+    {
+      &quot;id&quot;: &quot;card-lift&quot;,
+      &quot;label&quot;: &quot;Card lift (drag-up)&quot;,
+      &quot;phase&quot;: &quot;open&quot;,
+      &quot;boundary&quot;: &quot;SealedPack.handleCardPointerUp&quot;
+    },
+    {
+      &quot;id&quot;: &quot;card-click-rise&quot;,
+      &quot;label&quot;: &quot;Card rise (click)&quot;,
+      &quot;phase&quot;: &quot;open&quot;,
+      &quot;boundary&quot;: &quot;SealedPack.handlePackClick&quot;
+    },
+    {
+      &quot;id&quot;: &quot;elevate-card&quot;,
+      &quot;label&quot;: &quot;Elevate card&quot;,
+      &quot;phase&quot;: &quot;open&quot;,
+      &quot;boundary&quot;: &quot;setCardElevated(true)&quot;
+    },
+    {
+      &quot;id&quot;: &quot;request-open&quot;,
+      &quot;label&quot;: &quot;Request drawer open&quot;,
+      &quot;phase&quot;: &quot;open&quot;,
+      &quot;boundary&quot;: &quot;onOpen(getOrigin())&quot;
+    },
+    {
+      &quot;id&quot;: &quot;sheet-open&quot;,
+      &quot;label&quot;: &quot;Sheet slide-up&quot;,
+      &quot;phase&quot;: &quot;open&quot;,
+      &quot;boundary&quot;: &quot;BottomSheet sheet onAnimationComplete&quot;
+    },
+    {
+      &quot;id&quot;: &quot;layout-morph-in&quot;,
+      &quot;label&quot;: &quot;layoutId morph in&quot;,
+      &quot;phase&quot;: &quot;open&quot;,
+      &quot;boundary&quot;: &quot;PackOpener card0 onLayoutAnimationComplete&quot;
+    },
+    {
+      &quot;id&quot;: &quot;fan-out&quot;,
+      &quot;label&quot;: &quot;Fan-out springs&quot;,
+      &quot;phase&quot;: &quot;open&quot;,
+      &quot;boundary&quot;: &quot;PackOpener last card onAnimationComplete&quot;
+    }
+  ],
+  &quot;closeSteps&quot;: [
+    {
+      &quot;id&quot;: &quot;close-trigger&quot;,
+      &quot;label&quot;: &quot;Close trigger&quot;,
+      &quot;phase&quot;: &quot;close&quot;,
+      &quot;boundary&quot;: &quot;page.handleClose → isClosing=true&quot;
+    },
+    {
+      &quot;id&quot;: &quot;collapse-measure&quot;,
+      &quot;label&quot;: &quot;Collapse measure&quot;,
+      &quot;phase&quot;: &quot;close&quot;,
+      &quot;boundary&quot;: &quot;PackOpener collapse useLayoutEffect&quot;
+    },
+    {
+      &quot;id&quot;: &quot;collapse-fan&quot;,
+      &quot;label&quot;: &quot;Collapse fan-in&quot;,
+      &quot;phase&quot;: &quot;close&quot;,
+      &quot;boundary&quot;: &quot;PackOpener collapse springs&quot;
+    },
+    {
+      &quot;id&quot;: &quot;collapse-complete&quot;,
+      &quot;label&quot;: &quot;Collapse complete&quot;,
+      &quot;phase&quot;: &quot;close&quot;,
+      &quot;boundary&quot;: &quot;PackOpener onCollapseComplete&quot;
+    },
+    {
+      &quot;id&quot;: &quot;drawer-teardown&quot;,
+      &quot;label&quot;: &quot;Drawer teardown&quot;,
+      &quot;phase&quot;: &quot;close&quot;,
+      &quot;boundary&quot;: &quot;page.handleCollapseComplete → isSheetMounted=false&quot;
+    },
+    {
+      &quot;id&quot;: &quot;sheet-exit&quot;,
+      &quot;label&quot;: &quot;Sheet exit&quot;,
+      &quot;phase&quot;: &quot;close&quot;,
+      &quot;boundary&quot;: &quot;BottomSheet AnimatePresence onExitComplete&quot;
+    },
+    {
+      &quot;id&quot;: &quot;layout-morph-out&quot;,
+      &quot;label&quot;: &quot;layoutId morph back (APEX)&quot;,
+      &quot;phase&quot;: &quot;close&quot;,
+      &quot;boundary&quot;: &quot;SealedPack onLayoutAnimationComplete (pre-body)&quot;,
+      &quot;apex&quot;: true
+    },
+    {
+      &quot;id&quot;: &quot;drop-elevation&quot;,
+      &quot;label&quot;: &quot;Drop elevation / z-index (APEX)&quot;,
+      &quot;phase&quot;: &quot;close&quot;,
+      &quot;boundary&quot;: &quot;SealedPack setCardElevated(false)&quot;,
+      &quot;apex&quot;: true
+    }
+  ]
+}</code></pre>
+  </section>
+</main>
+</body>
+</html>
