@@ -1,3 +1,11 @@
+/**
+ * AnimationMachineGraph.tsx - SVG visualization of the animation state machine.
+ *
+ * Driven by the canonical model from animationMachine.ts, renders live snapshot
+ * state: active, reached, paused, blocked, and reset nodes/transitions are
+ * color-coded so the current point in the open/close sequence is visible at a
+ * glance inside the debug panel.
+ */
 "use client";
 
 import { useMemo, useState, type CSSProperties } from "react";
@@ -193,6 +201,9 @@ function TransitionPath({
   const toX = to.x + NODE_W / 2;
   const toY = to.y + NODE_H / 2;
   const midX = (fromX + toX) / 2;
+  // Same-lane: vertical arc (curveY offset above the lane) so the path stays
+  // visible above the node boxes. Cross-lane: S-curve with control points at
+  // each lane's Y for clean routing between rows.
   const curveY = fromY === toY ? fromY - 24 : (fromY + toY) / 2;
   const path =
     fromY === toY

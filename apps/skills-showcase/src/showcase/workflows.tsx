@@ -1,3 +1,9 @@
+/**
+ * Imperative DOM renderer for the workflow selector section.
+ * Populates workflow preview cards in the server-rendered page shell.
+ * TuiWorkflow.tsx is the full interactive player mounted separately -
+ * two different UIs for different contexts (preview vs full playback).
+ */
 "use client";
 
 import { useEffect, useRef } from "react";

@@ -1,9 +1,15 @@
+/**
+ * tRPC initialization with context creation.
+ * protectedProcedure gates admin endpoints behind HMAC session tokens.
+ */
 import { initTRPC, TRPCError } from '@trpc/server';
 import type { FetchCreateContextFnOptions } from '@trpc/server/adapters/fetch';
 import { z } from 'zod';
 import { SESSION_COOKIE_NAME, verifySessionToken } from './session';
 
 export async function createContext(opts: FetchCreateContextFnOptions) {
+  // tRPC's fetch adapter only exposes raw headers (FetchCreateContextFnOptions
+  // has no parsed cookies), so we parse the cookie header ourselves.
   const cookieHeader = opts.req.headers.get('cookie') ?? '';
   const cookies = Object.fromEntries(
     cookieHeader.split(';').map((c) => {

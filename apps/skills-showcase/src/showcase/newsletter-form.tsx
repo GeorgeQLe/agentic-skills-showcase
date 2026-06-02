@@ -1,3 +1,8 @@
+/**
+ * Controlled newsletter subscription form with a state machine
+ * (ready -> invalid-email/pending -> success/error). Validates email
+ * client-side before hitting the tRPC endpoint.
+ */
 "use client";
 
 import { useState, useRef } from "react";

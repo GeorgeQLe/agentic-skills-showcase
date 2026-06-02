@@ -1,3 +1,10 @@
+/**
+ * Imperative DOM renderer for the catalog page.
+ * The page is server-rendered HTML with `data-*` attribute hooks; this client
+ * component hydrates by finding those hooks and injecting dynamic content
+ * (skill cards, pack maps, benchmarks). This avoids re-rendering the entire
+ * page as a client component while still adding interactivity.
+ */
 "use client";
 
 import { useEffect } from "react";
@@ -181,6 +188,8 @@ export default function CatalogClient() {
     renderProof();
     renderFollowProof();
 
+    // Skills can appear in multiple platform variants (claude/codex) sharing
+    // the same mirrorKey - dedup prevents double-counting in the catalog view.
     function platformCountByMirrorKey(): Map<string, Set<string>> {
       const counts = new Map<string, Set<string>>();
       skills.forEach((skill) => {

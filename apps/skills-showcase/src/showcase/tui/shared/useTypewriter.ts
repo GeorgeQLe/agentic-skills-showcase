@@ -1,9 +1,17 @@
+/**
+ * Character-at-a-time text reveal hook for the TUI workflow player's agent
+ * response animation. Returns the progressively-revealed substring and a
+ * `done` flag that gates downstream playback logic.
+ */
 "use client";
 
 import { useState, useEffect, useRef } from "react";
 
 export function useTypewriter(text: string, charsPerTick = 2, tickMs = 30, enabled = true) {
   const [displayed, setDisplayed] = useState("");
+  // Ref instead of state for the character index: avoids a re-render on every
+  // tick. The ref holds the mutable cursor; only `displayed` (the sliced
+  // string) triggers a render - one setState per tick instead of two.
   const indexRef = useRef(0);
 
   useEffect(() => {

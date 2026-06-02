@@ -1,3 +1,9 @@
+/**
+ * Invisible render-null component that wires client-side interactivity
+ * (mobile menu toggle, Escape key handler) onto the server-rendered header.
+ * Returns null - exists purely for side effects. Keeps the header as plain
+ * server-rendered HTML (fast initial paint, SEO) while adding JS behavior.
+ */
 "use client";
 
 import { useCallback, useEffect, useRef } from "react";

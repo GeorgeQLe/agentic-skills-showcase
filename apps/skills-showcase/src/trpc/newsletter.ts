@@ -1,3 +1,6 @@
+/**
+ * Newsletter subscription (public) and admin CRUD (protected) endpoints.
+ */
 import { TRPCError } from '@trpc/server';
 import {
   insertSubscriber,
@@ -14,6 +17,8 @@ import {
   safeSecretEqual,
 } from './session';
 
+// Per-IP sliding window stored in the database rather than in-memory,
+// because serverless instances don't share memory across invocations.
 const SUBSCRIBE_RATE_LIMIT_WINDOW_MINUTES = 10;
 const SUBSCRIBE_RATE_LIMIT_MAX_ATTEMPTS = 5;
 
@@ -92,6 +97,8 @@ export const newsletterRouter = router({
   }),
 });
 
+// Hand-rolled instead of pulling a CSV library - single-use, three-line
+// implementation; a library would be heavier than the function itself.
 function csvEscape(value: string): string {
   if (value.includes(',') || value.includes('"') || value.includes('\n')) {
     return `"${value.replace(/"/g, '""')}"`;

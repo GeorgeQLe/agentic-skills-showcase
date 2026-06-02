@@ -1,3 +1,10 @@
+/**
+ * animationMachineStaticPage.ts - self-contained HTML reference page generator.
+ *
+ * Reads the same AnimationMachineModel used by the live debug panel so the
+ * static docs can never drift from the code. Tests compare the embedded JSON
+ * blob with the TypeScript export to enforce this invariant.
+ */
 import {
   ANIMATION_MACHINE_MODEL,
   type AnimationMachineModel,

@@ -1,5 +1,10 @@
 "use client";
 
+/**
+ * Client-side hook that reads skill catalog data from window.SKILLS_SHOWCASE_DATA.
+ * The data is injected by a <Script strategy="beforeInteractive"> tag in the root
+ * layout that loads a pre-built JSON file.
+ */
 import { useState, useEffect } from "react";
 
 export interface BenchmarkAgent {
@@ -57,6 +62,9 @@ export function useSkillsData() {
       return false;
     };
     if (!check()) {
+      // The Script tag loads before hydration but after the module graph -
+      // there's a race window where the hook mounts before the script has
+      // executed, so we poll until the global appears.
       const interval = setInterval(() => {
         if (check()) clearInterval(interval);
       }, 100);

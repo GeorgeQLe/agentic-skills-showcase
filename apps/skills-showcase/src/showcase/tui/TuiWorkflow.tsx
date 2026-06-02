@@ -1,3 +1,9 @@
+/**
+ * Terminal-style workflow player that renders AFPS phase walkthroughs as a TUI
+ * notebook with typewriter animation, benchmark injection, and step-by-step
+ * playback. Pairs useWorkflowPlayer (state machine) with useTypewriter (reveal
+ * animation) to orchestrate the full playback experience.
+ */
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -7,6 +13,9 @@ import type { WorkflowBenchmarkSummary, WorkflowStepBenchmark } from "@/showcase
 import "./workflow.css";
 
 export function TuiWorkflow() {
+  // Gates auto-advance: prevents advancing to the next step before the
+  // typewriter animation finishes revealing the current agent response.
+  // Without this, auto-advance would skip partially-typed content.
   const [activeTurnReady, setActiveTurnReady] = useState(false);
   const turnRefs = useRef<Array<HTMLElement | null>>([]);
   const {
@@ -27,6 +36,8 @@ export function TuiWorkflow() {
 
   const [benchmarks, setBenchmarks] = useState<Record<string, WorkflowBenchmarkSummary>>({});
 
+  // Same injection pattern as useSkillsData - data arrives via beforeInteractive
+  // Script tag on window, not props or API call.
   useEffect(() => {
     const data = (window as any).SKILLS_SHOWCASE_DATA;
     if (data?.workflowBenchmarks) setBenchmarks(data.workflowBenchmarks);
@@ -34,6 +45,8 @@ export function TuiWorkflow() {
 
   const totalSteps = workflow.steps.length;
   const workflowIndex = workflows.findIndex((w) => w.key === activeKey);
+  // Cycles through 7 CSS notebook tilt transforms (rotation + shadow) so each
+  // workflow gets a distinct visual angle without needing per-workflow config.
   const tiltClass = `tui-workflow__notebook--tilt-${workflowIndex % 7}`;
   const summary = benchmarks[activeKey];
   const revealedSteps = workflow.steps.slice(0, revealedStep + 1);

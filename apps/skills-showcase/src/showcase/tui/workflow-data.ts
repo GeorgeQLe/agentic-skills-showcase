@@ -1,3 +1,9 @@
+/**
+ * Static workflow definitions for the AFPS (Agentic Full-Product Stack) phase
+ * walkthroughs. Each workflow describes a product development phase with steps,
+ * replay blocks, and metadata for the TUI notebook player.
+ */
+
 export interface WorkflowReplayBlock {
   label: string;
   body: string;
@@ -40,6 +46,9 @@ export interface Workflow {
   steps: WorkflowStep[];
 }
 
+// Factory: auto-generates the replay block structure (user/agent/terminal/
+// artifact/receipt) from just title, command, and summary - keeps workflow
+// definitions declarative and prevents replay structure drift across 30+ steps.
 function step(title: string, command: string, summary: string, skill?: string): WorkflowStep {
   return {
     title,
@@ -66,6 +75,9 @@ function step(title: string, command: string, summary: string, skill?: string): 
         body: summary,
       },
       receipt: {
+        // "benchmark" receipts are dynamically populated from persisted benchmark
+        // evidence at render time; "curated" receipts use static placeholder text.
+        // The distinction drives conditional rendering in TuiWorkflow.
         state: skill ? "benchmark" : "curated",
         label: skill ? "Benchmark receipt pending render" : "Curated scenario",
         body: skill

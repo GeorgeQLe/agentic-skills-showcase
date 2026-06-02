@@ -1,3 +1,6 @@
+/**
+ * Neon serverless SQL access layer for the newsletter subscriber database.
+ */
 import { neon } from '@neondatabase/serverless';
 import type { NewsletterSubscriber } from './schema';
 
@@ -21,6 +24,9 @@ export async function insertSubscriber(
   const rows = await sql`
     INSERT INTO newsletter_subscribers (email, source_page, consent_text_version)
     VALUES (${email}, ${sourcePage}, ${consentTextVersion})
+    -- ON CONFLICT re-activates so users who previously unsubscribed can
+    -- re-subscribe by simply submitting the form again, without a separate
+    -- reactivation flow.
     ON CONFLICT (email) DO UPDATE SET
       updated_at = now(),
       status = 'active'

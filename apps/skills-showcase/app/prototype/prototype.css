@@ -1,5 +1,10 @@
+/* Overrides globals for the dark-theme prototype page. */
 @import "tailwindcss";
 
+/* === Keyframes === */
+
+/* Shimmer-foil: a diagonal highlight sweep that mimics metallic foil catching
+   light, used on dark-surface cards to draw attention without layout shift. */
 @keyframes shimmer {
   0% {
     background-position: -200% 0;

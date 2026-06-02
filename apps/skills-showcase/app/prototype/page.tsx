@@ -1,3 +1,8 @@
+/*
+ * Pack-opening prototype page - animation debug harness for the
+ * sealed-pack tear / open / drawer sequence. Used to iterate on
+ * motion timing and state transitions outside the production routes.
+ */
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
@@ -35,8 +40,9 @@ function PrototypeInner() {
   const [isSheetMounted, setIsSheetMounted] = useState(false);
   const isDrawerClosingRef = useRef(false);
 
-  // Debug harness drives the first pack ("global") through the exact
-  // production callbacks via this imperative handle.
+  // Debug harness drives pack index 0 ("global") through the exact
+  // production callbacks via this imperative handle. Index 0 is the
+  // canonical test target so every debug session starts deterministic.
   const targetPackRef = useRef<SealedPackHandle>(null);
 
   const handleOpen = useCallback((packName: string, origin: { x: number; y: number }) => {
@@ -141,6 +147,8 @@ function PrototypeInner() {
         </p>
       </header>
 
+      {/* LayoutGroup scopes framer-motion's shared layout animations (layoutId
+          morphs) so packs don't interfere with each other during transitions. */}
       <LayoutGroup>
         <div className="flex flex-wrap justify-center gap-6 mb-12">
           {packs.map((pack, index) => (

@@ -19,6 +19,8 @@ export function getBenchmarkIndicator(skill: Skill) {
     evidence.agents[0]
   );
   if (!best) return null;
+  // Grading thresholds are UX decisions (not statistical boundaries):
+  // 80%+ = A (green), 50-79% = B (yellow), below 50% = C (red).
   const pct = best.passRatePercent;
   if (pct >= 80) return { label: "A", color: "text-emerald-400" };
   if (pct >= 50) return { label: "B", color: "text-amber-400" };

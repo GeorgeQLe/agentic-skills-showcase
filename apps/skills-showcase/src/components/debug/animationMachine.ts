@@ -1,3 +1,11 @@
+/**
+ * animationMachine.ts - canonical model for the pack-opening state machine.
+ *
+ * This single definition is consumed by the live debug panel, the static HTML
+ * reference page, and integration tests. Keeping one source of truth prevents
+ * documentation/code drift: change a node or transition here and every consumer
+ * picks it up automatically.
+ */
 import { ALL_STEPS, CLOSE_STEPS, OPEN_STEPS, type StepDef } from "./steps";
 
 export type AnimationMachineLane =
@@ -124,6 +132,8 @@ export interface AnimationMachineModel {
   closeSteps: StepDef[];
 }
 
+// Hand-positioned constants - visual spacing for the SVG graph lanes.
+// These are design decisions for readability, not data-derived values.
 const LANE_Y: Record<AnimationMachineLane, number> = {
   page: 32,
   "sealed-pack": 142,
@@ -150,7 +160,11 @@ function stepNode(step: StepDef, index: number): AnimationMachineNode {
     phase: step.phase,
     kind: "gate",
     stepId: step.id,
+    // Marks high-value freeze points in the close sequence where the
+    // shared-layout morph flash occurs - the bug this harness was built to catch.
     apex: step.apex,
+    // Dot-paths into AnimationMachineSnapshot - buildAnimationMachineSnapshot
+    // reads these to determine which nodes are active/blocked/reset.
     trackedFields: ["debug.pausedAtStep", "debug.reachedSteps"],
     description: step.boundary,
     x: 88 + index * 86,

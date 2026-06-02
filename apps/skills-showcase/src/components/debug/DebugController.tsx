@@ -173,8 +173,9 @@ export function DebugProvider({ children }: { children: ReactNode }) {
       if (!enabledRef.current || modeRef.current !== "stepped") {
         return Promise.resolve();
       }
-      // If something is already parked (shouldn't happen in a sequential chain),
-      // release it to avoid a deadlock before parking the new boundary.
+      // If something is already parked (shouldn't happen in a sequential chain
+      // but can during rapid resets), release it to avoid a deadlock before
+      // parking the new boundary.
       if (pendingResolve.current) {
         const prev = pendingResolve.current;
         pendingResolve.current = null;

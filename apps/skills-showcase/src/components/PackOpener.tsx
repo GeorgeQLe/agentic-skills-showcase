@@ -182,8 +182,8 @@ export default function PackOpener({ skills, packName, isClosing, onCollapseComp
 
     dbgRef.current.mark("collapse-fan");
 
-    // Card 0 uses layoutId so it can't use the animate prop —
-    // drive its collapse imperatively via motion values
+    // Card 0 owns the shared layoutId, so framer controls its animate prop
+    // for the morph. Drive collapse imperatively via motion values instead.
     if (targetIndex !== 0) {
       const springConfig = dbgRef.current.scaleT({ type: "spring" as const, stiffness: 200, damping: 25 });
       animate(card0X, offsets[0].x, springConfig);

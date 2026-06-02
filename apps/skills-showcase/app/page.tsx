@@ -156,6 +156,8 @@ export default function HomePage() {
       </main>
 
       <ShowcaseFooter />
+      {/* Renders after the server HTML so it can imperatively populate
+          [data-workflow-preview] hooks in the DOM above. */}
       <WorkflowsClient />
     </>
   );

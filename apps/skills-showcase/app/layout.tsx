@@ -1,3 +1,9 @@
+/*
+ * Root layout - loads skills-data.js and github-proof-data.js via
+ * <Script strategy="beforeInteractive"> so the catalog JSON lands on
+ * window.SKILLS_SHOWCASE_DATA before React hydration. Client components
+ * read this directly instead of making an API call.
+ */
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 

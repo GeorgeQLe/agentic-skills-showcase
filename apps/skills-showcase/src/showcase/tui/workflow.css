@@ -1,4 +1,4 @@
-/* ── Playful Blueprint Workflow ── scoped under .tui-workflow ── */
+/* === TUI Container === */
 
 .tui-workflow {
   display: flex;
@@ -9,7 +9,7 @@
   overflow: clip;
 }
 
-/* ── Chip row ── */
+/* === Chip Row === */
 
 .tui-workflow__chips {
   display: flex;
@@ -58,7 +58,7 @@
   border-color: var(--coral-strong);
 }
 
-/* ── Main layout ── */
+/* === Transcript === */
 
 .tui-workflow__body {
   display: grid;
@@ -69,7 +69,7 @@
   min-width: 0;
 }
 
-/* ── Left: step area (55%) ── */
+/* === Step Cards === */
 
 .tui-workflow__step-area {
   display: flex;
@@ -78,8 +78,6 @@
   min-width: 0;
   max-width: 100%;
 }
-
-/* ── Step card ── */
 
 .tui-workflow__transcript {
   display: grid;
@@ -133,7 +131,7 @@
   overflow-wrap: anywhere;
 }
 
-/* ── Hybrid replay ── */
+/* === Replay Blocks === */
 
 .tui-workflow__replay {
   display: grid;
@@ -175,7 +173,7 @@
   color: var(--ink);
 }
 
-/* ── Dot indicators with connecting lines ── */
+/* === Dot Navigation === */
 
 .tui-workflow__dots {
   display: flex;
@@ -240,7 +238,7 @@
   flex-shrink: 0;
 }
 
-/* ── Controls ── */
+/* Controls */
 
 .tui-workflow__controls {
   display: flex;
@@ -279,7 +277,7 @@
   background: var(--teal-strong);
 }
 
-/* ── Counter ── */
+/* Counter */
 
 .tui-workflow__counter {
   text-align: center;
@@ -290,7 +288,7 @@
   margin: 0;
 }
 
-/* ── Right: lab-notebook sidebar (45%) ── */
+/* === Lab Notebook === */
 
 .tui-workflow__notebook {
   background: #f8f0ff;
@@ -306,6 +304,9 @@
   max-width: 100%;
 }
 
+/* === Notebook Tilts === */
+/* Subtle rotations give the notebook a hand-pinned-to-corkboard feel;
+   the component cycles through tilt classes on each workflow step change. */
 .tui-workflow__notebook--tilt-0 { transform: rotate(-0.5deg); }
 .tui-workflow__notebook--tilt-1 { transform: rotate(-0.3deg); }
 .tui-workflow__notebook--tilt-2 { transform: rotate(0deg); }
@@ -361,7 +362,7 @@
   color: var(--muted);
 }
 
-/* ── Benchmark strip ── */
+/* === Benchmark Strip === */
 
 .tui-workflow__benchmark-strip {
   display: flex;
@@ -383,7 +384,7 @@
   opacity: 0.4;
 }
 
-/* ── Step badge ── */
+/* Step badges */
 
 .tui-workflow__step-badge {
   display: flex;
@@ -412,7 +413,7 @@
   color: var(--coral);
 }
 
-/* ── Demo panel ── */
+/* Demo panel */
 
 .tui-workflow__demo-panel {
   border: 1px solid var(--line);
@@ -476,7 +477,7 @@
   color: #f6f7ff;
 }
 
-/* ── Replay receipts ── */
+/* === Receipt Blocks === */
 
 .tui-workflow__receipt {
   margin-top: 0.25rem;
@@ -556,7 +557,7 @@
   line-height: 1.5;
 }
 
-/* ── Keyframes ── */
+/* Keyframes */
 
 @keyframes ring-spin {
   to {
@@ -564,7 +565,7 @@
   }
 }
 
-/* ── Reduced motion ── */
+/* === Media Queries === */
 
 @media (prefers-reduced-motion: reduce) {
   .tui-workflow__step-card {
@@ -576,8 +577,6 @@
     border-color: var(--coral);
   }
 }
-
-/* ── Responsive ── */
 
 @media (max-width: 768px) {
   .tui-workflow {

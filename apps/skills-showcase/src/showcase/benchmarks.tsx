@@ -1,3 +1,8 @@
+/**
+ * Imperative DOM renderer for the benchmarks section - same pattern as
+ * catalog.tsx: finds `data-*` hooks in server-rendered HTML and injects
+ * benchmark cards/tables.
+ */
 "use client";
 
 import { useEffect } from "react";
@@ -66,6 +71,8 @@ export default function BenchmarksClient() {
 
     if (countTarget) countTarget.textContent = String(benchmarked.length);
 
+    // Multi-platform skills (claude/codex) share a mirrorKey - dedup so each
+    // logical skill gets one benchmark row regardless of platform variants.
     const seen = new Set<string>();
     const deduped = benchmarked.filter((s) => {
       const key = text(s.mirrorKey, s.name);

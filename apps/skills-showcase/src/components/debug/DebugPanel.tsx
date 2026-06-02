@@ -1,8 +1,18 @@
+/**
+ * DebugPanel.tsx - fixed-position debug overlay for /prototype.
+ *
+ * Controls animation speed, stepping mode, and displays live state from the
+ * animation machine. Designed to stay out of the way during normal use (a
+ * single gear button) and expand into a full instrumentation panel on demand.
+ */
 "use client";
 
 import { useState } from "react";
 import { useDebug } from "./DebugController";
 import { ALL_STEPS, OPEN_STEPS, CLOSE_STEPS, type StepDef } from "./steps";
+// Surfaced in the panel so the chosen slow-mo approach is visible at a glance
+// and future devs know the manual clock was evaluated and rejected - see
+// manualClock.ts for the full investigation log.
 import { SLOWMO_MECHANISM } from "./manualClock";
 import AnimationMachineGraph from "./AnimationMachineGraph";
 

@@ -1,3 +1,10 @@
+/**
+ * BottomSheet.tsx - slide-up drawer container for the pack-opener content.
+ *
+ * AnimatePresence exit drives the close morph-back sequence: when isOpen flips
+ * false the sheet slides out, and onExitComplete fires the chain that clears
+ * openPack and lets the shared-layout card morph back to the SealedPack.
+ */
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
@@ -32,6 +39,9 @@ export default function BottomSheet({
   const sheetY = useMotionValue(0);
   const dragControls = useDragControls();
   const [isExiting, setIsExiting] = useState(false);
+  // Track prior open state in a ref so the effect below can detect the
+  // open-to-closed transition and trigger exit animation before AnimatePresence
+  // unmounts the children.
   const wasOpenRef = useRef(isOpen);
 
   function handleDragEnd(_: unknown, info: PanInfo) {
@@ -110,6 +120,8 @@ export default function BottomSheet({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={dbg.scaleT({ duration: 0.3 })}
+            // Dismiss is disabled during collapse so the user can't tap the scrim
+            // mid-animation, which would break the close sequence ordering.
             onClick={dismissable ? onClose : undefined}
           />
           <motion.div

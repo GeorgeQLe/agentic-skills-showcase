@@ -1,3 +1,8 @@
+/**
+ * State machine hook for the TUI workflow player - manages active workflow,
+ * step index, playback state, and reduced-motion preferences. Exposes
+ * navigation primitives (next/prev/goTo/restart) consumed by TuiWorkflow.
+ */
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -7,11 +12,16 @@ import type { Workflow } from "../workflow-data";
 interface WorkflowPlayerState {
   activeKey: string;
   activeStep: number;
+  // High-water mark: only increases. Tracks the furthest step the user has
+  // seen so the transcript shows all previously-revealed steps. activeStep
+  // can go backwards (via prevStep); revealedStep cannot.
   revealedStep: number;
   playing: boolean;
   workflow: Workflow;
 }
 
+// canAutoAdvance: the parent (TuiWorkflow) sets this to false while typewriter
+// animation is in progress, gating auto-advance until content is fully revealed.
 export function useWorkflowPlayer(autoAdvanceMs = 900, canAutoAdvance = true) {
   const [state, setState] = useState<WorkflowPlayerState>(() => {
     const wf = workflows[0];
