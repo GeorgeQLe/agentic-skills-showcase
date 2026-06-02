@@ -1,0 +1,942 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>skills-showcase Documentation Pass</title>
+<style>
+:root {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --border: #30363d;
+  --text: #c9d1d9;
+  --text-muted: #8b949e;
+  --accent: #58a6ff;
+  --green: #3fb950;
+  --red: #f85149;
+  --orange: #d29922;
+  --purple: #bc8cff;
+  --code-bg: #1c2128;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.55;
+}
+main {
+  width: min(1120px, calc(100% - 32px));
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 32px 0 56px;
+  overflow-wrap: break-word;
+}
+a { color: var(--accent); }
+h1, h2, h3 { color: #fff; line-height: 1.2; }
+h1 { margin: 0 0 8px; font-size: clamp(2rem, 5vw, 3.5rem); }
+h2 { margin: 0; font-size: 1.45rem; color: var(--accent); }
+h3 { margin: 22px 0 8px; font-size: 1.05rem; }
+p { color: var(--text); }
+code {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 5px;
+  color: #e6edf3;
+}
+pre {
+  margin: 0;
+  padding: 18px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: #e6edf3;
+  font-size: 0.9rem;
+}
+section {
+  margin: 24px 0;
+  padding: 22px;
+  background: rgba(22, 27, 34, 0.72);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.hero {
+  padding: 28px 0 10px;
+  border: 0;
+  background: transparent;
+}
+.muted { color: var(--text-muted); }
+.toc {
+  background: var(--surface);
+}
+.toc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(210px, 100%), 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+.toc-grid a {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #11161d;
+  text-decoration: none;
+}
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+  gap: 12px;
+}
+.card {
+  background: #11161d;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+}
+.table-wrap { overflow-x: auto; }
+table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 760px;
+  font-size: 0.92rem;
+}
+th, td {
+  border: 1px solid var(--border);
+  padding: 9px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+th { background: var(--surface); color: #fff; }
+.badge {
+  display: inline-block;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 2px 8px;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+.feedback {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  min-width: min(320px, 100%);
+}
+.fb-row { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.fb-btn, button, .radio-option {
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 6px;
+  cursor: pointer;
+  font: inherit;
+}
+.fb-btn.active-up { border-color: var(--green); color: var(--green); background: rgba(63, 185, 80, .12); }
+.fb-btn.active-down { border-color: var(--red); color: var(--red); background: rgba(248, 81, 73, .12); }
+.fb-btn.active-clarify { border-color: var(--orange); color: var(--orange); background: rgba(210, 153, 34, .12); }
+.fb-panel {
+  display: none;
+  width: 100%;
+  background: #11161d;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+}
+.fb-panel.show { display: block; }
+textarea {
+  width: 100%;
+  min-height: 90px;
+  resize: vertical;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #0b1017;
+  color: var(--text);
+  padding: 10px;
+  font: inherit;
+}
+.yaml { min-height: 150px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.gate {
+  background: #1c2333;
+  border: 1px solid var(--purple);
+  border-radius: 8px;
+  padding: 14px;
+  margin: 14px 0;
+}
+.gate h3 { color: var(--purple); margin-top: 0; }
+.radio-stack { display: grid; gap: 8px; margin-top: 10px; }
+.radio-option { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; }
+.conditional-note { display: none; margin-top: 8px; }
+.conditional-note.show { display: block; }
+.status { color: var(--orange); min-height: 1.5em; }
+.compile-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0; }
+button.primary { background: var(--accent); border-color: var(--accent); color: #08111f; font-weight: 700; }
+button:disabled { opacity: .45; cursor: not-allowed; }
+.file-path { color: var(--accent); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.88rem; }
+.comment-type { font-size: 0.8rem; border: 1px solid var(--border); border-radius: 999px; padding: 2px 8px; color: var(--text-muted); }
+@media (max-width: 860px) {
+  main { width: min(100% - 24px, 1120px); padding-top: 22px; }
+  section { padding: 18px; }
+}
+@media (max-width: 560px) {
+  main { width: min(100% - 16px, 1120px); }
+  .fb-row, .compile-actions { width: 100%; }
+  button, .fb-btn, .radio-option { width: 100%; justify-content: center; }
+}
+</style>
+</head>
+<body>
+<main>
+  <section class="hero" id="top">
+    <h1>skills-showcase Documentation Pass</h1>
+    <p class="muted">Review of WHY-only comments added to ~28 files across 6 phases. Rule: "Default to writing no comments. Only add when the WHY is non-obvious." Gold standard: <code>manualClock.ts</code>, <code>steps.ts</code>.</p>
+    <p>
+      <span class="badge">~28 files commented</span>
+      <span class="badge">~30 files intentionally skipped</span>
+      <span class="badge">4 comment types</span>
+    </p>
+  </section>
+
+  <section class="toc" id="toc">
+    <div class="section-head">
+      <h2>Table of Contents</h2>
+      <div class="feedback" data-section="Table of Contents"></div>
+    </div>
+    <div class="toc-grid">
+      <a href="#overview">Overview</a>
+      <a href="#phase1">Phase 1: CSS Section Markers</a>
+      <a href="#phase2">Phase 2: App Shell &amp; Layout</a>
+      <a href="#phase3">Phase 3: Debug Harness</a>
+      <a href="#phase4">Phase 4: Showcase Pages</a>
+      <a href="#phase5">Phase 5: TUI Workflow Player</a>
+      <a href="#phase6">Phase 6: tRPC &amp; Data Layer</a>
+      <a href="#evidence">Evidence Matrix</a>
+      <a href="#confidence">Confidence Register</a>
+      <a href="#gates">Approval Gates</a>
+      <a href="#compile">Compile</a>
+    </div>
+  </section>
+
+  <!-- ═══════ Overview ═══════ -->
+  <section id="overview">
+    <div class="section-head">
+      <h2>Overview</h2>
+      <div class="feedback" data-section="Overview"></div>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <h3>Comment Types Used</h3>
+        <ul style="margin:0;padding-left:18px">
+          <li><strong>Module-level blocks</strong> &mdash; <code>/** ... */</code> at file top explaining the module's role and non-obvious contracts</li>
+          <li><strong>Inline WHY comments</strong> &mdash; single-line <code>//</code> explaining why a specific approach was chosen</li>
+          <li><strong>CSS section markers</strong> &mdash; <code>/* === Section === */</code> dividing large CSS files into navigable regions</li>
+          <li><strong>Contract comments</strong> &mdash; SQL/code comments explaining behavioral contracts (e.g., ON CONFLICT reactivation)</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Guiding Principle</h3>
+        <p style="margin:0">Every comment answers <em>why</em>, never <em>what</em>. Well-named identifiers explain what the code does. Comments only appear where the reasoning behind a choice would surprise a future reader.</p>
+      </div>
+      <div class="card">
+        <h3>Files Skipped</h3>
+        <p style="margin:0">~30 files were intentionally left uncommented because they are self-documenting: <code>SealedPack.tsx</code>, <code>manualClock.ts</code>, <code>steps.ts</code>, simple type files, test files, config files, and single-purpose utilities.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════ Phase 1: CSS Section Markers ═══════ -->
+  <section id="phase1">
+    <div class="section-head">
+      <h2>Phase 1: CSS Section Markers</h2>
+      <div class="feedback" data-section="Phase 1: CSS Section Markers"></div>
+    </div>
+    <p class="muted">Added <code>/* === Section === */</code> markers to both globals.css (~1260 lines) and workflow.css (~620 lines) to create navigable regions. Two inline WHY comments were also added in globals.css.</p>
+
+    <h3 class="file-path">app/globals.css</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Comment</th><th>Type</th><th>Rationale</th></tr></thead>
+        <tbody>
+          <tr><td><code>/* === Root Tokens / CSS Variables === */</code></td><td><span class="comment-type">section marker</span></td><td>First logical region; tokens define the design system</td></tr>
+          <tr><td><pre>/* Force light scheme so blueprint grid and card surfaces render consistently
+   regardless of OS dark-mode preference. */</pre></td><td><span class="comment-type">inline WHY</span></td><td><code>color-scheme: light</code> looks like it could be removed — explains it's load-bearing</td></tr>
+          <tr><td><pre>/* Two overlapping 1px repeating gradients produce a 48px blueprint grid
+   visible behind every page - the signature visual motif of the showcase. */</pre></td><td><span class="comment-type">inline WHY</span></td><td>Opaque gradient stack on <code>html</code> — explains the visual intent</td></tr>
+          <tr><td><code>/* === Header / Navigation === */</code></td><td><span class="comment-type">section marker</span></td><td>Separates header/nav from reset styles</td></tr>
+          <tr><td><code>/* === Mobile Menu === */</code></td><td><span class="comment-type">section marker</span></td><td>Menu-button styles start here</td></tr>
+          <tr><td><code>/* === Page Layout === */</code></td><td><span class="comment-type">section marker</span></td><td>Main page container</td></tr>
+          <tr><td><code>/* === Hero Section === */</code></td><td><span class="comment-type">section marker</span></td><td>Hero grid and content</td></tr>
+          <tr><td><code>/* === Typography === */</code></td><td><span class="comment-type">section marker</span></td><td>Heading and body type</td></tr>
+          <tr><td><code>/* === Blueprint Panel === */</code></td><td><span class="comment-type">section marker</span></td><td>Shared card/panel surface styles</td></tr>
+          <tr><td><code>/* === Follow / Newsletter === */</code></td><td><span class="comment-type">section marker</span></td><td>Newsletter and follow section</td></tr>
+          <tr><td><code>/* === Workflow Page === */</code></td><td><span class="comment-type">section marker</span></td><td>Workflow listing styles</td></tr>
+          <tr><td><code>/* === Pack Map === */</code></td><td><span class="comment-type">section marker</span></td><td>Pack map and proof grid</td></tr>
+          <tr><td><code>/* === Catalog === */</code></td><td><span class="comment-type">section marker</span></td><td>Catalog-specific tools/filters</td></tr>
+          <tr><td><code>/* === Benchmarks === */</code></td><td><span class="comment-type">section marker</span></td><td>Benchmark panels and tables</td></tr>
+          <tr><td><code>/* === Inspect / Proof === */</code></td><td><span class="comment-type">section marker</span></td><td>Inspect tables and proof views</td></tr>
+          <tr><td><code>/* === Footer === */</code></td><td><span class="comment-type">section marker</span></td><td>Site footer</td></tr>
+          <tr><td><code>/* === Media Queries === */</code></td><td><span class="comment-type">section marker</span></td><td>Responsive and motion queries</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="file-path">app/prototype/prototype.css</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Comment</th><th>Type</th><th>Rationale</th></tr></thead>
+        <tbody>
+          <tr><td><code>/* Overrides globals for the dark-theme prototype page. */</code></td><td><span class="comment-type">module</span></td><td>Not obvious this file overrides globals.css specifically for /prototype</td></tr>
+          <tr><td><code>/* === Keyframes === */</code></td><td><span class="comment-type">section marker</span></td><td>Marks keyframes region</td></tr>
+          <tr><td><pre>/* Shimmer-foil: a diagonal highlight sweep that mimics metallic foil catching
+   light, used on dark-surface cards to draw attention without layout shift. */</pre></td><td><span class="comment-type">inline WHY</span></td><td>Non-obvious visual purpose of the shimmer animation</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="file-path">src/showcase/tui/workflow.css</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Comment</th><th>Type</th><th>Rationale</th></tr></thead>
+        <tbody>
+          <tr><td><code>/* === TUI Container === */</code></td><td><span class="comment-type">section marker</span></td><td>Replaces previous ad-hoc markers with consistent format</td></tr>
+          <tr><td><code>/* === Chip Row === */</code></td><td><span class="comment-type">section marker</span></td><td>Workflow chip selector row</td></tr>
+          <tr><td><code>/* === Transcript === */</code></td><td><span class="comment-type">section marker</span></td><td>Transcript body layout</td></tr>
+          <tr><td><code>/* === Step Cards === */</code></td><td><span class="comment-type">section marker</span></td><td>Individual step card styles</td></tr>
+          <tr><td><code>/* === Replay Blocks === */</code></td><td><span class="comment-type">section marker</span></td><td>Hybrid replay section</td></tr>
+          <tr><td><code>/* === Dot Navigation === */</code></td><td><span class="comment-type">section marker</span></td><td>Dot indicator navigation</td></tr>
+          <tr><td><code>/* === Lab Notebook === */</code></td><td><span class="comment-type">section marker</span></td><td>Right sidebar notebook panel</td></tr>
+          <tr><td><code>/* === Notebook Tilts === */</code></td><td><span class="comment-type">section marker</span></td><td>New section with inline WHY</td></tr>
+          <tr><td><pre>/* Subtle rotations give the notebook a hand-pinned-to-corkboard feel;
+   the component cycles through tilt classes on each workflow step change. */</pre></td><td><span class="comment-type">inline WHY</span></td><td>Non-obvious visual intent of the tilt transforms</td></tr>
+          <tr><td><code>/* === Benchmark Strip === */</code></td><td><span class="comment-type">section marker</span></td><td>Benchmark display strip</td></tr>
+          <tr><td><code>/* === Receipt Blocks === */</code></td><td><span class="comment-type">section marker</span></td><td>Replay receipt blocks</td></tr>
+          <tr><td><code>/* === Media Queries === */</code></td><td><span class="comment-type">section marker</span></td><td>Reduced motion + responsive queries</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ═══════ Phase 2: App Shell & Layout ═══════ -->
+  <section id="phase2">
+    <div class="section-head">
+      <h2>Phase 2: App Shell &amp; Layout</h2>
+      <div class="feedback" data-section="Phase 2: App Shell & Layout"></div>
+    </div>
+    <p class="muted">Module-level blocks and inline WHY comments for the app shell (root layout, page, prototype page).</p>
+
+    <h3 class="file-path">app/layout.tsx</h3>
+    <pre>/*
+ * Root layout - loads skills-data.js and github-proof-data.js via
+ * &lt;Script strategy="beforeInteractive"&gt; so the catalog JSON lands on
+ * window.SKILLS_SHOWCASE_DATA before React hydration. Client components
+ * read this directly instead of making an API call.
+ */</pre>
+
+    <h3 class="file-path">app/page.tsx</h3>
+    <pre>{/* Renders after the server HTML so it can imperatively populate
+    [data-workflow-preview] hooks in the DOM above. */}</pre>
+
+    <h3 class="file-path">app/prototype/page.tsx</h3>
+    <pre>/*
+ * Pack-opening prototype page - animation debug harness for the
+ * sealed-pack tear / open / drawer sequence. Used to iterate on
+ * motion timing and state transitions outside the production routes.
+ */</pre>
+    <pre>// Debug harness drives pack index 0 ("global") through the exact
+// production callbacks via this imperative handle. Index 0 is the
+// canonical test target so every debug session starts deterministic.</pre>
+    <pre>{/* LayoutGroup scopes framer-motion's shared layout animations (layoutId
+    morphs) so packs don't interfere with each other during transitions. */}</pre>
+  </section>
+
+  <!-- ═══════ Phase 3: Debug Harness ═══════ -->
+  <section id="phase3">
+    <div class="section-head">
+      <h2>Phase 3: Debug Harness</h2>
+      <div class="feedback" data-section="Phase 3: Debug Harness"></div>
+    </div>
+    <p class="muted">Module-level blocks and inline WHY comments for the debug visualization and control components.</p>
+
+    <h3 class="file-path">src/components/BottomSheet.tsx</h3>
+    <pre>/**
+ * BottomSheet.tsx - slide-up drawer container for the pack-opener content.
+ *
+ * AnimatePresence exit drives the close morph-back sequence: when isOpen flips
+ * false the sheet slides out, and onExitComplete fires the chain that clears
+ * openPack and lets the shared-layout card morph back to the SealedPack.
+ */</pre>
+    <pre>// Track prior open state in a ref so the effect below can detect the
+// open-to-closed transition and trigger exit animation before AnimatePresence
+// unmounts the children.</pre>
+    <pre>// Dismiss is disabled during collapse so the user can't tap the scrim
+// mid-animation, which would break the close sequence ordering.</pre>
+
+    <h3 class="file-path">src/components/CardFace.tsx</h3>
+    <pre>// Grading thresholds are UX decisions (not statistical boundaries):
+// 80%+ = A (green), 50-79% = B (yellow), below 50% = C (red).</pre>
+
+    <h3 class="file-path">src/components/PackOpener.tsx</h3>
+    <pre>// Card 0 owns the shared layoutId, so framer controls its animate prop
+// for the morph. Drive collapse imperatively via motion values instead.</pre>
+
+    <h3 class="file-path">src/components/debug/AnimationMachineGraph.tsx</h3>
+    <pre>/**
+ * AnimationMachineGraph.tsx - SVG visualization of the animation state machine.
+ *
+ * Driven by the canonical model from animationMachine.ts, renders live snapshot
+ * state: active, reached, paused, blocked, and reset nodes/transitions are
+ * color-coded so the current point in the open/close sequence is visible at a
+ * glance inside the debug panel.
+ */</pre>
+    <pre>// Same-lane: vertical arc (curveY offset above the lane) so the path stays
+// visible above the node boxes. Cross-lane: S-curve with control points at
+// each lane's Y for clean routing between rows.</pre>
+
+    <h3 class="file-path">src/components/debug/DebugController.tsx</h3>
+    <pre>// If something is already parked (shouldn't happen in a sequential chain
+// but can during rapid resets), release it to avoid a deadlock before
+// parking the new boundary.</pre>
+
+    <h3 class="file-path">src/components/debug/DebugPanel.tsx</h3>
+    <pre>/**
+ * DebugPanel.tsx - fixed-position debug overlay for /prototype.
+ *
+ * Controls animation speed, stepping mode, and displays live state from the
+ * animation machine. Designed to stay out of the way during normal use (a
+ * single gear button) and expand into a full instrumentation panel on demand.
+ */</pre>
+    <pre>// Surfaced in the panel so the chosen slow-mo approach is visible at a glance
+// and future devs know the manual clock was evaluated and rejected - see
+// manualClock.ts for the full investigation log.</pre>
+
+    <h3 class="file-path">src/components/debug/animationMachine.ts</h3>
+    <pre>/**
+ * animationMachine.ts - canonical model for the pack-opening state machine.
+ *
+ * This single definition is consumed by the live debug panel, the static HTML
+ * reference page, and integration tests. Keeping one source of truth prevents
+ * documentation/code drift: change a node or transition here and every consumer
+ * picks it up automatically.
+ */</pre>
+    <pre>// Hand-positioned constants - visual spacing for the SVG graph lanes.
+// These are design decisions for readability, not data-derived values.</pre>
+    <pre>// Marks high-value freeze points in the close sequence where the
+// shared-layout morph flash occurs - the bug this harness was built to catch.</pre>
+    <pre>// Dot-paths into AnimationMachineSnapshot - buildAnimationMachineSnapshot
+// reads these to determine which nodes are active/blocked/reset.</pre>
+
+    <h3 class="file-path">src/components/debug/animationMachineStaticPage.ts</h3>
+    <pre>/**
+ * animationMachineStaticPage.ts - self-contained HTML reference page generator.
+ *
+ * Reads the same AnimationMachineModel used by the live debug panel so the
+ * static docs can never drift from the code. Tests compare the embedded JSON
+ * blob with the TypeScript export to enforce this invariant.
+ */</pre>
+  </section>
+
+  <!-- ═══════ Phase 4: Showcase Pages ═══════ -->
+  <section id="phase4">
+    <div class="section-head">
+      <h2>Phase 4: Showcase Pages</h2>
+      <div class="feedback" data-section="Phase 4: Showcase Pages"></div>
+    </div>
+    <p class="muted">Module-level blocks and inline WHY comments for the imperative DOM renderer components and showcase shell.</p>
+
+    <h3 class="file-path">src/showcase/ShowcaseShell.tsx</h3>
+    <pre>/**
+ * Invisible render-null component that wires client-side interactivity
+ * (mobile menu toggle, Escape key handler) onto the server-rendered header.
+ * Returns null - exists purely for side effects. Keeps the header as plain
+ * server-rendered HTML (fast initial paint, SEO) while adding JS behavior.
+ */</pre>
+
+    <h3 class="file-path">src/showcase/benchmarks.tsx</h3>
+    <pre>/**
+ * Imperative DOM renderer for the benchmarks section - same pattern as
+ * catalog.tsx: finds `data-*` hooks in server-rendered HTML and injects
+ * benchmark cards/tables.
+ */</pre>
+    <pre>// Multi-platform skills (claude/codex) share a mirrorKey - dedup so each
+// logical skill gets one benchmark row regardless of platform variants.</pre>
+
+    <h3 class="file-path">src/showcase/catalog.tsx</h3>
+    <pre>/**
+ * Imperative DOM renderer for the catalog page.
+ * The page is server-rendered HTML with `data-*` attribute hooks; this client
+ * component hydrates by finding those hooks and injecting dynamic content
+ * (skill cards, pack maps, benchmarks). This avoids re-rendering the entire
+ * page as a client component while still adding interactivity.
+ */</pre>
+    <pre>// Skills can appear in multiple platform variants (claude/codex) sharing
+// the same mirrorKey - dedup prevents double-counting in the catalog view.</pre>
+
+    <h3 class="file-path">src/showcase/newsletter-form.tsx</h3>
+    <pre>/**
+ * Controlled newsletter subscription form with a state machine
+ * (ready -&gt; invalid-email/pending -&gt; success/error). Validates email
+ * client-side before hitting the tRPC endpoint.
+ */</pre>
+
+    <h3 class="file-path">src/showcase/workflows.tsx</h3>
+    <pre>/**
+ * Imperative DOM renderer for the workflow selector section.
+ * Populates workflow preview cards in the server-rendered page shell.
+ * TuiWorkflow.tsx is the full interactive player mounted separately -
+ * two different UIs for different contexts (preview vs full playback).
+ */</pre>
+
+    <h3 class="file-path">src/hooks/useSkillsData.ts</h3>
+    <pre>/**
+ * Client-side hook that reads skill catalog data from window.SKILLS_SHOWCASE_DATA.
+ * The data is injected by a &lt;Script strategy="beforeInteractive"&gt; tag in the root
+ * layout that loads a pre-built JSON file.
+ */</pre>
+    <pre>// The Script tag loads before hydration but after the module graph -
+// there's a race window where the hook mounts before the script has
+// executed, so we poll until the global appears.</pre>
+  </section>
+
+  <!-- ═══════ Phase 5: TUI Workflow Player ═══════ -->
+  <section id="phase5">
+    <div class="section-head">
+      <h2>Phase 5: TUI Workflow Player</h2>
+      <div class="feedback" data-section="Phase 5: TUI Workflow Player"></div>
+    </div>
+    <p class="muted">Module-level blocks and inline WHY comments for the TUI workflow subsystem.</p>
+
+    <h3 class="file-path">src/showcase/tui/TuiWorkflow.tsx</h3>
+    <pre>/**
+ * Terminal-style workflow player that renders AFPS phase walkthroughs as a TUI
+ * notebook with typewriter animation, benchmark injection, and step-by-step
+ * playback. Pairs useWorkflowPlayer (state machine) with useTypewriter (reveal
+ * animation) to orchestrate the full playback experience.
+ */</pre>
+    <pre>// Gates auto-advance: prevents advancing to the next step before the
+// typewriter animation finishes revealing the current agent response.
+// Without this, auto-advance would skip partially-typed content.</pre>
+    <pre>// Same injection pattern as useSkillsData - data arrives via beforeInteractive
+// Script tag on window, not props or API call.</pre>
+    <pre>// Cycles through 7 CSS notebook tilt transforms (rotation + shadow) so each
+// workflow gets a distinct visual angle without needing per-workflow config.</pre>
+
+    <h3 class="file-path">src/showcase/tui/shared/useTypewriter.ts</h3>
+    <pre>/**
+ * Character-at-a-time text reveal hook for the TUI workflow player's agent
+ * response animation. Returns the progressively-revealed substring and a
+ * `done` flag that gates downstream playback logic.
+ */</pre>
+    <pre>// Ref instead of state for the character index: avoids a re-render on every
+// tick. The ref holds the mutable cursor; only `displayed` (the sliced
+// string) triggers a render - one setState per tick instead of two.</pre>
+
+    <h3 class="file-path">src/showcase/tui/shared/useWorkflowPlayer.ts</h3>
+    <pre>/**
+ * State machine hook for the TUI workflow player - manages active workflow,
+ * step index, playback state, and reduced-motion preferences. Exposes
+ * navigation primitives (next/prev/goTo/restart) consumed by TuiWorkflow.
+ */</pre>
+    <pre>// High-water mark: only increases. Tracks the furthest step the user has
+// seen so the transcript shows all previously-revealed steps. activeStep
+// can go backwards (via prevStep); revealedStep cannot.</pre>
+    <pre>// canAutoAdvance: the parent (TuiWorkflow) sets this to false while typewriter
+// animation is in progress, gating auto-advance until content is fully revealed.</pre>
+
+    <h3 class="file-path">src/showcase/tui/workflow-data.ts</h3>
+    <pre>/**
+ * Static workflow definitions for the AFPS (Agentic Full-Product Stack) phase
+ * walkthroughs. Each workflow describes a product development phase with steps,
+ * replay blocks, and metadata for the TUI notebook player.
+ */</pre>
+    <pre>// Factory: auto-generates the replay block structure (user/agent/terminal/
+// artifact/receipt) from just title, command, and summary - keeps workflow
+// definitions declarative and prevents replay structure drift across 30+ steps.</pre>
+    <pre>// "benchmark" receipts are dynamically populated from persisted benchmark
+// evidence at render time; "curated" receipts use static placeholder text.
+// The distinction drives conditional rendering in TuiWorkflow.</pre>
+  </section>
+
+  <!-- ═══════ Phase 6: tRPC & Data Layer ═══════ -->
+  <section id="phase6">
+    <div class="section-head">
+      <h2>Phase 6: tRPC &amp; Data Layer</h2>
+      <div class="feedback" data-section="Phase 6: tRPC & Data Layer"></div>
+    </div>
+    <p class="muted">Module-level blocks, inline WHY comments, and a SQL contract comment for the tRPC layer and database access.</p>
+
+    <h3 class="file-path">src/db/index.ts</h3>
+    <pre>/**
+ * Neon serverless SQL access layer for the newsletter subscriber database.
+ */</pre>
+    <pre>-- ON CONFLICT re-activates so users who previously unsubscribed can
+-- re-subscribe by simply submitting the form again, without a separate
+-- reactivation flow.</pre>
+
+    <h3 class="file-path">src/trpc/init.ts</h3>
+    <pre>/**
+ * tRPC initialization with context creation.
+ * protectedProcedure gates admin endpoints behind HMAC session tokens.
+ */</pre>
+    <pre>// tRPC's fetch adapter only exposes raw headers (FetchCreateContextFnOptions
+// has no parsed cookies), so we parse the cookie header ourselves.</pre>
+
+    <h3 class="file-path">src/trpc/newsletter.ts</h3>
+    <pre>/**
+ * Newsletter subscription (public) and admin CRUD (protected) endpoints.
+ */</pre>
+    <pre>// Per-IP sliding window stored in the database rather than in-memory,
+// because serverless instances don't share memory across invocations.</pre>
+    <pre>// Hand-rolled instead of pulling a CSV library - single-use, three-line
+// implementation; a library would be heavier than the function itself.</pre>
+
+    <h3 class="file-path">src/trpc/provider.tsx</h3>
+    <pre>/**
+ * Client-side tRPC + React Query provider.
+ */</pre>
+    <pre>// useState(() =&gt; ...) initializer prevents re-creation on every render.
+// Without this, each render would create new client instances, breaking
+// React Query's cache and causing infinite refetch loops.</pre>
+  </section>
+
+  <!-- ═══════ Evidence Matrix ═══════ -->
+  <section id="evidence">
+    <div class="section-head">
+      <h2>Evidence Matrix</h2>
+      <div class="feedback" data-section="Evidence Matrix"></div>
+    </div>
+    <p class="muted">Representative subset of ~15 comments mapped to their justification for existence.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>File</th><th>Comment (abbreviated)</th><th>Type</th><th>Justification</th></tr></thead>
+        <tbody>
+          <tr><td><code>globals.css</code></td><td>Force light scheme&hellip;</td><td>inline WHY</td><td><code>color-scheme: light</code> looks deletable; comment prevents premature removal</td></tr>
+          <tr><td><code>globals.css</code></td><td>Two overlapping gradients&hellip;</td><td>inline WHY</td><td>Opaque gradient stack; intent (blueprint grid) isn't obvious from code</td></tr>
+          <tr><td><code>layout.tsx</code></td><td>Root layout loads&hellip; beforeInteractive</td><td>module</td><td>Non-obvious data loading strategy (window global vs API call)</td></tr>
+          <tr><td><code>ShowcaseShell.tsx</code></td><td>Invisible render-null component&hellip;</td><td>module</td><td>A component that returns null is surprising; explains side-effect pattern</td></tr>
+          <tr><td><code>catalog.tsx</code></td><td>Imperative DOM renderer&hellip;</td><td>module</td><td>Imperative DOM mutation in React is non-standard; explains the hybrid SSR approach</td></tr>
+          <tr><td><code>BottomSheet.tsx</code></td><td>AnimatePresence exit drives close&hellip;</td><td>module</td><td>Exit-driven close sequence is the core contract; not obvious from props alone</td></tr>
+          <tr><td><code>animationMachine.ts</code></td><td>Canonical model&hellip; single source of truth</td><td>module</td><td>Three consumers (panel, static page, tests) share this; explains why changes propagate</td></tr>
+          <tr><td><code>useTypewriter.ts</code></td><td>Ref instead of state&hellip;</td><td>inline WHY</td><td>Ref vs state is a performance choice; without comment, future dev might "fix" it to state</td></tr>
+          <tr><td><code>useWorkflowPlayer.ts</code></td><td>High-water mark: only increases</td><td>inline WHY</td><td><code>revealedStep</code> vs <code>activeStep</code> distinction is subtle; explains monotonic invariant</td></tr>
+          <tr><td><code>workflow-data.ts</code></td><td>Factory: auto-generates replay block&hellip;</td><td>inline WHY</td><td>The <code>step()</code> factory's purpose isn't obvious; explains why it exists over raw objects</td></tr>
+          <tr><td><code>db/index.ts</code></td><td>ON CONFLICT re-activates&hellip;</td><td>contract</td><td>UPSERT behavior is a product decision (re-subscribe flow); not obvious from SQL alone</td></tr>
+          <tr><td><code>trpc/init.ts</code></td><td>fetch adapter only exposes raw headers</td><td>inline WHY</td><td>Manual cookie parsing looks redundant; comment explains framework limitation</td></tr>
+          <tr><td><code>newsletter.ts</code></td><td>Per-IP sliding window in database&hellip;</td><td>inline WHY</td><td>In-memory rate limiting would be the default assumption; explains serverless constraint</td></tr>
+          <tr><td><code>newsletter.ts</code></td><td>Hand-rolled instead of CSV library</td><td>inline WHY</td><td>Prevents future "why not use a library?" questions</td></tr>
+          <tr><td><code>provider.tsx</code></td><td>useState initializer prevents re-creation</td><td>inline WHY</td><td>The <code>[queryClient]</code> pattern is a React footgun; explains why not <code>useMemo</code> or bare init</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ═══════ Confidence Register ═══════ -->
+  <section id="confidence">
+    <div class="section-head">
+      <h2>Confidence / Assumption Register</h2>
+      <div class="feedback" data-section="Confidence Register"></div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Item</th><th>Confidence</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>All comments are verifiable against source code</td><td>High</td><td>Every comment references behavior visible in the same file or its immediate imports</td></tr>
+          <tr><td>Existing gold-standard files represent intended quality bar</td><td>High</td><td><code>manualClock.ts</code> and <code>steps.ts</code> were pre-existing exemplars; documentation pass matches their style</td></tr>
+          <tr><td>CSS section marker placement follows logical boundaries</td><td>Medium</td><td>Section boundaries are judgment calls; some reviewers may prefer different groupings</td></tr>
+          <tr><td>Files intentionally skipped are truly self-documenting</td><td>High</td><td>Skipped files have clear naming, simple structure, or existing comments</td></tr>
+          <tr><td>No existing comments were removed (only added/refined)</td><td>High</td><td>The diff shows only additions and one refinement in <code>DebugController.tsx</code> and <code>PackOpener.tsx</code></td></tr>
+          <tr><td>workflow.css marker format (<code>/* === X === */</code>) is consistent</td><td>High</td><td>Replaced the previous inconsistent <code>/* &mdash;&mdash; X &mdash;&mdash; */</code> format with uniform <code>/* === X === */</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ═══════ Approval Gates ═══════ -->
+  <section id="gates">
+    <div class="section-head">
+      <h2>Approval Gates</h2>
+      <div class="feedback" data-section="Approval Gates"></div>
+    </div>
+
+    <div class="gate" data-gate="comment_quality">
+      <h3>Comment Quality</h3>
+      <p>Do the comments match the gold standard (WHY-only, concise, no boilerplate)?</p>
+      <div class="radio-stack" data-question="Comment Quality">
+        <label class="radio-option"><input type="radio" name="q1" value="Comments match gold standard"> Comments match gold standard</label>
+        <label class="radio-option"><input type="radio" name="q1" value="Some comments explain WHAT instead of WHY"> Some comments explain WHAT instead of WHY</label>
+        <label class="radio-option"><input type="radio" name="q1" value="Too verbose - trim further"> Too verbose &mdash; trim further</label>
+        <label class="radio-option"><input type="radio" name="q1" value="Other / None of the above"> Other / None of the above</label>
+        <label class="radio-option"><input type="radio" name="q1" value="Need clarification"> Need clarification</label>
+        <textarea class="conditional-note" data-for="q1" placeholder="Optional notes or specific comments to revise"></textarea>
+      </div>
+    </div>
+
+    <div class="gate" data-gate="coverage_scope">
+      <h3>Coverage Scope</h3>
+      <p>Is the file selection correct (right files commented, right files skipped)?</p>
+      <div class="radio-stack" data-question="Coverage Scope">
+        <label class="radio-option"><input type="radio" name="q2" value="Coverage is correct"> Coverage is correct</label>
+        <label class="radio-option"><input type="radio" name="q2" value="Some commented files should have been skipped"> Some commented files should have been skipped</label>
+        <label class="radio-option"><input type="radio" name="q2" value="Some skipped files need comments"> Some skipped files need comments</label>
+        <label class="radio-option"><input type="radio" name="q2" value="Other / None of the above"> Other / None of the above</label>
+        <label class="radio-option"><input type="radio" name="q2" value="Need clarification"> Need clarification</label>
+        <textarea class="conditional-note" data-for="q2" placeholder="Optional notes or files to add/remove"></textarea>
+      </div>
+    </div>
+
+    <div class="gate" data-gate="css_markers">
+      <h3>CSS Section Markers</h3>
+      <p>Are the section boundaries in globals.css and workflow.css placed correctly?</p>
+      <div class="radio-stack" data-question="CSS Section Markers">
+        <label class="radio-option"><input type="radio" name="q3" value="Section boundaries are correct"> Section boundaries are correct</label>
+        <label class="radio-option"><input type="radio" name="q3" value="Some sections need different boundaries"> Some sections need different boundaries</label>
+        <label class="radio-option"><input type="radio" name="q3" value="Prefer original marker format"> Prefer original marker format over <code>/* === X === */</code></label>
+        <label class="radio-option"><input type="radio" name="q3" value="Other / None of the above"> Other / None of the above</label>
+        <label class="radio-option"><input type="radio" name="q3" value="Need clarification"> Need clarification</label>
+        <textarea class="conditional-note" data-for="q3" placeholder="Optional notes or boundary adjustments"></textarea>
+      </div>
+    </div>
+
+    <div class="gate" data-gate="proposed_changes">
+      <h3>Proposed File Changes</h3>
+      <p>Accept the ~28 file modifications as a single documentation commit?</p>
+      <div class="radio-stack" data-question="Proposed File Changes">
+        <label class="radio-option"><input type="radio" name="q4" value="Accept as single commit"> Accept as single documentation commit</label>
+        <label class="radio-option"><input type="radio" name="q4" value="Commit by phase"> Separate commits by phase (6 commits)</label>
+        <label class="radio-option"><input type="radio" name="q4" value="Commit CSS separately"> Commit CSS markers separately from code comments</label>
+        <label class="radio-option"><input type="radio" name="q4" value="Other / None of the above"> Other / None of the above</label>
+        <label class="radio-option"><input type="radio" name="q4" value="Need clarification"> Need clarification</label>
+        <textarea class="conditional-note" data-for="q4" placeholder="Optional notes or commit strategy preference"></textarea>
+      </div>
+    </div>
+
+    <div class="gate" data-gate="post_approval">
+      <h3>Post-Approval Route</h3>
+      <p>After approval, commit and push to master?</p>
+      <div class="radio-stack" data-question="Post-Approval Route">
+        <label class="radio-option"><input type="radio" name="q5" value="Commit and push to master"> Commit and push to master</label>
+        <label class="radio-option"><input type="radio" name="q5" value="Commit locally only"> Commit locally, don't push yet</label>
+        <label class="radio-option"><input type="radio" name="q5" value="Other / None of the above"> Other / None of the above</label>
+        <label class="radio-option"><input type="radio" name="q5" value="Need clarification"> Need clarification</label>
+        <textarea class="conditional-note" data-for="q5" placeholder="Optional notes or routing preference"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════ Compile ═══════ -->
+  <section id="compile">
+    <div class="section-head">
+      <h2>Compile</h2>
+      <div class="feedback" data-section="Compile"></div>
+    </div>
+    <p class="muted">Use feedback YAML for revision requests before final approval. Use final answers after all required gates are answered.</p>
+    <div class="compile-actions">
+      <button id="compile-feedback">Compile Feedback YAML</button>
+      <button class="primary" id="compile-answers">Compile Answers</button>
+      <button id="copy-final">Copy YAML</button>
+    </div>
+    <p class="status" id="compile-status">Required questions remaining: 5</p>
+    <textarea class="yaml" id="compiled-yaml" readonly></textarea>
+  </section>
+</main>
+<script>
+const ALIGNMENT_PAGE = "alignment/skills-showcase-documentation.html";
+const questionNames = ["q1", "q2", "q3", "q4", "q5"];
+
+function yamlEscape(value) {
+  return String(value || "").replace(/\n/g, "\n").replace(/"/g, "\"");
+}
+
+function collectQuestionAnswers() {
+  return questionNames.map((name) => {
+    const input = document.querySelector(`input[name="${name}"]:checked`);
+    const block = document.querySelector(`[data-for="${name}"]`);
+    const stack = document.querySelector(`input[name="${name}"]`)?.closest("[data-question]");
+    return {
+      name,
+      section: stack?.dataset.question || name,
+      answer: input?.value || "",
+      notes: block?.value || "",
+      answered: Boolean(input)
+    };
+  });
+}
+
+function selectedFeedback() {
+  return Array.from(document.querySelectorAll(".feedback")).flatMap((fb) => {
+    const selected = fb.dataset.value;
+    if (!selected) return [];
+    const notes = fb.querySelector(".fb-notes")?.value || "";
+    const action = selected === "up" ? "accept-as-is" : selected === "down" ? "investigate-and-revise" : "clarify-before-approval";
+    return [{
+      section: fb.dataset.section || "Unknown section",
+      feedback: selected === "clarify" ? "needs-clarification" : selected,
+      notes,
+      requested_agent_action: action
+    }];
+  });
+}
+
+function feedbackYaml(items) {
+  const unanswered = collectQuestionAnswers().filter(q => !q.answered).map(q => q.section);
+  const lines = [
+    `alignment_page: ${ALIGNMENT_PAGE}`,
+    "feedback_status: revision-request",
+    "approval_status: not-approved",
+    "unanswered_required_questions:",
+    ...unanswered.map(q => `  - "${yamlEscape(q)}"`),
+    "section_feedback:",
+    ...(items.length ? items : selectedFeedback()).map(item => [
+      `  - section: "${yamlEscape(item.section)}"`,
+      `    feedback: "${yamlEscape(item.feedback)}"`,
+      `    notes: "${yamlEscape(item.notes)}"`,
+      `    requested_agent_action: "${yamlEscape(item.requested_agent_action)}"`
+    ].join("\n"))
+  ];
+  if ((items.length ? items : selectedFeedback()).length === 0) lines.push("  []");
+  return lines.join("\n");
+}
+
+function answersYaml() {
+  const answers = collectQuestionAnswers();
+  const feedback = selectedFeedback();
+  const lines = [
+    `alignment_page: ${ALIGNMENT_PAGE}`,
+    "approval_status: ready-for-agent-review",
+    "gate_answers:",
+    ...answers.map(a => [
+      `  - section: "${yamlEscape(a.section)}"`,
+      `    gate_type: "${yamlEscape(a.section.toLowerCase().replaceAll(" ", "_").replaceAll("/", "_"))}"`,
+      `    status: "${a.answer === "Other / None of the above" ? "other" : a.answer === "Need clarification" ? "needs-clarification" : "answered"}"`,
+      `    answer: "${yamlEscape(a.answer)}"`,
+      `    notes: "${yamlEscape(a.notes)}"`
+    ].join("\n")),
+    "section_feedback:",
+    ...(feedback.length ? feedback.map(item => [
+      `  - section: "${yamlEscape(item.section)}"`,
+      `    feedback: "${yamlEscape(item.feedback)}"`,
+      `    notes: "${yamlEscape(item.notes)}"`,
+      `    requested_agent_action: "${yamlEscape(item.requested_agent_action)}"`
+    ].join("\n")) : ["  []"])
+  ];
+  return lines.join("\n");
+}
+
+async function copyText(text, target) {
+  try {
+    await navigator.clipboard.writeText(text);
+    if (target) target.textContent = "Copied YAML to clipboard.";
+  } catch (_) {
+    if (target) target.textContent = "Clipboard blocked. YAML is selected for copying.";
+    const area = document.getElementById("compiled-yaml");
+    if (area) area.select();
+  }
+}
+
+function updateStatus() {
+  const remaining = collectQuestionAnswers().filter(q => !q.answered);
+  document.getElementById("compile-status").textContent = `Required questions remaining: ${remaining.length}`;
+  return remaining;
+}
+
+document.querySelectorAll("input[type=radio]").forEach(input => {
+  input.addEventListener("change", () => {
+    const note = document.querySelector(`[data-for="${input.name}"]`);
+    if (note) note.classList.add("show");
+    updateStatus();
+  });
+});
+
+document.querySelectorAll(".feedback").forEach((fb) => {
+  const section = fb.dataset.section || "Section";
+  fb.innerHTML = `
+    <div class="fb-row">
+      <button type="button" class="fb-btn" data-value="up" title="Approve section">Thumbs up</button>
+      <button type="button" class="fb-btn" data-value="down" title="Flag concern">Thumbs down</button>
+      <button type="button" class="fb-btn" data-value="clarify" title="Need clarification">Clarify</button>
+    </div>
+    <div class="fb-panel">
+      <textarea class="fb-notes" placeholder="Section feedback for ${section}"></textarea>
+      <div class="compile-actions">
+        <button type="button" class="local-feedback">Compile Feedback YAML</button>
+        <button type="button" class="local-copy">Copy YAML</button>
+      </div>
+      <textarea class="yaml local-yaml" readonly></textarea>
+    </div>
+  `;
+  const panel = fb.querySelector(".fb-panel");
+  fb.querySelectorAll(".fb-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const value = btn.dataset.value;
+      fb.dataset.value = fb.dataset.value === value ? "" : value;
+      fb.querySelectorAll(".fb-btn").forEach(b => {
+        b.classList.remove("active-up", "active-down", "active-clarify");
+      });
+      if (fb.dataset.value) {
+        btn.classList.add(`active-${value}`);
+        panel.classList.add("show");
+      } else {
+        panel.classList.remove("show");
+      }
+    });
+  });
+  fb.querySelector(".local-feedback").addEventListener("click", () => {
+    const selected = fb.dataset.value;
+    if (!selected) return;
+    const item = {
+      section,
+      feedback: selected === "clarify" ? "needs-clarification" : selected,
+      notes: fb.querySelector(".fb-notes").value || "",
+      requested_agent_action: selected === "up" ? "accept-as-is" : selected === "down" ? "investigate-and-revise" : "clarify-before-approval"
+    };
+    fb.querySelector(".local-yaml").value = feedbackYaml([item]);
+  });
+  fb.querySelector(".local-copy").addEventListener("click", () => {
+    const area = fb.querySelector(".local-yaml");
+    if (!area.value) fb.querySelector(".local-feedback").click();
+    copyText(area.value, document.getElementById("compile-status"));
+  });
+});
+
+document.getElementById("compile-feedback").addEventListener("click", () => {
+  const yaml = feedbackYaml([]);
+  document.getElementById("compiled-yaml").value = yaml;
+  copyText(yaml, document.getElementById("compile-status"));
+});
+
+document.getElementById("compile-answers").addEventListener("click", () => {
+  const remaining = updateStatus();
+  if (remaining.length) {
+    const first = document.querySelector(`input[name="${remaining[0].name}"]`);
+    first?.scrollIntoView({ behavior: "smooth", block: "center" });
+    return;
+  }
+  const yaml = answersYaml();
+  document.getElementById("compiled-yaml").value = yaml;
+  copyText(yaml, document.getElementById("compile-status"));
+});
+
+document.getElementById("copy-final").addEventListener("click", () => {
+  const area = document.getElementById("compiled-yaml");
+  copyText(area.value, document.getElementById("compile-status"));
+});
+
+updateStatus();
+</script>
+</body>
+</html>
