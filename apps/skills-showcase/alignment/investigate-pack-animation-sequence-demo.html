@@ -1,0 +1,587 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pack Animation Sequence — Interactive Demo</title>
+<style>
+:root {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --border: #30363d;
+  --text: #c9d1d9;
+  --text-muted: #8b949e;
+  --accent: #58a6ff;
+  --green: #3fb950;
+  --red: #f85149;
+  --orange: #d29922;
+  --purple: #bc8cff;
+  --amber: #d29922;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding: 24px 16px;
+}
+h1 { color: #fff; font-size: 1.4rem; margin-bottom: 4px; }
+.subtitle { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px; }
+.subtitle a { color: var(--accent); text-decoration: none; }
+.subtitle a:hover { text-decoration: underline; }
+
+/* --- Controls --- */
+.controls { display: flex; gap: 10px; margin-bottom: 16px; }
+.controls button {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 20px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  min-height: 44px;
+}
+.controls button:hover { background: #1c2128; border-color: var(--accent); }
+.controls button:disabled { opacity: 0.4; cursor: default; border-color: var(--border); }
+.controls button.play { border-color: var(--green); color: var(--green); }
+.controls button.play:hover:not(:disabled) { background: rgba(63, 185, 80, 0.1); }
+.controls button.reset { border-color: var(--red); color: var(--red); }
+.controls button.reset:hover:not(:disabled) { background: rgba(248, 81, 73, 0.1); }
+
+/* --- Phase Indicator --- */
+.phase-bar {
+  display: flex; gap: 4px; align-items: center;
+  margin-bottom: 6px; flex-wrap: wrap; justify-content: center;
+}
+.phase-dot {
+  width: 22px; height: 22px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.6rem; font-weight: 700;
+  border: 2px solid transparent; transition: all 0.2s;
+  color: var(--text-muted); background: var(--surface);
+  cursor: pointer;
+}
+.phase-dot.open { border-color: rgba(63, 185, 80, 0.3); }
+.phase-dot.interactive { border-color: rgba(88, 166, 255, 0.3); }
+.phase-dot.close { border-color: rgba(248, 81, 73, 0.3); }
+.phase-dot.active.open { background: var(--green); color: #fff; border-color: var(--green); }
+.phase-dot.active.interactive { background: var(--accent); color: #fff; border-color: var(--accent); }
+.phase-dot.active.close { background: var(--red); color: #fff; border-color: var(--red); }
+.phase-dot.done { opacity: 0.35; }
+.phase-label { color: var(--text-muted); font-size: 0.8rem; height: 20px; margin-bottom: 12px; text-align: center; }
+.phase-label span { color: var(--text); font-weight: 600; }
+
+/* --- Viewport --- */
+.viewport {
+  width: 400px; height: 600px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  position: relative; overflow: hidden;
+}
+@media (max-width: 460px) {
+  .viewport { width: 100%; height: 80vw; min-height: 400px; max-height: 600px; }
+}
+
+/* --- Pack (portrait orientation) --- */
+.pack {
+  position: absolute;
+  width: 90px; height: 130px;
+  left: calc(50% - 45px);
+  top: 200px;
+  border: 2px solid var(--amber);
+  border-radius: 6px;
+  background: rgba(210, 153, 34, 0.08);
+  z-index: 10;
+  perspective: 400px;
+}
+.pack-inner {
+  width: 100%; height: 100%;
+  position: relative; overflow: hidden; border-radius: 4px;
+}
+.pack-label {
+  position: absolute; top: 55%; left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--amber); font-size: 0.65rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.7;
+}
+
+/* Shimmer */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.pack::after {
+  content: ''; position: absolute; inset: 0; border-radius: 4px;
+  background: linear-gradient(110deg,
+    transparent 30%, rgba(210,153,34,0.12) 45%,
+    rgba(210,153,34,0.25) 50%, rgba(210,153,34,0.12) 55%, transparent 70%);
+  background-size: 200% 100%;
+  animation: shimmer 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* --- Flap (top lid, rotates open backward) --- */
+.flap {
+  position: absolute;
+  width: calc(100% + 4px); height: 30px;
+  left: -2px; top: -2px;
+  background: rgba(210, 153, 34, 0.2);
+  border: 2px solid var(--amber);
+  border-radius: 6px 6px 0 0;
+  transform-origin: center bottom;
+  transform: rotateX(0deg);
+  transition: transform 0.3s ease-in-out;
+  z-index: 1;
+}
+
+/* --- Scrim --- */
+.scrim {
+  position: absolute; inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  opacity: 0; z-index: 15;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+/* --- Drawer (bottom sheet) --- */
+.drawer {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  height: 250px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-radius: 16px 16px 0 0;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 20;
+  display: flex; align-items: center; justify-content: center;
+  gap: 14px; padding: 20px;
+}
+.drawer-handle {
+  position: absolute; top: 8px; left: 50%;
+  transform: translateX(-50%);
+  width: 40px; height: 4px;
+  background: var(--border); border-radius: 2px;
+}
+.slot {
+  width: 66px; height: 94px;
+  border: 1px dashed var(--border); border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-muted); font-size: 0.5rem;
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+
+/* --- Card (main, always a viewport child) --- */
+.card {
+  position: absolute;
+  width: 66px; height: 94px;
+  background: linear-gradient(135deg, #1c2d4a, #1a3a5c);
+  border: 2px solid var(--accent);
+  border-radius: 8px;
+  z-index: 9;
+  left: calc(50% - 33px);
+  top: 230px;
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex; align-items: center; justify-content: center;
+}
+.card-face {
+  color: var(--accent); font-size: 1.4rem; font-weight: 700;
+  transition: transform 0.3s;
+}
+
+/* --- Fan cards --- */
+.fan-card {
+  position: absolute;
+  width: 66px; height: 94px;
+  background: linear-gradient(135deg, #1c2d4a, #1a3a5c);
+  border: 2px solid var(--accent);
+  border-radius: 8px;
+  z-index: 21;
+  left: calc(50% - 33px); top: 230px;
+  opacity: 0; transform: scale(0.8);
+  transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--accent); font-size: 1.4rem; font-weight: 700;
+}
+
+/* --- Keyframes --- */
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 15px rgba(88,166,255,0.3), 0 0 30px rgba(88,166,255,0.15); }
+  50% { box-shadow: 0 0 25px rgba(88,166,255,0.5), 0 0 50px rgba(88,166,255,0.25); }
+}
+@keyframes card-flip {
+  0% { transform: rotateY(0deg); }
+  50% { transform: rotateY(180deg); }
+  100% { transform: rotateY(360deg); }
+}
+@keyframes scrim-pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 0.8; }
+  100% { opacity: 0.6; }
+}
+
+/* ===================== PHASE STATES ===================== */
+
+/* Phase 1: Sealed — default state, shimmer runs */
+
+/* Phase 2: Tear — flap begins opening */
+.viewport[data-phase="2"] .flap {
+  transform: perspective(400px) rotateX(-100deg);
+}
+
+/* Phase 3: Opened — flap fully open, card peeks above pack */
+.viewport[data-phase="3"] .flap { transform: perspective(400px) rotateX(-160deg); }
+.viewport[data-phase="3"] .card {
+  opacity: 1;
+  top: 175px;
+}
+
+/* Phase 4: Apex — card rises high with spring */
+.viewport[data-phase="4"] .flap { transform: perspective(400px) rotateX(-160deg); }
+.viewport[data-phase="4"] .card {
+  opacity: 1;
+  top: 50px;
+  transition: top 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s;
+}
+
+/* Phase 5: Hold — card elevated with glow */
+.viewport[data-phase="5"] .flap { transform: perspective(400px) rotateX(-160deg); }
+.viewport[data-phase="5"] .card {
+  opacity: 1; top: 50px;
+  z-index: 25;
+  animation: glow-pulse 1s ease-in-out infinite;
+}
+
+/* Phase 6: Sheet Up — drawer + scrim appear, card stays at apex */
+.viewport[data-phase="6"] .flap { transform: perspective(400px) rotateX(-160deg); }
+.viewport[data-phase="6"] .card {
+  opacity: 1; top: 50px;
+  z-index: 25;
+  animation: glow-pulse 1s ease-in-out infinite;
+}
+.viewport[data-phase="6"] .scrim { opacity: 1; }
+.viewport[data-phase="6"] .drawer { transform: translateY(0); }
+
+/* Phase 7: Morph In — card morphs to drawer slot (position set by JS) */
+.viewport[data-phase="7"] .flap { transform: perspective(400px) rotateX(-160deg); }
+.viewport[data-phase="7"] .scrim { opacity: 1; }
+.viewport[data-phase="7"] .drawer { transform: translateY(0); }
+.viewport[data-phase="7"] .card {
+  opacity: 1; z-index: 25;
+  animation: none; box-shadow: none;
+}
+
+/* Phase 8: Fan Out — fan cards appear at slots */
+.viewport[data-phase="8"] .flap { transform: perspective(400px) rotateX(-160deg); }
+.viewport[data-phase="8"] .scrim { opacity: 1; }
+.viewport[data-phase="8"] .drawer { transform: translateY(0); }
+.viewport[data-phase="8"] .card {
+  opacity: 1; z-index: 25;
+  animation: none; box-shadow: none;
+}
+.viewport[data-phase="8"] .fan-card { opacity: 1; transform: scale(1); }
+
+/* Phase 9: Interactive — flip animation on first fan card */
+.viewport[data-phase="9"] .flap { transform: perspective(400px) rotateX(-160deg); }
+.viewport[data-phase="9"] .scrim { opacity: 1; }
+.viewport[data-phase="9"] .drawer { transform: translateY(0); }
+.viewport[data-phase="9"] .card {
+  opacity: 1; z-index: 25;
+  animation: none; box-shadow: none;
+}
+.viewport[data-phase="9"] .fan-card { opacity: 1; transform: scale(1); }
+.viewport[data-phase="9"] #fan0 .card-face {
+  animation: card-flip 0.8s ease-in-out;
+}
+
+/* Phase 10: Close signal — scrim pulses */
+.viewport[data-phase="10"] .flap { transform: perspective(400px) rotateX(-160deg); }
+.viewport[data-phase="10"] .scrim { opacity: 1; animation: scrim-pulse 0.2s ease; }
+.viewport[data-phase="10"] .drawer { transform: translateY(0); }
+.viewport[data-phase="10"] .card {
+  opacity: 1; z-index: 25;
+  animation: none; box-shadow: none;
+}
+.viewport[data-phase="10"] .fan-card { opacity: 1; transform: scale(1); }
+
+/* Phase 11: Measure — same visual, instant sync frame */
+.viewport[data-phase="11"] .flap { transform: perspective(400px) rotateX(-160deg); }
+.viewport[data-phase="11"] .scrim { opacity: 1; }
+.viewport[data-phase="11"] .drawer { transform: translateY(0); }
+.viewport[data-phase="11"] .card {
+  opacity: 1; z-index: 25;
+  animation: none; box-shadow: none;
+}
+.viewport[data-phase="11"] .fan-card { opacity: 1; transform: scale(1); }
+
+/* Phase 12: Collapse — fan cards shrink back with stagger */
+.viewport[data-phase="12"] .flap { transform: perspective(400px) rotateX(-160deg); }
+.viewport[data-phase="12"] .scrim { opacity: 1; }
+.viewport[data-phase="12"] .drawer { transform: translateY(0); }
+.viewport[data-phase="12"] .card {
+  opacity: 1; z-index: 25;
+  animation: none; box-shadow: none;
+}
+.viewport[data-phase="12"] .fan-card {
+  opacity: 0; transform: scale(0.8);
+  transition-duration: 0.4s;
+}
+.viewport[data-phase="12"] #fan0 { transition-delay: 0.12s; }
+.viewport[data-phase="12"] #fan1 { transition-delay: 0.06s; }
+.viewport[data-phase="12"] #fan2 { transition-delay: 0s; }
+
+/* Phase 13: Teardown — fan cards fully gone */
+.viewport[data-phase="13"] .flap { transform: perspective(400px) rotateX(-160deg); }
+.viewport[data-phase="13"] .scrim { opacity: 1; }
+.viewport[data-phase="13"] .drawer { transform: translateY(0); }
+.viewport[data-phase="13"] .card {
+  opacity: 1; z-index: 25;
+  animation: none; box-shadow: none;
+}
+
+/* Phase 14: Sheet Exit — drawer slides down, card stays in slot (JS inline) */
+.viewport[data-phase="14"] .flap { transform: perspective(400px) rotateX(-160deg); }
+.viewport[data-phase="14"] .scrim { opacity: 0; transition-duration: 0.3s; }
+.viewport[data-phase="14"] .drawer { transform: translateY(100%); transition-duration: 0.3s; }
+.viewport[data-phase="14"] .card {
+  opacity: 1; z-index: 25;
+  animation: none; box-shadow: none;
+}
+
+/* Phase 15: Morph Out — card returns to apex with glow */
+.viewport[data-phase="15"] .flap { transform: perspective(400px) rotateX(-160deg); }
+.viewport[data-phase="15"] .card {
+  opacity: 1;
+  top: 50px;
+  left: calc(50% - 33px);
+  width: 66px; height: 94px;
+  z-index: 25;
+  animation: glow-pulse 1s ease-in-out infinite;
+  transition: top 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              left 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              width 0.3s, height 0.3s;
+}
+
+/* Phase 16: Drop — card falls back behind pack */
+.viewport[data-phase="16"] .flap {
+  transform: perspective(400px) rotateX(-160deg);
+  transition: transform 0.3s 0.15s;
+}
+.viewport[data-phase="16"] .card {
+  opacity: 1;
+  top: 230px;
+  left: calc(50% - 33px);
+  z-index: 8;
+  animation: none; box-shadow: none;
+  transition: top 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              z-index 0s 0.15s;
+}
+</style>
+</head>
+<body>
+
+<h1>Pack Animation Sequence</h1>
+<p class="subtitle">16-phase interactive demo &middot; <a href="investigate-pack-animation-sequence.html">alignment page</a></p>
+
+<div class="controls">
+  <button class="play" id="btnPlay">&#9654; Play</button>
+  <button id="btnStep">Step &rarr;</button>
+  <button class="reset" id="btnReset">Reset</button>
+</div>
+
+<div class="phase-bar" id="phaseBar"></div>
+<div class="phase-label" id="phaseLabel"></div>
+
+<div class="viewport" id="viewport" data-phase="1">
+  <div class="pack">
+    <div class="pack-inner">
+      <div class="pack-label">PACK</div>
+    </div>
+    <div class="flap"></div>
+  </div>
+
+  <div class="scrim"></div>
+
+  <div class="card" id="mainCard">
+    <span class="card-face">&#9830;</span>
+  </div>
+
+  <div class="fan-card" id="fan0"><span class="card-face">&#9827;</span></div>
+  <div class="fan-card" id="fan1"><span class="card-face">&#9829;</span></div>
+  <div class="fan-card" id="fan2"><span class="card-face">&#9824;</span></div>
+
+  <div class="drawer" id="drawer">
+    <div class="drawer-handle"></div>
+    <div class="slot">slot 0</div>
+    <div class="slot">slot 1</div>
+    <div class="slot">slot 2</div>
+    <div class="slot">slot 3</div>
+  </div>
+</div>
+
+<script>
+const PHASES = [
+  { id: 1,  name: 'Sealed',      group: 'open',        duration: 1200 },
+  { id: 2,  name: 'Tear',        group: 'open',        duration: 350  },
+  { id: 3,  name: 'Opened',      group: 'open',        duration: 350  },
+  { id: 4,  name: 'Apex',        group: 'open',        duration: 500  },
+  { id: 5,  name: 'Hold',        group: 'open',        duration: 600  },
+  { id: 6,  name: 'Sheet Up',    group: 'interactive', duration: 400  },
+  { id: 7,  name: 'Morph In',    group: 'interactive', duration: 400  },
+  { id: 8,  name: 'Fan Out',     group: 'interactive', duration: 500  },
+  { id: 9,  name: 'Interactive', group: 'interactive', duration: 1500 },
+  { id: 10, name: 'Close',       group: 'close',       duration: 200  },
+  { id: 11, name: 'Measure',     group: 'close',       duration: 100  },
+  { id: 12, name: 'Collapse',    group: 'close',       duration: 500  },
+  { id: 13, name: 'Teardown',    group: 'close',       duration: 200  },
+  { id: 14, name: 'Sheet Exit',  group: 'close',       duration: 400  },
+  { id: 15, name: 'Morph Out',   group: 'close',       duration: 400  },
+  { id: 16, name: 'Drop',        group: 'close',       duration: 500  },
+];
+
+const viewport = document.getElementById('viewport');
+const phaseBar = document.getElementById('phaseBar');
+const phaseLabel = document.getElementById('phaseLabel');
+const btnPlay = document.getElementById('btnPlay');
+const btnStep = document.getElementById('btnStep');
+const btnReset = document.getElementById('btnReset');
+const mainCard = document.getElementById('mainCard');
+const drawer = document.getElementById('drawer');
+const fanCards = [
+  document.getElementById('fan0'),
+  document.getElementById('fan1'),
+  document.getElementById('fan2'),
+];
+
+let currentPhase = 1;
+let playing = false;
+let playTimer = null;
+
+function getSlotPosition(slotIndex) {
+  const vp = viewport.getBoundingClientRect();
+  const slots = drawer.querySelectorAll('.slot');
+  const slot = slots[slotIndex];
+  if (!slot) return null;
+  const r = slot.getBoundingClientRect();
+  return {
+    top: r.top - vp.top,
+    left: r.left - vp.left,
+    width: r.width,
+    height: r.height,
+  };
+}
+
+function positionAtSlot(card, slotIndex) {
+  const s = getSlotPosition(slotIndex);
+  if (!s) return;
+  card.style.top = s.top + 'px';
+  card.style.left = s.left + 'px';
+  card.style.width = s.width + 'px';
+  card.style.height = s.height + 'px';
+  card.style.transform = '';
+}
+
+function clearInlinePos(card) {
+  card.style.top = '';
+  card.style.left = '';
+  card.style.width = '';
+  card.style.height = '';
+  card.style.transform = '';
+}
+
+function setPhase(index) {
+  currentPhase = index;
+
+  // Position elements BEFORE setting data-phase so getBoundingClientRect
+  // reads the current (old) layout, not the new CSS state.
+  if (index >= 7 && index <= 14) {
+    positionAtSlot(mainCard, 0);
+  } else {
+    clearInlinePos(mainCard);
+  }
+
+  if (index >= 7 && index <= 12) {
+    positionAtSlot(fanCards[0], 1);
+    positionAtSlot(fanCards[1], 2);
+    positionAtSlot(fanCards[2], 3);
+  } else {
+    fanCards.forEach(fc => clearInlinePos(fc));
+  }
+
+  viewport.setAttribute('data-phase', String(index));
+  updateIndicator();
+}
+
+function updateIndicator() {
+  const dots = phaseBar.querySelectorAll('.phase-dot');
+  dots.forEach((dot, i) => {
+    const phaseNum = i + 1;
+    dot.classList.remove('active', 'done');
+    if (phaseNum === currentPhase) dot.classList.add('active');
+    else if (phaseNum < currentPhase) dot.classList.add('done');
+  });
+  const phase = PHASES[currentPhase - 1];
+  phaseLabel.innerHTML = 'Phase <span>' + phase.id + ': ' + phase.name + '</span> — ' + phase.group;
+}
+
+function playSequence() {
+  if (playing) return;
+  playing = true;
+  btnPlay.disabled = true;
+  btnStep.disabled = true;
+  let idx = 0;
+  function next() {
+    if (idx >= PHASES.length) {
+      playing = false;
+      btnPlay.disabled = false;
+      btnStep.disabled = false;
+      return;
+    }
+    setPhase(PHASES[idx].id);
+    var dur = PHASES[idx].duration;
+    idx++;
+    playTimer = setTimeout(next, dur);
+  }
+  next();
+}
+
+function stepPhase() {
+  if (playing) return;
+  setPhase(currentPhase >= 16 ? 1 : currentPhase + 1);
+}
+
+function resetPhase() {
+  if (playTimer) clearTimeout(playTimer);
+  playing = false;
+  btnPlay.disabled = false;
+  btnStep.disabled = false;
+  setPhase(1);
+}
+
+btnPlay.addEventListener('click', playSequence);
+btnStep.addEventListener('click', stepPhase);
+btnReset.addEventListener('click', resetPhase);
+
+PHASES.forEach(function(p) {
+  var dot = document.createElement('div');
+  dot.className = 'phase-dot ' + p.group;
+  dot.textContent = p.id;
+  dot.title = 'Phase ' + p.id + ': ' + p.name;
+  dot.addEventListener('click', function() {
+    if (!playing) setPhase(p.id);
+  });
+  phaseBar.appendChild(dot);
+});
+
+setPhase(1);
+</script>
+</body>
+</html>
