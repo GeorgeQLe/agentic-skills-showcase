@@ -1,0 +1,1452 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Animation Sequence Alignment — Pack Flow 16-Phase Review</title>
+<style>
+:root {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --border: #30363d;
+  --text: #c9d1d9;
+  --text-muted: #8b949e;
+  --accent: #58a6ff;
+  --green: #3fb950;
+  --red: #f85149;
+  --orange: #d29922;
+  --purple: #bc8cff;
+  --code-bg: #1c2128;
+  --amber: #d29922;
+  --page-blue: #58a6ff;
+  --pack-amber: #d29922;
+  --sheet-green: #3fb950;
+  --opener-purple: #bc8cff;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.55;
+}
+main {
+  width: min(960px, calc(100% - 32px));
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 32px 0 56px;
+  overflow-wrap: break-word;
+}
+a { color: var(--accent); }
+h1, h2, h3 { color: #fff; line-height: 1.2; }
+h1 { margin: 0 0 8px; font-size: 1.75rem; }
+h2 { margin: 0; font-size: 1.35rem; color: var(--accent); }
+h3 { margin: 22px 0 8px; font-size: 1.05rem; }
+p { color: var(--text); }
+code {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 5px;
+  color: #e6edf3;
+  font-size: 0.85em;
+}
+section {
+  margin: 24px 0;
+  padding: 22px;
+  background: rgba(22, 27, 34, 0.72);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.hero { padding: 28px 0 10px; border: 0; background: transparent; }
+.muted { color: var(--text-muted); }
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(210, 153, 34, 0.15);
+  color: var(--orange);
+  border: 1px solid rgba(210, 153, 34, 0.3);
+}
+.toc { background: var(--surface); }
+.toc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(210px, 100%), 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+.toc-grid a {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #11161d;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.feedback {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  min-width: min(320px, 100%);
+}
+.fb-row { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.fb-btn, button, .radio-option {
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 6px;
+  cursor: pointer;
+  font: inherit;
+}
+.fb-btn.active-up { border-color: var(--green); color: var(--green); background: rgba(63, 185, 80, .12); }
+.fb-btn.active-down { border-color: var(--red); color: var(--red); background: rgba(248, 81, 73, .12); }
+.fb-btn.active-clarify { border-color: var(--orange); color: var(--orange); background: rgba(210, 153, 34, .12); }
+.fb-panel {
+  display: none;
+  width: 100%;
+  background: #11161d;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+}
+.fb-panel.show { display: block; }
+textarea {
+  width: 100%;
+  min-height: 90px;
+  resize: vertical;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #0b1017;
+  color: var(--text);
+  padding: 10px;
+  font: inherit;
+}
+.yaml { min-height: 150px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.gate {
+  background: #1c2333;
+  border: 1px solid var(--purple);
+  border-radius: 8px;
+  padding: 14px;
+  margin: 14px 0;
+}
+.gate h3 { color: var(--purple); margin-top: 0; }
+.radio-stack { display: grid; gap: 8px; margin-top: 10px; }
+.radio-option { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; }
+.conditional-note { display: none; margin-top: 8px; }
+.conditional-note.show { display: block; }
+.status { color: var(--orange); min-height: 1.5em; }
+.compile-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0; }
+button.primary { background: var(--accent); border-color: var(--accent); color: #08111f; font-weight: 700; }
+button:disabled { opacity: .45; cursor: not-allowed; }
+
+/* Phase timeline */
+.timeline-wrap { overflow-x: auto; padding: 8px 0 16px; }
+.timeline-wrap svg { display: block; margin: 0 auto; }
+
+/* Phase banner */
+.phase-banner {
+  display: inline-block;
+  padding: 0.2rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.phase-open { background: rgba(59, 185, 80, 0.15); color: var(--green); border: 1px solid rgba(59, 185, 80, 0.3); }
+.phase-interactive { background: rgba(88, 166, 255, 0.15); color: var(--accent); border: 1px solid rgba(88, 166, 255, 0.3); }
+.phase-close { background: rgba(248, 81, 73, 0.15); color: var(--red); border: 1px solid rgba(248, 81, 73, 0.3); }
+
+/* Step cards */
+.step-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin: 1rem 0 1.5rem;
+  position: relative;
+}
+.step-card.apex {
+  border-color: var(--orange);
+  box-shadow: 0 0 0 1px var(--orange), 0 0 12px rgba(210, 153, 34, 0.15);
+}
+.step-card.apex::before {
+  content: 'APEX';
+  position: absolute;
+  top: -0.6rem;
+  right: 1rem;
+  background: var(--orange);
+  color: var(--bg);
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 0.1rem 0.5rem;
+  border-radius: 4px;
+  letter-spacing: 0.08em;
+}
+.step-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+.step-number {
+  background: var(--accent);
+  color: var(--bg);
+  font-size: 0.75rem;
+  font-weight: 700;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.step-number.owner-page { background: var(--page-blue); }
+.step-number.owner-pack { background: var(--pack-amber); }
+.step-number.owner-sheet { background: var(--sheet-green); }
+.step-number.owner-opener { background: var(--opener-purple); }
+.step-name { font-weight: 700; color: #fff; font-size: 1.05rem; }
+.step-id { color: var(--text-muted); font-size: 0.8rem; font-family: monospace; }
+
+.meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(210px, 100%), 1fr));
+  gap: 0.75rem;
+  margin: 0.75rem 0;
+}
+.meta-item {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.6rem 0.75rem;
+}
+.meta-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 0.2rem;
+}
+.meta-value {
+  font-size: 0.85rem;
+  color: var(--text);
+  font-family: monospace;
+}
+
+.visual-box {
+  background: rgba(88, 166, 255, 0.06);
+  border: 1px solid rgba(88, 166, 255, 0.2);
+  border-radius: 6px;
+  padding: 0.6rem 0.75rem;
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+}
+.visual-box strong { color: var(--accent); }
+
+.code-block {
+  background: #010409;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  overflow-x: auto;
+  margin: 0.75rem 0;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+.code-block pre {
+  margin: 0;
+  font-family: 'SF Mono', 'Fira Code', Menlo, Consolas, monospace;
+  white-space: pre;
+  color: var(--text);
+}
+.code-file {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-bottom: 0.4rem;
+  font-family: monospace;
+}
+
+.state-changes { margin: 0.5rem 0; padding-left: 0; list-style: none; }
+.state-changes li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: baseline;
+  margin: 0.3rem 0;
+  font-size: 0.85rem;
+}
+.state-changes li::before {
+  content: '\2192';
+  color: var(--green);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.field-name { font-family: monospace; color: var(--purple); }
+.field-from { color: var(--text-muted); }
+.field-to { color: var(--green); font-weight: 600; }
+
+.cross-ref {
+  background: #1c2333;
+  border-left: 3px solid var(--purple);
+  padding: 0.5rem 0.75rem;
+  margin: 0.6rem 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  border-radius: 0 4px 4px 0;
+}
+.cross-ref strong { color: var(--purple); }
+
+.invariant-box {
+  background: rgba(248, 81, 73, 0.08);
+  border: 1px solid rgba(248, 81, 73, 0.3);
+  border-radius: 6px;
+  padding: 0.6rem 0.75rem;
+  margin: 0.5rem 0;
+  font-size: 0.85rem;
+}
+.invariant-box strong { color: var(--red); }
+
+/* Evidence matrix table */
+div.table-wrap { overflow-x: auto; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+th {
+  background: var(--surface);
+  color: #fff;
+  text-align: left;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  font-weight: 600;
+  white-space: nowrap;
+}
+td {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  vertical-align: top;
+}
+td code { font-size: 0.8em; }
+
+/* Timing ref table */
+.timing-table td:nth-child(3),
+.timing-table td:nth-child(4) {
+  font-family: monospace;
+  font-size: 0.82rem;
+}
+
+/* Legend */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 10px 0;
+  font-size: 0.8rem;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+@media (max-width: 860px) {
+  main { width: min(100% - 24px, 960px); padding-top: 22px; }
+  section { padding: 18px; }
+  .meta-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 560px) {
+  main { width: min(100% - 16px, 960px); }
+  h1 { font-size: 1.4rem; }
+  .meta-grid { grid-template-columns: 1fr; }
+  .step-header { gap: 0.35rem; }
+  .code-block { font-size: 0.72rem; padding: 0.5rem; }
+  .fb-row, .compile-actions { width: 100%; }
+  button, .fb-btn, .radio-option { width: 100%; justify-content: center; }
+}
+</style>
+</head>
+<body>
+<main>
+
+<!-- ==================== 1. SUMMARY + TOC ==================== -->
+<section class="hero" id="top">
+  <h1>Card Pack Animation Sequence Alignment</h1>
+  <span class="status-badge">review</span>
+  <p class="muted" style="margin-top:10px">Canonical 16-phase animation sequence for the <code>/prototype</code> pack flow, derived from the current <code>PackFlowPhase</code> state machine (commit <code>cfb236e0</code>). Review and confirm each phase before performance investigation begins.</p>
+</section>
+
+<section class="toc" id="toc">
+  <div class="section-head">
+    <h2>Table of Contents</h2>
+    <div class="feedback" data-section="Table of Contents"></div>
+  </div>
+  <div class="toc-grid">
+    <a href="#timeline">Phase Timeline</a>
+    <a href="#open-sequence">Open Sequence (1&ndash;8)</a>
+    <a href="#phase-1">1. Sealed (idle)</a>
+    <a href="#phase-2">2. Tear</a>
+    <a href="#phase-3">3. Pack Opened</a>
+    <a href="#phase-4">4. Opening Apex</a>
+    <a href="#phase-5">5. Elevate + Hold</a>
+    <a href="#phase-6">6. Sheet Slide Up</a>
+    <a href="#phase-7">7. Layout Morph In</a>
+    <a href="#phase-8">8. Fan Out</a>
+    <a href="#interactive">9. Drawer Open</a>
+    <a href="#close-sequence">Close Sequence (10&ndash;16)</a>
+    <a href="#phase-10">10. Close Trigger</a>
+    <a href="#phase-11">11. Collapse Measure</a>
+    <a href="#phase-12">12. Collapse Fan-In</a>
+    <a href="#phase-13">13. Drawer Teardown</a>
+    <a href="#phase-14">14. Sheet Exit</a>
+    <a href="#phase-15">15. Layout Morph Out (APEX)</a>
+    <a href="#phase-16">16. Drop Elevation (APEX)</a>
+    <a href="#apex-deepdive">Apex Gates Deep-Dive</a>
+    <a href="#evidence">Evidence Matrix</a>
+    <a href="#timing-ref">Timing Reference</a>
+    <a href="#perf-scope">Performance Scope</a>
+    <a href="#gates">Approval Gates</a>
+    <a href="#compile">Compile &amp; Approve</a>
+  </div>
+</section>
+
+<!-- ==================== 2. PHASE TIMELINE ==================== -->
+<section id="timeline">
+  <div class="section-head">
+    <h2>Phase Timeline</h2>
+    <div class="feedback" data-section="Phase Timeline"></div>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--pack-amber)"></div> SealedPack</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--page-blue)"></div> Page</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--sheet-green)"></div> BottomSheet</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--opener-purple)"></div> PackOpener</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--orange); border: 2px solid var(--orange)"></div> Apex</div>
+  </div>
+  <div class="timeline-wrap">
+    <svg width="920" height="140" viewBox="0 0 920 140" xmlns="http://www.w3.org/2000/svg" style="min-width:920px">
+      <!-- Connection line -->
+      <line x1="30" y1="60" x2="890" y2="60" stroke="#30363d" stroke-width="2"/>
+      <!-- Phase group labels -->
+      <text x="240" y="18" fill="#3fb950" font-size="11" font-weight="700" text-anchor="middle">OPEN (1-8)</text>
+      <text x="505" y="18" fill="#58a6ff" font-size="11" font-weight="700" text-anchor="middle">INTERACTIVE</text>
+      <text x="720" y="18" fill="#f85149" font-size="11" font-weight="700" text-anchor="middle">CLOSE (10-16)</text>
+      <!-- Phase 1: Sealed - SealedPack -->
+      <circle cx="30" cy="60" r="14" fill="#d29922" stroke="#d29922" stroke-width="2"/>
+      <text x="30" y="64" fill="#0d1117" font-size="10" font-weight="700" text-anchor="middle">1</text>
+      <text x="30" y="95" fill="#8b949e" font-size="8" text-anchor="middle">SEALED</text>
+      <!-- Phase 2: Tear - SealedPack -->
+      <circle cx="90" cy="60" r="14" fill="#d29922" stroke="#d29922" stroke-width="2"/>
+      <text x="90" y="64" fill="#0d1117" font-size="10" font-weight="700" text-anchor="middle">2</text>
+      <text x="90" y="95" fill="#8b949e" font-size="8" text-anchor="middle">TEAR</text>
+      <!-- Phase 3: Pack Opened - SealedPack -->
+      <circle cx="150" cy="60" r="14" fill="#d29922" stroke="#d29922" stroke-width="2"/>
+      <text x="150" y="64" fill="#0d1117" font-size="10" font-weight="700" text-anchor="middle">3</text>
+      <text x="150" y="95" fill="#8b949e" font-size="8" text-anchor="middle">OPENED</text>
+      <!-- Phase 4: Opening Apex - SealedPack -->
+      <circle cx="220" cy="60" r="14" fill="#d29922" stroke="#d29922" stroke-width="2"/>
+      <text x="220" y="64" fill="#0d1117" font-size="10" font-weight="700" text-anchor="middle">4</text>
+      <text x="220" y="95" fill="#8b949e" font-size="8" text-anchor="middle">APEX</text>
+      <!-- Phase 5: Elevate + Hold - SealedPack -->
+      <circle cx="280" cy="60" r="14" fill="#d29922" stroke="#d29922" stroke-width="2"/>
+      <text x="280" y="64" fill="#0d1117" font-size="10" font-weight="700" text-anchor="middle">5</text>
+      <text x="280" y="95" fill="#8b949e" font-size="8" text-anchor="middle">ELEV.</text>
+      <!-- Phase 6: Sheet Slide Up - BottomSheet -->
+      <circle cx="350" cy="60" r="14" fill="#3fb950" stroke="#3fb950" stroke-width="2"/>
+      <text x="350" y="64" fill="#0d1117" font-size="10" font-weight="700" text-anchor="middle">6</text>
+      <text x="350" y="95" fill="#8b949e" font-size="8" text-anchor="middle">SHEET</text>
+      <!-- Phase 7: Layout Morph In - PackOpener -->
+      <circle cx="420" cy="60" r="14" fill="#bc8cff" stroke="#bc8cff" stroke-width="2"/>
+      <text x="420" y="64" fill="#0d1117" font-size="10" font-weight="700" text-anchor="middle">7</text>
+      <text x="420" y="95" fill="#8b949e" font-size="8" text-anchor="middle">MORPH</text>
+      <!-- Phase 8: Fan Out - PackOpener -->
+      <circle cx="480" cy="60" r="14" fill="#bc8cff" stroke="#bc8cff" stroke-width="2"/>
+      <text x="480" y="64" fill="#0d1117" font-size="10" font-weight="700" text-anchor="middle">8</text>
+      <text x="480" y="95" fill="#8b949e" font-size="8" text-anchor="middle">FAN</text>
+      <!-- Phase 9: Drawer Open - All -->
+      <circle cx="535" cy="60" r="16" fill="none" stroke="#58a6ff" stroke-width="2" stroke-dasharray="4 2"/>
+      <text x="535" y="64" fill="#58a6ff" font-size="10" font-weight="700" text-anchor="middle">9</text>
+      <text x="535" y="95" fill="#8b949e" font-size="8" text-anchor="middle">OPEN</text>
+      <!-- Phase 10: Close Trigger - Page -->
+      <circle cx="600" cy="60" r="14" fill="#58a6ff" stroke="#58a6ff" stroke-width="2"/>
+      <text x="600" y="64" fill="#0d1117" font-size="10" font-weight="700" text-anchor="middle">10</text>
+      <text x="600" y="95" fill="#8b949e" font-size="8" text-anchor="middle">CLOSE</text>
+      <!-- Phase 11: Collapse Measure - PackOpener -->
+      <circle cx="650" cy="60" r="14" fill="#bc8cff" stroke="#bc8cff" stroke-width="2"/>
+      <text x="650" y="64" fill="#0d1117" font-size="10" font-weight="700" text-anchor="middle">11</text>
+      <text x="650" y="95" fill="#8b949e" font-size="8" text-anchor="middle">MEAS.</text>
+      <!-- Phase 12: Collapse Fan-In - PackOpener -->
+      <circle cx="700" cy="60" r="14" fill="#bc8cff" stroke="#bc8cff" stroke-width="2"/>
+      <text x="700" y="64" fill="#0d1117" font-size="10" font-weight="700" text-anchor="middle">12</text>
+      <text x="700" y="95" fill="#8b949e" font-size="8" text-anchor="middle">FAN-IN</text>
+      <!-- Phase 13: Drawer Teardown - Page -->
+      <circle cx="750" cy="60" r="14" fill="#58a6ff" stroke="#58a6ff" stroke-width="2"/>
+      <text x="750" y="64" fill="#0d1117" font-size="10" font-weight="700" text-anchor="middle">13</text>
+      <text x="750" y="95" fill="#8b949e" font-size="8" text-anchor="middle">TEAR</text>
+      <!-- Phase 14: Sheet Exit - BottomSheet -->
+      <circle cx="800" cy="60" r="14" fill="#3fb950" stroke="#3fb950" stroke-width="2"/>
+      <text x="800" y="64" fill="#0d1117" font-size="10" font-weight="700" text-anchor="middle">14</text>
+      <text x="800" y="95" fill="#8b949e" font-size="8" text-anchor="middle">EXIT</text>
+      <!-- Phase 15: Layout Morph Out - APEX - SealedPack -->
+      <circle cx="850" cy="60" r="15" fill="#d29922" stroke="#f85149" stroke-width="3"/>
+      <text x="850" y="64" fill="#0d1117" font-size="10" font-weight="700" text-anchor="middle">15</text>
+      <text x="850" y="95" fill="#d29922" font-size="8" font-weight="700" text-anchor="middle">APEX</text>
+      <!-- Phase 16: Drop Elevation - APEX - SealedPack -->
+      <circle cx="895" cy="60" r="15" fill="#d29922" stroke="#f85149" stroke-width="3"/>
+      <text x="895" y="64" fill="#0d1117" font-size="10" font-weight="700" text-anchor="middle">16</text>
+      <text x="895" y="95" fill="#d29922" font-size="8" font-weight="700" text-anchor="middle">APEX</text>
+      <!-- PackFlowPhase labels -->
+      <text x="30" y="125" fill="#30363d" font-size="7" font-family="monospace" text-anchor="middle">sealed</text>
+      <text x="250" y="125" fill="#30363d" font-size="7" font-family="monospace" text-anchor="middle">opening-apex</text>
+      <text x="535" y="125" fill="#30363d" font-size="7" font-family="monospace" text-anchor="middle">drawer-open</text>
+      <text x="650" y="125" fill="#30363d" font-size="7" font-family="monospace" text-anchor="middle">closing-collapse</text>
+      <text x="800" y="125" fill="#30363d" font-size="7" font-family="monospace" text-anchor="middle">sheet-exiting</text>
+      <text x="872" y="125" fill="#30363d" font-size="7" font-family="monospace" text-anchor="middle">layout-morph-out / drop-elevation</text>
+    </svg>
+  </div>
+  <p class="muted" style="font-size:0.8rem">The bottom row shows the <code>PackFlowPhase</code> state-machine value active during each group. Phases 15&ndash;16 each have their own <code>PackFlowPhase</code> value.</p>
+</section>
+
+<!-- ==================== 3. OPEN SEQUENCE ==================== -->
+<section id="open-sequence">
+  <div class="section-head">
+    <h2><span class="phase-banner phase-open">Open</span> Open Sequence &mdash; Phases 1&ndash;8</h2>
+    <div class="feedback" data-section="Open Sequence"></div>
+  </div>
+  <p>The open flow is largely event-driven. Once the drawer mounts, concurrent animations fire (sheet slide + layout morph). The <code>PackFlowPhase</code> transitions: <code>sealed</code> &rarr; <code>opening-apex</code> &rarr; <code>drawer-open</code>.</p>
+
+  <!-- Phase 1: SEALED -->
+  <div class="step-card" id="phase-1">
+    <div class="step-header">
+      <span class="step-number owner-pack">1</span>
+      <span class="step-name">Sealed (Idle)</span>
+      <span class="step-id">PackFlowPhase: sealed</span>
+    </div>
+    <div class="visual-box"><strong>What you see:</strong> Pack at rest. Shimmer overlay loops every 3s. Hint arrow pulses at the tear line. No user interaction yet.</div>
+    <div class="meta-grid">
+      <div class="meta-item"><div class="meta-label">Component</div><div class="meta-value">SealedPack</div></div>
+      <div class="meta-item"><div class="meta-label">Timing</div><div class="meta-value">Continuous CSS (3s shimmer loop)</div></div>
+      <div class="meta-item"><div class="meta-label">Trigger</div><div class="meta-value">None &mdash; initial state</div></div>
+    </div>
+    <div class="cross-ref"><strong>Source:</strong> SealedPack.tsx renders the sealed branch (line 494&ndash;601) with <code>shimmer-foil</code> CSS class on the sheen overlay. Arrow hint opacity is driven by <code>hintOpacity</code> which fades when drag starts (<code>dragX [0,30] &rarr; opacity [1,0]</code>).</div>
+  </div>
+
+  <!-- Phase 2: TEAR -->
+  <div class="step-card" id="phase-2">
+    <div class="step-header">
+      <span class="step-number owner-pack">2</span>
+      <span class="step-name">Tear</span>
+      <span class="step-id">gesture-driven</span>
+    </div>
+    <div class="visual-box"><strong>What you see:</strong> User drags the right edge of the flap. A curl element + amber glow track the drag. When dragX &ge; 120px (THRESHOLD), the tear completes.</div>
+    <div class="meta-grid">
+      <div class="meta-item"><div class="meta-label">Component</div><div class="meta-value">SealedPack</div></div>
+      <div class="meta-item"><div class="meta-label">Threshold</div><div class="meta-value">THRESHOLD = 120px</div></div>
+      <div class="meta-item"><div class="meta-label">Revert Spring</div><div class="meta-value">stiffness: 400, damping: 25</div></div>
+    </div>
+    <div class="cross-ref"><strong>Source:</strong> <code>handlePointerDown/Move/Up</code> (SealedPack.tsx:160&ndash;185). Curl tracks via <code>curlX = dragX - curlSize</code>. Glow opacity maps <code>dragX [0, 20, 120] &rarr; [0, 0.6, 1]</code>. On release: if <code>dragX &ge; THRESHOLD</code>, calls <code>completeTear()</code>; otherwise reverts with spring 400/25.</div>
+  </div>
+
+  <!-- Phase 3: PACK OPENED -->
+  <div class="step-card" id="phase-3">
+    <div class="step-header">
+      <span class="step-number owner-pack">3</span>
+      <span class="step-name">Pack Opened</span>
+      <span class="step-id">completeTear()</span>
+    </div>
+    <div class="visual-box"><strong>What you see:</strong> Flap animates fully open (<code>dragX &rarr; 192</code>), curl fades out. Card preview becomes visible. Pack is marked as opened.</div>
+    <div class="meta-grid">
+      <div class="meta-item"><div class="meta-label">Component</div><div class="meta-value">SealedPack</div></div>
+      <div class="meta-item"><div class="meta-label">Tear Tween</div><div class="meta-value">duration: 0.3s</div></div>
+      <div class="meta-item"><div class="meta-label">Auto-Open Timer</div><div class="meta-value">600ms fallback (first tear only)</div></div>
+    </div>
+    <div class="code-file">SealedPack.tsx:132&ndash;154</div>
+    <div class="code-block"><pre>function completeTear() {
+  hasTriggered.current = true;
+  pendingOpen.current = !!autoOpenOnTear;
+  if (autoOpenOnTear &amp;&amp; !dbg.isStepping()) {
+    pendingOpenTimer.current = setTimeout(() =&gt; {
+      if (pendingOpen.current) {
+        pendingOpen.current = false;
+        onOpen(getOrigin());
+      }
+    }, 600);
+  }
+  animate(dragX, PACK_WIDTH, { duration: 0.3 });
+  animate(curlOpacity, 0, { duration: 0.3 }).then(async () =&gt; {
+    await dbg.gate("tear");
+    onTear?.();
+  });
+}</pre></div>
+    <div class="cross-ref"><strong>Feeds next:</strong> <code>onTear()</code> adds pack to <code>openedPacks</code>. If <code>autoOpenOnTear</code> (first tear), arms a <code>pendingOpen</code> flag + 600ms fallback. The <code>onLayoutAnimationComplete</code> of the opened card will detect <code>pendingOpen</code> and auto-continue to phase 4.</div>
+  </div>
+
+  <!-- Phase 4: OPENING APEX -->
+  <div class="step-card" id="phase-4">
+    <div class="step-header">
+      <span class="step-number owner-pack">4</span>
+      <span class="step-name">Opening Apex</span>
+      <span class="step-id">PackFlowPhase: opening-apex</span>
+    </div>
+    <div class="visual-box"><strong>What you see:</strong> Card rises to &minus;180px above pack. Two input paths: <em>click</em> uses spring 400/25 on <code>cardSlideY</code>; <em>drag-up</em> uses spring 300/30 on <code>cardDragY</code>.</div>
+    <div class="meta-grid">
+      <div class="meta-item"><div class="meta-label">Component</div><div class="meta-value">SealedPack</div></div>
+      <div class="meta-item"><div class="meta-label">Click Spring</div><div class="meta-value">stiffness: 400, damping: 25</div></div>
+      <div class="meta-item"><div class="meta-label">Drag Spring</div><div class="meta-value">stiffness: 300, damping: 30</div></div>
+      <div class="meta-item"><div class="meta-label">Drag Threshold</div><div class="meta-value">DRAG_UP_THRESHOLD = 80px</div></div>
+    </div>
+    <div class="code-file">SealedPack.tsx:276&ndash;287 (click path)</div>
+    <div class="code-block"><pre>function handlePackClick() {
+  if (hasCardTriggered.current) return;
+  hasCardTriggered.current = true;
+  animate(cardSlideY, -180, {
+    type: "spring", stiffness: 400, damping: 25,
+  }).then(async () =&gt; {
+    await dbg.gate("card-click-rise");
+    await proceedToOpen();
+  });
+}</pre></div>
+    <div class="cross-ref"><strong>Feeds next:</strong> Both paths call <code>proceedToOpen()</code>, which immediately sets <code>cardElevated = true</code> (phase 5) and fires <code>onOpeningApex()</code> &rarr; page sets <code>phase = "opening-apex"</code>.</div>
+  </div>
+
+  <!-- Phase 5: ELEVATE + HOLD -->
+  <div class="step-card" id="phase-5">
+    <div class="step-header">
+      <span class="step-number owner-pack">5</span>
+      <span class="step-name">Elevate + Hold</span>
+      <span class="step-id">proceedToOpen()</span>
+    </div>
+    <div class="visual-box"><strong>What you see:</strong> Card z-index jumps to 60 (above pack body). 200ms pause at apex before drawer opens. Card is visually floating above the pack.</div>
+    <div class="meta-grid">
+      <div class="meta-item"><div class="meta-label">Component</div><div class="meta-value">SealedPack &rarr; Page</div></div>
+      <div class="meta-item"><div class="meta-label">Hold Duration</div><div class="meta-value">200ms setTimeout</div></div>
+      <div class="meta-item"><div class="meta-label">z-index</div><div class="meta-value">default &rarr; 60</div></div>
+    </div>
+    <div class="code-file">SealedPack.tsx:118&ndash;130</div>
+    <div class="code-block"><pre>async function proceedToOpen() {
+  setCardElevated(true);
+  onOpeningApex?.();
+  await dbg.gate("elevate-card");
+  await dbg.gate("request-open");
+  if (dbg.isStepping()) {
+    onOpen(getOrigin());
+  } else {
+    setTimeout(() =&gt; onOpen(getOrigin()), 200);
+  }
+}</pre></div>
+    <ul class="state-changes">
+      <li><span class="field-name">cardElevated</span> <span class="field-from">false</span> &rarr; <span class="field-to">true</span></li>
+      <li><span class="field-name">z-index</span> <span class="field-from">default</span> &rarr; <span class="field-to">60</span></li>
+      <li><span class="field-name">PackFlowPhase</span> <span class="field-from">sealed</span> &rarr; <span class="field-to">opening-apex</span></li>
+    </ul>
+    <div class="cross-ref"><strong>Feeds next:</strong> After 200ms, <code>onOpen(origin)</code> fires <code>handleOpen</code> in page.tsx, which sets <code>activePack</code>, <code>phase = "drawer-open"</code>, and adds to <code>openedPacks</code>. This mounts the BottomSheet (phase 6) and PackOpener (phase 7).</div>
+  </div>
+
+  <!-- Phase 6: SHEET SLIDE UP -->
+  <div class="step-card" id="phase-6">
+    <div class="step-header">
+      <span class="step-number owner-sheet">6</span>
+      <span class="step-name">Sheet Slide Up</span>
+      <span class="step-id">BottomSheet mount</span>
+    </div>
+    <div class="visual-box"><strong>What you see:</strong> Bottom drawer slides from below the screen to its resting position. Scrim fades in behind it.</div>
+    <div class="meta-grid">
+      <div class="meta-item"><div class="meta-label">Component</div><div class="meta-value">BottomSheet</div></div>
+      <div class="meta-item"><div class="meta-label">Animation</div><div class="meta-value">y: "100%" &rarr; 0</div></div>
+      <div class="meta-item"><div class="meta-label">Duration</div><div class="meta-value">0.3s tween</div></div>
+      <div class="meta-item"><div class="meta-label">Scrim</div><div class="meta-value">opacity: 0 &rarr; 1 (0.3s)</div></div>
+    </div>
+    <div class="cross-ref"><strong>Source:</strong> BottomSheet.tsx:128&ndash;154. AnimatePresence mounts the sheet and scrim when <code>isOpen</code> (derived from <code>phase === "drawer-open" || phase === "closing-collapse"</code>) becomes true. Both sheet and scrim use <code>duration: 0.3</code>.</div>
+  </div>
+
+  <!-- Phase 7: LAYOUT MORPH IN -->
+  <div class="step-card" id="phase-7">
+    <div class="step-header">
+      <span class="step-number owner-opener">7</span>
+      <span class="step-name">Layout Morph In</span>
+      <span class="step-id">layoutId morph</span>
+    </div>
+    <div class="visual-box"><strong>What you see:</strong> Card 0 morphs from its sealed-pack position into the drawer&rsquo;s card-0 slot via framer-motion&rsquo;s shared <code>layoutId</code>.</div>
+    <div class="meta-grid">
+      <div class="meta-item"><div class="meta-label">Component</div><div class="meta-value">PackOpener (card 0)</div></div>
+      <div class="meta-item"><div class="meta-label">layoutId</div><div class="meta-value">pack-card-{packName}</div></div>
+      <div class="meta-item"><div class="meta-label">Spring</div><div class="meta-value">stiffness: 200, damping: 25</div></div>
+    </div>
+    <div class="cross-ref"><strong>Source:</strong> PackOpener.tsx:253&ndash;264. The <code>layoutId</code> is shared between SealedPack&rsquo;s card and PackOpener&rsquo;s card 0. Framer-motion automatically animates between positions. Fires <code>mark("layout-morph-in")</code> on complete. Runs concurrently with phase 6.</div>
+  </div>
+
+  <!-- Phase 8: FAN OUT -->
+  <div class="step-card" id="phase-8">
+    <div class="step-header">
+      <span class="step-number owner-opener">8</span>
+      <span class="step-name">Fan Out</span>
+      <span class="step-id">staggered springs</span>
+    </div>
+    <div class="visual-box"><strong>What you see:</strong> Remaining cards spread outward from card-0&rsquo;s position with a stagger delay. Cards animate from stacked/rotated to their grid positions.</div>
+    <div class="meta-grid">
+      <div class="meta-item"><div class="meta-label">Component</div><div class="meta-value">PackOpener (cards 1+)</div></div>
+      <div class="meta-item"><div class="meta-label">Spring</div><div class="meta-value">stiffness: 200, damping: 25</div></div>
+      <div class="meta-item"><div class="meta-label">Stagger</div><div class="meta-value">0.3s + min(i, 12) &times; 0.04s</div></div>
+      <div class="meta-item"><div class="meta-label">Initial State</div><div class="meta-value">opacity:0, scale:0.6, rotateZ:random</div></div>
+    </div>
+    <div class="cross-ref"><strong>Source:</strong> PackOpener.tsx:306&ndash;338. <code>fanOffsets</code> measured in <code>useLayoutEffect</code> (line 87&ndash;99). Last card fires <code>mark("fan-out")</code>. Maximum stagger cap at index 12 = 0.3 + 0.48 = 0.78s total delay.</div>
+  </div>
+</section>
+
+<!-- ==================== 4. INTERACTIVE STATE ==================== -->
+<section id="interactive">
+  <div class="section-head">
+    <h2><span class="phase-banner phase-interactive">Interactive</span> Phase 9 &mdash; Drawer Open</h2>
+    <div class="feedback" data-section="Interactive State"></div>
+  </div>
+
+  <div class="step-card" id="phase-9">
+    <div class="step-header">
+      <span class="step-number owner-page">9</span>
+      <span class="step-name">Drawer Open</span>
+      <span class="step-id">PackFlowPhase: drawer-open</span>
+    </div>
+    <div class="visual-box"><strong>What you see:</strong> Cards are fully fanned out in the drawer. Each card is tappable to flip (rotateY 0 &rarr; 180&deg;, 0.5s). User can scroll the drawer. Tapping the scrim or dragging the sheet past threshold triggers close.</div>
+    <div class="meta-grid">
+      <div class="meta-item"><div class="meta-label">Card Flip</div><div class="meta-value">duration: 0.5s, ease: [0.23, 1, 0.32, 1]</div></div>
+      <div class="meta-item"><div class="meta-label">Sheet Drag</div><div class="meta-value">drag:"y", elastic: {top:0, bottom:0.4}</div></div>
+      <div class="meta-item"><div class="meta-label">Dismiss Guard</div><div class="meta-value">canDismiss = phase === "drawer-open"</div></div>
+    </div>
+    <div class="cross-ref"><strong>Source:</strong> SkillCard.tsx:18&ndash;23 (flip), BottomSheet.tsx:48&ndash;53 (drag dismiss: offset.y &gt; 100 || velocity.y &gt; 500). Page.tsx:51&ndash;53 derives <code>canDismiss</code> from phase. Sheet drag snap-back spring: stiffness 300, damping 30.</div>
+  </div>
+</section>
+
+<!-- ==================== 5. CLOSE SEQUENCE ==================== -->
+<section id="close-sequence">
+  <div class="section-head">
+    <h2><span class="phase-banner phase-close">Close</span> Close Sequence &mdash; Phases 10&ndash;16</h2>
+    <div class="feedback" data-section="Close Sequence"></div>
+  </div>
+  <p>The close flow is a genuine sequential callback chain. <code>PackFlowPhase</code> transitions: <code>drawer-open</code> &rarr; <code>closing-collapse</code> &rarr; <code>sheet-exiting</code> &rarr; <code>layout-morph-out</code> &rarr; <code>drop-elevation</code> &rarr; <code>sealed</code>.</p>
+
+  <div class="invariant-box">
+    <strong>Critical invariant:</strong> <code>activePack</code> survives through phases 13&ndash;16 and is only cleared when phase returns to <code>sealed</code> at the end of phase 16. This keeps the SealedPack in its &ldquo;opened&rdquo; render branch so the shared <code>layoutId</code> card can morph back.
+  </div>
+
+  <!-- Phase 10: CLOSE TRIGGER -->
+  <div class="step-card" id="phase-10">
+    <div class="step-header">
+      <span class="step-number owner-page">10</span>
+      <span class="step-name">Close Trigger</span>
+      <span class="step-id">PackFlowPhase: closing-collapse</span>
+    </div>
+    <div class="visual-box"><strong>What you see:</strong> User taps scrim or drags sheet past threshold. Dismiss is immediately disabled to prevent re-triggering mid-animation.</div>
+    <div class="meta-grid">
+      <div class="meta-item"><div class="meta-label">Component</div><div class="meta-value">Page (handleClose)</div></div>
+      <div class="meta-item"><div class="meta-label">Guard</div><div class="meta-value">phase !== "drawer-open" &rarr; return</div></div>
+      <div class="meta-item"><div class="meta-label">Trigger Source</div><div class="meta-value">Scrim click or sheet drag dismiss</div></div>
+    </div>
+    <div class="code-file">page.tsx:84&ndash;88</div>
+    <div class="code-block"><pre>const handleClose = useCallback(() =&gt; {
+  if (phase !== "drawer-open") return;
+  dbg.mark("close-trigger");
+  setPhase("closing-collapse");
+}, [dbg, phase]);</pre></div>
+    <ul class="state-changes">
+      <li><span class="field-name">PackFlowPhase</span> <span class="field-from">drawer-open</span> &rarr; <span class="field-to">closing-collapse</span></li>
+      <li><span class="field-name">isSheetOpen</span> stays <span class="field-to">true</span> (closing-collapse is still in isSheetOpen)</li>
+      <li><span class="field-name">canDismiss</span> <span class="field-from">true</span> &rarr; <span class="field-to">false</span></li>
+      <li><span class="field-name">drawerIsClosing</span> <span class="field-from">false</span> &rarr; <span class="field-to">true</span></li>
+    </ul>
+    <div class="cross-ref"><strong>Feeds next:</strong> <code>drawerIsClosing</code> becomes true, which is passed to PackOpener as <code>isClosing</code>. This triggers the collapse <code>useLayoutEffect</code> (phase 11). Sheet dismiss is disabled via <code>canDismiss = false</code>.</div>
+  </div>
+
+  <!-- Phase 11: COLLAPSE MEASURE -->
+  <div class="step-card" id="phase-11">
+    <div class="step-header">
+      <span class="step-number owner-opener">11</span>
+      <span class="step-name">Collapse Measure</span>
+      <span class="step-id">synchronous measurement</span>
+    </div>
+    <div class="visual-box"><strong>What you see:</strong> Instant &mdash; no visible change. The system measures card positions to compute collapse offsets. The visible top-left card becomes the collapse target.</div>
+    <div class="meta-grid">
+      <div class="meta-item"><div class="meta-label">Component</div><div class="meta-value">PackOpener</div></div>
+      <div class="meta-item"><div class="meta-label">Runs In</div><div class="meta-value">useLayoutEffect (synchronous)</div></div>
+      <div class="meta-item"><div class="meta-label">Target Selection</div><div class="meta-value">Visible top-left card (TOP_TOLERANCE: 10px)</div></div>
+    </div>
+    <div class="code-file">PackOpener.tsx:102&ndash;194</div>
+    <div class="code-block"><pre>useLayoutEffect(() =&gt; {
+  if (!isClosing || collapseState) return;
+  dbgRef.current.mark("collapse-measure");
+
+  // Walk up to find scroll container
+  // Find visible top-left card via bounding rects
+  let targetIndex = 0;
+  let bestTop = Infinity, bestLeft = Infinity;
+  const TOP_TOLERANCE = 10;
+
+  cards.forEach((cardEl, i) =&gt; {
+    const rect = cardEl.getBoundingClientRect();
+    if (rect.bottom &lt; viewport.top || rect.top &gt; viewport.bottom) return;
+    if (rect.top &lt; bestTop - TOP_TOLERANCE) {
+      bestTop = rect.top; bestLeft = rect.left; targetIndex = i;
+    } else if (Math.abs(rect.top - bestTop) &lt;= TOP_TOLERANCE
+               &amp;&amp; rect.left &lt; bestLeft) {
+      bestLeft = rect.left; targetIndex = i;
+    }
+  });
+
+  const offsets = cards.map((card, i) =&gt; {
+    if (i === targetIndex) return { x: 0, y: 0 };
+    const rect = card.getBoundingClientRect();
+    return { x: targetRect.left - rect.left, y: targetRect.top - rect.top };
+  });
+
+  setCollapseState({ targetIndex, offsets });
+  dbgRef.current.mark("collapse-fan");
+}, [isClosing, collapseState, ...]);</pre></div>
+    <ul class="state-changes">
+      <li><span class="field-name">collapseState</span> <span class="field-from">null</span> &rarr; <span class="field-to">{ targetIndex, offsets[] }</span></li>
+      <li><span class="field-name">collapseCount</span> &rarr; <span class="field-to">0 (reset)</span></li>
+      <li><span class="field-name">expectedCollapseCount</span> &rarr; <span class="field-to">skills.length - 1</span></li>
+    </ul>
+    <div class="cross-ref"><strong>Feeds next:</strong> Setting <code>collapseState</code> triggers a re-render. Each non-target card gets its collapse animation props (phase 12). Card 0 is driven imperatively via <code>card0X/card0Y</code> motion values.</div>
+  </div>
+
+  <!-- Phase 12: COLLAPSE FAN-IN -->
+  <div class="step-card" id="phase-12">
+    <div class="step-header">
+      <span class="step-number owner-opener">12</span>
+      <span class="step-name">Collapse Fan-In</span>
+      <span class="step-id">reverse-staggered springs</span>
+    </div>
+    <div class="visual-box"><strong>What you see:</strong> All cards collapse toward the target card. Cards fade out, scale down to 0.6, and rotate to random angles. Reverse stagger: outer cards move first (20ms/card).</div>
+    <div class="meta-grid">
+      <div class="meta-item"><div class="meta-label">Component</div><div class="meta-value">PackOpener</div></div>
+      <div class="meta-item"><div class="meta-label">Spring</div><div class="meta-value">stiffness: 200, damping: 25</div></div>
+      <div class="meta-item"><div class="meta-label">Stagger</div><div class="meta-value">reverseIndex &times; 0.02s</div></div>
+      <div class="meta-item"><div class="meta-label">Non-Target Final</div><div class="meta-value">opacity:0, scale:0.6, rotateZ:random</div></div>
+    </div>
+    <div class="code-file">PackOpener.tsx:278&ndash;305</div>
+    <div class="code-block"><pre>const offset = collapseState.offsets[i] || { x: 0, y: 0 };
+const isTarget = i === collapseState.targetIndex;
+const reverseIndex = skills.length - 1 - i;
+const staggerDelay = isTarget ? 0 : reverseIndex * 0.02;
+
+&lt;motion.div
+  animate={{
+    x: offset.x, y: offset.y,
+    opacity: isTarget ? 1 : 0,
+    scale: isTarget ? 1 : 0.6,
+    rotateZ: isTarget ? 0 : rotations[i],
+  }}
+  transition={{
+    type: "spring", stiffness: 200, damping: 25,
+    delay: staggerDelay,
+  }}
+  onAnimationComplete={isTarget ? undefined : handleCardCollapseComplete}
+/&gt;</pre></div>
+    <div class="cross-ref"><strong>Feeds next:</strong> Each non-target card fires <code>handleCardCollapseComplete</code> &rarr; <code>dispatchCollapseComplete()</code> which increments <code>collapseCount</code>. When <code>collapseCount &ge; expectedCollapseCount</code>, fires <code>completeCollapse()</code> (phase 13).</div>
+  </div>
+
+  <!-- Phase 13: DRAWER TEARDOWN -->
+  <div class="step-card" id="phase-13">
+    <div class="step-header">
+      <span class="step-number owner-page">13</span>
+      <span class="step-name">Drawer Teardown</span>
+      <span class="step-id">PackFlowPhase: sheet-exiting</span>
+    </div>
+    <div class="visual-box"><strong>What you see:</strong> Collapse completes. Sheet begins its exit animation. The callback chain bridges PackOpener &rarr; Page &rarr; BottomSheet.</div>
+    <div class="meta-grid">
+      <div class="meta-item"><div class="meta-label">Component</div><div class="meta-value">PackOpener &rarr; Page</div></div>
+      <div class="meta-item"><div class="meta-label">Guard</div><div class="meta-value">collapseCompleteFiredRef (one-shot)</div></div>
+      <div class="meta-item"><div class="meta-label">Key Invariant</div><div class="meta-value">activePack is NOT cleared</div></div>
+    </div>
+    <div class="code-file">PackOpener.tsx:45&ndash;61 (completeCollapse)</div>
+    <div class="code-block"><pre>const completeCollapse = useCallback(() =&gt; {
+  if (collapseCompleteFiredRef.current) return;
+  collapseCompleteFiredRef.current = true;
+  void (async () =&gt; {
+    await dbgRef.current.gate("collapse-complete");
+    onCollapseCompleteRef.current?.();
+  })();
+}, [debugReport]);</pre></div>
+    <div class="code-file">page.tsx:90&ndash;93 (handleCollapseComplete)</div>
+    <div class="code-block"><pre>const handleCollapseComplete = useCallback(() =&gt; {
+  dbg.mark("drawer-teardown");
+  setPhase("sheet-exiting");
+}, [dbg]);</pre></div>
+    <ul class="state-changes">
+      <li><span class="field-name">PackFlowPhase</span> <span class="field-from">closing-collapse</span> &rarr; <span class="field-to">sheet-exiting</span></li>
+      <li><span class="field-name">isSheetOpen</span> <span class="field-from">true</span> &rarr; <span class="field-to">false</span> (sheet-exiting is not in isSheetOpen)</li>
+      <li><span class="field-name">activePack</span> stays <span class="field-to">retained</span></li>
+    </ul>
+    <div class="invariant-box"><strong>Critical:</strong> <code>isSheetOpen</code> becomes false (triggers AnimatePresence exit), but <code>activePack</code> is intentionally retained so SealedPack keeps its opened branch with the <code>layoutId</code> card for the morph-back.</div>
+  </div>
+
+  <!-- Phase 14: SHEET EXIT -->
+  <div class="step-card" id="phase-14">
+    <div class="step-header">
+      <span class="step-number owner-sheet">14</span>
+      <span class="step-name">Sheet Exit</span>
+      <span class="step-id">AnimatePresence exit</span>
+    </div>
+    <div class="visual-box"><strong>What you see:</strong> Sheet slides down to y:100%. Scrim fades out. When exit completes, <code>onExitComplete</code> fires.</div>
+    <div class="meta-grid">
+      <div class="meta-item"><div class="meta-label">Component</div><div class="meta-value">BottomSheet</div></div>
+      <div class="meta-item"><div class="meta-label">Animation</div><div class="meta-value">y: 0 &rarr; "100%"</div></div>
+      <div class="meta-item"><div class="meta-label">Duration</div><div class="meta-value">0.3s tween</div></div>
+      <div class="meta-item"><div class="meta-label">Scrim</div><div class="meta-value">opacity: 1 &rarr; 0 (0.3s)</div></div>
+    </div>
+    <div class="code-file">BottomSheet.tsx:98&ndash;113 (onExitComplete)</div>
+    <div class="code-block"><pre>&lt;AnimatePresence
+  onExitComplete={() =&gt; {
+    setIsExiting(false);
+    dbg.mark("sheet-exit");
+    onExitComplete?.();
+  }}
+&gt;</pre></div>
+    <div class="code-file">page.tsx:95&ndash;99 (handleSheetExited)</div>
+    <div class="code-block"><pre>const handleSheetExited = useCallback(() =&gt; {
+  setPhase((current) =&gt;
+    current === "sheet-exiting" ? "layout-morph-out" : current
+  );
+}, []);</pre></div>
+    <ul class="state-changes">
+      <li><span class="field-name">PackFlowPhase</span> <span class="field-from">sheet-exiting</span> &rarr; <span class="field-to">layout-morph-out</span></li>
+      <li><span class="field-name">sheet.mounted</span> <span class="field-from">true</span> &rarr; <span class="field-to">false</span></li>
+      <li><span class="field-name">activePack</span> stays <span class="field-to">retained</span></li>
+    </ul>
+    <div class="cross-ref"><strong>Feeds next:</strong> Phase becomes <code>layout-morph-out</code>. PackOpener unmounts, so its <code>layoutId</code> card disappears. The shared <code>layoutId</code> now only exists in SealedPack, causing framer-motion to animate the card back to the pack position (phase 15). SealedPack&rsquo;s <code>useLayoutEffect</code> detects <code>isDrawerOpen</code> flipped false &rarr; sets <code>wasInDrawer=true, cardSlideY=-180</code>.</div>
+  </div>
+
+  <!-- Phase 15: LAYOUT MORPH OUT (APEX) -->
+  <div class="step-card apex" id="phase-15">
+    <div class="step-header">
+      <span class="step-number owner-pack">15</span>
+      <span class="step-name">Layout Morph Out</span>
+      <span class="step-id">PackFlowPhase: layout-morph-out</span>
+    </div>
+    <div class="visual-box"><strong>What you see:</strong> Card morphs from drawer position back to sealed-pack position via <code>layoutId</code>. Card is at z-index 60, visually floating above the pack body. This is the first APEX frame.</div>
+    <div class="meta-grid">
+      <div class="meta-item"><div class="meta-label">Component</div><div class="meta-value">SealedPack</div></div>
+      <div class="meta-item"><div class="meta-label">Morph Transition</div><div class="meta-value">duration: 0.3s, ease: [0.42, 0, 0.58, 1]</div></div>
+      <div class="meta-item"><div class="meta-label">z-index</div><div class="meta-value">60 (above pack body)</div></div>
+      <div class="meta-item"><div class="meta-label">Guard</div><div class="meta-value">flowPhase === "layout-morph-out" &amp;&amp; !isDrawerOpen &amp;&amp; wasInDrawer &amp;&amp; !isCloseMorphBackInFlight</div></div>
+    </div>
+    <div class="code-file">SealedPack.tsx:399&ndash;401 (layoutId transition)</div>
+    <div class="code-block"><pre>transition={dbg.scaleT({
+  layout: { duration: 0.3, ease: [0.42, 0, 0.58, 1] }
+})}</pre></div>
+    <div class="code-file">SealedPack.tsx:206&ndash;226 (useLayoutEffect: prepare morph-back)</div>
+    <div class="code-block"><pre>useLayoutEffect(() =&gt; {
+  if (prevDrawerOpen.current &amp;&amp; !isDrawerOpen) {
+    wasInDrawer.current = true;
+    setCardElevated(true);
+    cardDragY.set(0);
+    cardSlideY.set(-180);
+  }
+  prevDrawerOpen.current = !!isDrawerOpen;
+}, [isDrawerOpen, cardDragY, cardSlideY, ...]);</pre></div>
+    <div class="code-file">SealedPack.tsx:437&ndash;446 (onLayoutAnimationComplete: APEX handler)</div>
+    <div class="code-block"><pre>if (flowPhase === "layout-morph-out"
+    &amp;&amp; !isDrawerOpen
+    &amp;&amp; wasInDrawer.current
+    &amp;&amp; !isCloseMorphBackInFlight.current) {
+  isCloseMorphBackInFlight.current = true;
+  await dbg.gate("layout-morph-out");
+  onCloseMorphComplete?.();
+  // ... continues to phase 16 ...
+}</pre></div>
+    <ul class="state-changes">
+      <li><span class="field-name">wasInDrawer</span> <span class="field-from">false</span> &rarr; <span class="field-to">true</span> (set in useLayoutEffect)</li>
+      <li><span class="field-name">cardElevated</span> &rarr; <span class="field-to">true</span> (set in useLayoutEffect)</li>
+      <li><span class="field-name">cardSlideY</span> &rarr; <span class="field-to">-180</span> (set in useLayoutEffect)</li>
+      <li><span class="field-name">isCloseMorphBackInFlight</span> <span class="field-from">false</span> &rarr; <span class="field-to">true</span></li>
+    </ul>
+    <div class="cross-ref"><strong>Feeds next:</strong> <code>onCloseMorphComplete()</code> fires page&rsquo;s <code>handleCloseMorphComplete</code> which sets <code>phase = "drop-elevation"</code> (phase 16). The one-shot <code>isCloseMorphBackInFlight</code> ref prevents re-entry.</div>
+  </div>
+
+  <!-- Phase 16: DROP ELEVATION (APEX) -->
+  <div class="step-card apex" id="phase-16">
+    <div class="step-header">
+      <span class="step-number owner-pack">16</span>
+      <span class="step-name">Drop Elevation</span>
+      <span class="step-id">PackFlowPhase: drop-elevation &rarr; sealed</span>
+    </div>
+    <div class="visual-box"><strong>What you see:</strong> Card drops its z-index from 60 to default. Card descends from &minus;180 to 0 (slides behind pack body). Pack returns to idle state.</div>
+    <div class="meta-grid">
+      <div class="meta-item"><div class="meta-label">Component</div><div class="meta-value">SealedPack &rarr; Page</div></div>
+      <div class="meta-item"><div class="meta-label">Descent Spring</div><div class="meta-value">stiffness: 300, damping: 25</div></div>
+      <div class="meta-item"><div class="meta-label">z-index</div><div class="meta-value">60 &rarr; default</div></div>
+      <div class="meta-item"><div class="meta-label">cardSlideY</div><div class="meta-value">-180 &rarr; 0</div></div>
+    </div>
+    <div class="code-file">SealedPack.tsx:447&ndash;472 (continuation of APEX handler)</div>
+    <div class="code-block"><pre>  await dbg.gate("drop-elevation");
+  wasInDrawer.current = false;
+  setCardElevated(false);
+  onDropElevationComplete?.();
+  animate(cardSlideY, 0, {
+    type: "spring", stiffness: 300, damping: 25,
+  }).then(() =&gt; {
+    hasCardTriggered.current = false;
+    isCloseMorphBackInFlight.current = false;
+  });</pre></div>
+    <div class="code-file">page.tsx:107&ndash;110 (handleDropElevationComplete)</div>
+    <div class="code-block"><pre>const handleDropElevationComplete = useCallback(() =&gt; {
+  setActivePack(null);
+  setPhase("sealed");
+}, []);</pre></div>
+    <ul class="state-changes">
+      <li><span class="field-name">PackFlowPhase</span> <span class="field-from">drop-elevation</span> &rarr; <span class="field-to">sealed</span></li>
+      <li><span class="field-name">activePack</span> <span class="field-from">{ packName, origin }</span> &rarr; <span class="field-to">null</span></li>
+      <li><span class="field-name">wasInDrawer</span> <span class="field-from">true</span> &rarr; <span class="field-to">false</span></li>
+      <li><span class="field-name">cardElevated</span> <span class="field-from">true</span> &rarr; <span class="field-to">false</span></li>
+      <li><span class="field-name">z-index</span> <span class="field-from">60</span> &rarr; <span class="field-to">default</span></li>
+      <li><span class="field-name">cardSlideY</span> <span class="field-from">-180</span> &rarr; <span class="field-to">0</span></li>
+      <li><span class="field-name">isCloseMorphBackInFlight</span> <span class="field-from">true</span> &rarr; <span class="field-to">false (after spring)</span></li>
+      <li><span class="field-name">hasCardTriggered</span> &rarr; <span class="field-to">false (after spring, pack re-openable)</span></li>
+    </ul>
+    <div class="invariant-box"><strong>End state:</strong> <code>activePack = null</code>, <code>phase = "sealed"</code>. The pack is fully closed and can be re-opened. <code>hasCardTriggered</code> resets after the descent spring completes, so the card-lift/click gesture is re-armed.</div>
+  </div>
+</section>
+
+<!-- ==================== 6. APEX GATES DEEP-DIVE ==================== -->
+<section id="apex-deepdive">
+  <div class="section-head">
+    <h2>Apex Gates Deep-Dive</h2>
+    <div class="feedback" data-section="Apex Deep-Dive"></div>
+  </div>
+  <p>Phases 15 and 16 are the two APEX frames &mdash; the highest-risk animation boundaries. They run inside a single <code>onLayoutAnimationComplete</code> handler in SealedPack, gated sequentially.</p>
+
+  <h3 style="color:var(--orange)">layout-morph-out (Phase 15)</h3>
+  <p>After the sheet exits, PackOpener unmounts and its <code>layoutId</code> card disappears. Framer-motion morphs the card back to SealedPack&rsquo;s position. When the layout animation completes:</p>
+  <ul style="font-size:0.9rem">
+    <li>The card is at z-index 60, sitting <em>above</em> the pack body at <code>cardSlideY = -180</code></li>
+    <li>The <code>layout-morph-out</code> gate holds this exact visual frame for inspection in debug mode</li>
+    <li>Guard condition: <code>flowPhase === "layout-morph-out" && !isDrawerOpen && wasInDrawer && !isCloseMorphBackInFlight</code></li>
+    <li>The one-shot <code>isCloseMorphBackInFlight</code> ref prevents re-entry if framer fires the callback again</li>
+  </ul>
+  <p>On gate release: <code>onCloseMorphComplete()</code> &rarr; page sets <code>phase = "drop-elevation"</code></p>
+
+  <h3 style="color:var(--orange)">drop-elevation (Phase 16)</h3>
+  <p>Immediately after the morph-out gate, the drop-elevation gate fires in the same handler:</p>
+  <ul style="font-size:0.9rem">
+    <li>On gate release: <code>wasInDrawer = false</code>, <code>setCardElevated(false)</code> &mdash; z-index drops from 60</li>
+    <li><code>onDropElevationComplete()</code> &rarr; page clears <code>activePack</code> and resets <code>phase = "sealed"</code></li>
+    <li>The descent spring (<code>cardSlideY: -180 &rarr; 0</code>, spring 300/25) runs after z-index drops</li>
+    <li>After the spring, <code>hasCardTriggered</code> and <code>isCloseMorphBackInFlight</code> reset so the pack can be re-opened</li>
+  </ul>
+
+  <div class="invariant-box">
+    <strong>Why two gates in one handler?</strong> The morph-back and elevation-drop are visually distinct moments but share the same <code>onLayoutAnimationComplete</code> callback. Splitting them into two sequential gates lets the debug harness freeze at each visual state independently. In production (non-stepped mode), both gates resolve immediately and the visual transition is a single fluid motion.
+  </div>
+</section>
+
+<!-- ==================== 7. EVIDENCE MATRIX ==================== -->
+<section id="evidence">
+  <div class="section-head">
+    <h2>Evidence Matrix</h2>
+    <div class="feedback" data-section="Evidence Matrix"></div>
+  </div>
+  <p class="muted">Maps each phase to the current source code location, <code>PackFlowPhase</code> state, and the debug step ID from <code>steps.ts</code>.</p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Phase</th>
+          <th>PackFlowPhase</th>
+          <th>Debug Step ID</th>
+          <th>Primary Source</th>
+          <th>Lines</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>Sealed</td><td><code>sealed</code></td><td>&mdash;</td><td>SealedPack.tsx</td><td>494&ndash;601</td></tr>
+        <tr><td>2</td><td>Tear</td><td><code>sealed</code></td><td>&mdash;</td><td>SealedPack.tsx</td><td>160&ndash;185</td></tr>
+        <tr><td>3</td><td>Pack Opened</td><td><code>sealed</code></td><td><code>tear</code></td><td>SealedPack.tsx</td><td>132&ndash;154</td></tr>
+        <tr><td>4</td><td>Opening Apex</td><td><code>opening-apex</code></td><td><code>card-click-rise</code> / <code>card-lift</code></td><td>SealedPack.tsx</td><td>253&ndash;287</td></tr>
+        <tr><td>5</td><td>Elevate + Hold</td><td><code>opening-apex</code></td><td><code>elevate-card</code>, <code>request-open</code></td><td>SealedPack.tsx</td><td>118&ndash;130</td></tr>
+        <tr><td>6</td><td>Sheet Slide Up</td><td><code>drawer-open</code></td><td><code>sheet-open</code></td><td>BottomSheet.tsx</td><td>128&ndash;154</td></tr>
+        <tr><td>7</td><td>Layout Morph In</td><td><code>drawer-open</code></td><td><code>layout-morph-in</code></td><td>PackOpener.tsx</td><td>253&ndash;264</td></tr>
+        <tr><td>8</td><td>Fan Out</td><td><code>drawer-open</code></td><td><code>fan-out</code></td><td>PackOpener.tsx</td><td>306&ndash;338</td></tr>
+        <tr><td>9</td><td>Drawer Open</td><td><code>drawer-open</code></td><td>&mdash;</td><td>SkillCard.tsx / BottomSheet.tsx</td><td>&mdash;</td></tr>
+        <tr><td>10</td><td>Close Trigger</td><td><code>closing-collapse</code></td><td><code>close-trigger</code></td><td>page.tsx</td><td>84&ndash;88</td></tr>
+        <tr><td>11</td><td>Collapse Measure</td><td><code>closing-collapse</code></td><td><code>collapse-measure</code></td><td>PackOpener.tsx</td><td>102&ndash;194</td></tr>
+        <tr><td>12</td><td>Collapse Fan-In</td><td><code>closing-collapse</code></td><td><code>collapse-fan</code></td><td>PackOpener.tsx</td><td>278&ndash;305</td></tr>
+        <tr><td>13</td><td>Drawer Teardown</td><td><code>sheet-exiting</code></td><td><code>collapse-complete</code>, <code>drawer-teardown</code></td><td>PackOpener.tsx + page.tsx</td><td>45&ndash;61, 90&ndash;93</td></tr>
+        <tr><td>14</td><td>Sheet Exit</td><td><code>layout-morph-out</code></td><td><code>sheet-exit</code></td><td>BottomSheet.tsx + page.tsx</td><td>98&ndash;113, 95&ndash;99</td></tr>
+        <tr><td>15</td><td>Layout Morph Out</td><td><code>layout-morph-out</code></td><td><code>layout-morph-out</code></td><td>SealedPack.tsx</td><td>437&ndash;446</td></tr>
+        <tr><td>16</td><td>Drop Elevation</td><td><code>drop-elevation</code> &rarr; <code>sealed</code></td><td><code>drop-elevation</code></td><td>SealedPack.tsx + page.tsx</td><td>447&ndash;472, 107&ndash;110</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ==================== 8. TIMING REFERENCE ==================== -->
+<section id="timing-ref">
+  <div class="section-head">
+    <h2>Timing Reference</h2>
+    <div class="feedback" data-section="Timing Reference"></div>
+  </div>
+  <p class="muted">All spring and tween values extracted from the current source files. Debug mode wraps these via <code>dbg.scaleT()</code> for time-scaling.</p>
+  <div class="table-wrap">
+    <table class="timing-table">
+      <thead>
+        <tr>
+          <th>Animation</th>
+          <th>Source File</th>
+          <th>Type</th>
+          <th>Parameters</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Shimmer overlay</td><td>CSS (shimmer-foil)</td><td>CSS keyframes</td><td>3s loop</td></tr>
+        <tr><td>Tear complete (dragX, curlOpacity)</td><td>SealedPack.tsx:149&ndash;150</td><td>tween</td><td>duration: 0.3</td></tr>
+        <tr><td>Tear revert</td><td>SealedPack.tsx:157</td><td>spring</td><td>stiffness: 400, damping: 25</td></tr>
+        <tr><td>Card rise (click, cardSlideY)</td><td>SealedPack.tsx:279&ndash;281</td><td>spring</td><td>stiffness: 400, damping: 25</td></tr>
+        <tr><td>Card rise (drag, cardDragY)</td><td>SealedPack.tsx:260&ndash;261</td><td>spring</td><td>stiffness: 300, damping: 30</td></tr>
+        <tr><td>Card drag revert</td><td>SealedPack.tsx:265</td><td>spring</td><td>stiffness: 400, damping: 25</td></tr>
+        <tr><td>Open hold</td><td>SealedPack.tsx:128</td><td>setTimeout</td><td>200ms</td></tr>
+        <tr><td>Auto-open fallback</td><td>SealedPack.tsx:141</td><td>setTimeout</td><td>600ms</td></tr>
+        <tr><td>Sheet slide (enter/exit)</td><td>BottomSheet.tsx:140</td><td>tween</td><td>duration: 0.3</td></tr>
+        <tr><td>Scrim fade (enter/exit)</td><td>BottomSheet.tsx:123</td><td>tween</td><td>duration: 0.3</td></tr>
+        <tr><td>Layout morph in (card 0)</td><td>PackOpener.tsx:259&ndash;261</td><td>spring</td><td>stiffness: 200, damping: 25</td></tr>
+        <tr><td>Fan-out springs</td><td>PackOpener.tsx:328&ndash;331</td><td>spring</td><td>stiffness: 200, damping: 25, delay: 0.3 + min(i,12)*0.04</td></tr>
+        <tr><td>Card flip</td><td>SkillCard.tsx:22</td><td>tween</td><td>duration: 0.5, ease: [0.23, 1, 0.32, 1]</td></tr>
+        <tr><td>Sheet drag snap</td><td>BottomSheet.tsx:52</td><td>spring</td><td>stiffness: 300, damping: 30</td></tr>
+        <tr><td>Collapse springs</td><td>PackOpener.tsx:294&ndash;297</td><td>spring</td><td>stiffness: 200, damping: 25, delay: reverseIndex*0.02</td></tr>
+        <tr><td>Card 0 collapse (imperative)</td><td>PackOpener.tsx:188&ndash;190</td><td>spring</td><td>stiffness: 200, damping: 25</td></tr>
+        <tr><td>Layout morph out</td><td>SealedPack.tsx:400</td><td>cubic-bezier</td><td>duration: 0.3, ease: [0.42, 0, 0.58, 1]</td></tr>
+        <tr><td>Descent spring (cardSlideY)</td><td>SealedPack.tsx:459&ndash;462</td><td>spring</td><td>stiffness: 300, damping: 25</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ==================== 9. PERFORMANCE INVESTIGATION SCOPE ==================== -->
+<section id="perf-scope">
+  <div class="section-head">
+    <h2>Performance Investigation Scope</h2>
+    <div class="feedback" data-section="Performance Scope"></div>
+  </div>
+  <p class="muted">Non-gated preview of the follow-up investigation after this sequence is confirmed.</p>
+  <p>Once the 16-phase sequence above is confirmed, the performance investigation will focus on:</p>
+  <ul style="font-size:0.9rem; line-height:1.7">
+    <li><strong>Close sequence jank:</strong> Phases 12&ndash;16 involve multiple sequential spring handoffs and layout measurements. Profile whether the collapse &rarr; sheet exit &rarr; morph-back chain drops frames.</li>
+    <li><strong>Layout thrash in morph-back:</strong> Phase 15 sets <code>cardElevated</code>, <code>cardSlideY</code>, and <code>wasInDrawer</code> in a <code>useLayoutEffect</code>. Verify this doesn&rsquo;t cause unnecessary re-renders or layout recalculations.</li>
+    <li><strong>Fan-out stagger cost:</strong> Phase 8 staggers up to 12 cards. Measure whether the stagger delay creates perceptible jank on lower-end devices.</li>
+    <li><strong>activePack retention:</strong> The critical invariant (phases 13&ndash;16) means the SealedPack re-renders in its opened branch while simultaneously running exit animations. Profile the render cost.</li>
+    <li><strong>Debug overhead:</strong> The <code>debugReport</code> calls and motion value subscriptions may add overhead even when the debug panel is closed. Check if <code>debugEnabled</code> guards are sufficient.</li>
+  </ul>
+</section>
+
+<!-- ==================== 10. APPROVAL GATES ==================== -->
+<section id="gates">
+  <div class="section-head">
+    <h2>Approval Gates</h2>
+    <div class="feedback" data-section="Approval Gates"></div>
+  </div>
+
+  <!-- Gate 1: Open Sequence -->
+  <div class="gate" data-gate="open-sequence">
+    <h3>Gate 1: Open Sequence (Phases 1&ndash;8)</h3>
+    <p>Does the documented open sequence match the expected visual behavior? Are the timing values and input paths (click vs drag vs auto-open) correct?</p>
+    <div class="radio-stack" data-question="Open Sequence">
+      <label class="radio-option"><input type="radio" name="q1" value="Yes — open sequence matches expected behavior"> Yes &mdash; open sequence matches expected behavior</label>
+      <label class="radio-option"><input type="radio" name="q1" value="Mostly correct — minor timing or visual inaccuracies"> Mostly correct &mdash; minor timing or visual inaccuracies</label>
+      <label class="radio-option"><input type="radio" name="q1" value="Other / None of the above"> Other / None of the above</label>
+      <label class="radio-option"><input type="radio" name="q1" value="Need clarification"> Need clarification</label>
+      <textarea class="conditional-note" data-for="q1" placeholder="Optional notes on open sequence accuracy"></textarea>
+    </div>
+  </div>
+
+  <!-- Gate 2: Close Sequence -->
+  <div class="gate" data-gate="close-sequence">
+    <h3>Gate 2: Close Sequence (Phases 10&ndash;16)</h3>
+    <p>Does the documented close sequence match the expected callback chain? Is the activePack invariant (retained through phases 13&ndash;16) correct?</p>
+    <div class="radio-stack" data-question="Close Sequence">
+      <label class="radio-option"><input type="radio" name="q2" value="Yes — close chain and invariant are correct"> Yes &mdash; close chain and invariant are correct</label>
+      <label class="radio-option"><input type="radio" name="q2" value="Close chain is correct but invariant needs adjustment"> Close chain is correct but invariant needs adjustment</label>
+      <label class="radio-option"><input type="radio" name="q2" value="Other / None of the above"> Other / None of the above</label>
+      <label class="radio-option"><input type="radio" name="q2" value="Need clarification"> Need clarification</label>
+      <textarea class="conditional-note" data-for="q2" placeholder="Optional notes on close sequence or activePack invariant"></textarea>
+    </div>
+  </div>
+
+  <!-- Gate 3: Apex Behavior -->
+  <div class="gate" data-gate="apex-behavior">
+    <h3>Gate 3: Apex Behavior (Phases 15&ndash;16)</h3>
+    <p>Is the two-gate apex model (layout-morph-out then drop-elevation) the correct visual split? Does the z-index 60 &rarr; default transition happen at the right moment?</p>
+    <div class="radio-stack" data-question="Apex Behavior">
+      <label class="radio-option"><input type="radio" name="q3" value="Yes — apex gates and z-index transitions are correct"> Yes &mdash; apex gates and z-index transitions are correct</label>
+      <label class="radio-option"><input type="radio" name="q3" value="The visual split is wrong — should be a single transition"> The visual split is wrong &mdash; should be a single transition</label>
+      <label class="radio-option"><input type="radio" name="q3" value="Other / None of the above"> Other / None of the above</label>
+      <label class="radio-option"><input type="radio" name="q3" value="Need clarification"> Need clarification</label>
+      <textarea class="conditional-note" data-for="q3" placeholder="Optional notes on apex behavior"></textarea>
+    </div>
+  </div>
+
+  <!-- Gate 4: Timing Expectations -->
+  <div class="gate" data-gate="timing-expectations">
+    <h3>Gate 4: Timing Expectations</h3>
+    <p>Are the spring and tween values in the timing reference table the values you expect? Should any be adjusted before the performance investigation?</p>
+    <div class="radio-stack" data-question="Timing Expectations">
+      <label class="radio-option"><input type="radio" name="q4" value="Yes — timing values look correct"> Yes &mdash; timing values look correct</label>
+      <label class="radio-option"><input type="radio" name="q4" value="Some values need adjustment"> Some values need adjustment</label>
+      <label class="radio-option"><input type="radio" name="q4" value="Other / None of the above"> Other / None of the above</label>
+      <label class="radio-option"><input type="radio" name="q4" value="Need clarification"> Need clarification</label>
+      <textarea class="conditional-note" data-for="q4" placeholder="Optional notes on timing values"></textarea>
+    </div>
+  </div>
+
+  <!-- Gate 5: Investigation Scope -->
+  <div class="gate" data-gate="investigation-scope">
+    <h3>Gate 5: Performance Investigation Scope</h3>
+    <p>Does the performance investigation scope cover the right areas? Should any areas be added or removed?</p>
+    <div class="radio-stack" data-question="Investigation Scope">
+      <label class="radio-option"><input type="radio" name="q5" value="Yes — scope covers the right areas"> Yes &mdash; scope covers the right areas</label>
+      <label class="radio-option"><input type="radio" name="q5" value="Add more areas"> Add more investigation areas</label>
+      <label class="radio-option"><input type="radio" name="q5" value="Narrow the scope"> Narrow the scope</label>
+      <label class="radio-option"><input type="radio" name="q5" value="Other / None of the above"> Other / None of the above</label>
+      <label class="radio-option"><input type="radio" name="q5" value="Need clarification"> Need clarification</label>
+      <textarea class="conditional-note" data-for="q5" placeholder="Optional notes on investigation scope"></textarea>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== COMPILE SECTION ==================== -->
+<section id="compile">
+  <div class="section-head">
+    <h2>Compile &amp; Approve</h2>
+    <div class="feedback" data-section="Compile"></div>
+  </div>
+  <p class="muted">Use feedback YAML for revision requests before answering all gates. Use final answers once all 5 required gates are answered.</p>
+  <div class="compile-actions">
+    <button id="compile-feedback">Compile Feedback YAML</button>
+    <button class="primary" id="compile-answers">Compile Answers</button>
+    <button id="copy-final">Copy YAML</button>
+  </div>
+  <p class="status" id="compile-status">Required questions remaining: 5</p>
+  <textarea class="yaml" id="compiled-yaml" readonly></textarea>
+</section>
+
+</main>
+<script>
+const ALIGNMENT_PAGE = "apps/skills-showcase/alignment/investigate-pack-animation-sequence.html";
+const questionNames = ["q1", "q2", "q3", "q4", "q5"];
+
+function yamlEscape(value) {
+  return String(value ?? "")
+    .replace(/\\/g, "\\\\")
+    .replace(/"/g, "\\\"")
+    .replace(/\n/g, "\\n");
+}
+
+function collectQuestionAnswers() {
+  return questionNames.map((name) => {
+    const input = document.querySelector(`input[name="${name}"]:checked`);
+    const block = document.querySelector(`[data-for="${name}"]`);
+    const stack = document.querySelector(`input[name="${name}"]`)?.closest("[data-question]");
+    const gate = stack?.closest(".gate");
+    return {
+      name,
+      section: stack?.dataset.question || name,
+      gateType: gate?.dataset.gate || name,
+      answer: input?.value || "",
+      notes: block?.value || "",
+      answered: Boolean(input)
+    };
+  });
+}
+
+function selectedFeedback() {
+  return Array.from(document.querySelectorAll(".feedback")).flatMap((fb) => {
+    const selected = fb.dataset.value;
+    if (!selected) return [];
+    const notes = fb.querySelector(".fb-notes")?.value || "";
+    const action = selected === "up" ? "accept-as-is" : selected === "down" ? "investigate-and-revise" : "clarify-before-approval";
+    return [{
+      section: fb.dataset.section || "Unknown section",
+      feedback: selected === "clarify" ? "needs-clarification" : selected,
+      notes,
+      requested_agent_action: action
+    }];
+  });
+}
+
+function feedbackYaml(items) {
+  const unanswered = collectQuestionAnswers().filter(q => !q.answered).map(q => q.section);
+  const feedbackItems = items.length ? items : selectedFeedback();
+  const lines = [
+    `alignment_page: ${ALIGNMENT_PAGE}`,
+    "feedback_status: revision-request",
+    "approval_status: not-approved",
+    "unanswered_required_questions:",
+    ...unanswered.map(q => `  - "${yamlEscape(q)}"`),
+    "section_feedback:",
+    ...feedbackItems.map(item => [
+      `  - section: "${yamlEscape(item.section)}"`,
+      `    feedback: "${yamlEscape(item.feedback)}"`,
+      `    notes: "${yamlEscape(item.notes)}"`,
+      `    requested_agent_action: "${yamlEscape(item.requested_agent_action)}"`
+    ].join("\n"))
+  ];
+  if (feedbackItems.length === 0) lines.push("  []");
+  return lines.join("\n");
+}
+
+function answersYaml() {
+  const answers = collectQuestionAnswers();
+  const feedback = selectedFeedback();
+  const lines = [
+    `alignment_page: ${ALIGNMENT_PAGE}`,
+    "approval_status: ready-for-agent-review",
+    "gate_answers:",
+    ...answers.map(a => [
+      `  - section: "${yamlEscape(a.section)}"`,
+      `    gate_type: "${yamlEscape(a.gateType)}"`,
+      `    status: "${a.answer === "Other / None of the above" ? "other" : a.answer === "Need clarification" ? "needs-clarification" : "answered"}"`,
+      `    answer: "${yamlEscape(a.answer)}"`,
+      `    notes: "${yamlEscape(a.notes)}"`
+    ].join("\n")),
+    "section_feedback:",
+    ...(feedback.length ? feedback.map(item => [
+      `  - section: "${yamlEscape(item.section)}"`,
+      `    feedback: "${yamlEscape(item.feedback)}"`,
+      `    notes: "${yamlEscape(item.notes)}"`,
+      `    requested_agent_action: "${yamlEscape(item.requested_agent_action)}"`
+    ].join("\n")) : ["  []"])
+  ];
+  return lines.join("\n");
+}
+
+async function copyText(text, target) {
+  try {
+    await navigator.clipboard.writeText(text);
+    if (target) target.textContent = "Copied YAML to clipboard.";
+  } catch (_) {
+    if (target) target.textContent = "Clipboard blocked. YAML is selected for copying.";
+    const area = document.getElementById("compiled-yaml");
+    if (area) area.select();
+  }
+}
+
+function updateStatus() {
+  const remaining = collectQuestionAnswers().filter(q => !q.answered);
+  const el = document.getElementById("compile-status");
+  el.textContent = `Required questions remaining: ${remaining.length}`;
+  const btn = document.getElementById("compile-answers");
+  btn.disabled = remaining.length > 0;
+  return remaining;
+}
+
+document.querySelectorAll("input[type=radio]").forEach(input => {
+  input.addEventListener("change", () => {
+    const note = document.querySelector(`[data-for="${input.name}"]`);
+    if (note) note.classList.add("show");
+    updateStatus();
+  });
+});
+
+document.querySelectorAll(".feedback").forEach((fb) => {
+  const section = fb.dataset.section || "Section";
+  fb.innerHTML = `
+    <div class="fb-row">
+      <button type="button" class="fb-btn" data-value="up" title="Approve section">Thumbs up</button>
+      <button type="button" class="fb-btn" data-value="down" title="Flag concern">Thumbs down</button>
+      <button type="button" class="fb-btn" data-value="clarify" title="Need clarification">Clarify</button>
+    </div>
+    <div class="fb-panel">
+      <textarea class="fb-notes" placeholder="Section feedback for ${section}"></textarea>
+      <div class="compile-actions">
+        <button type="button" class="local-feedback">Compile Feedback YAML</button>
+        <button type="button" class="local-copy">Copy YAML</button>
+      </div>
+      <textarea class="yaml local-yaml" readonly></textarea>
+    </div>
+  `;
+  const panel = fb.querySelector(".fb-panel");
+  fb.querySelectorAll(".fb-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const value = btn.dataset.value;
+      fb.dataset.value = fb.dataset.value === value ? "" : value;
+      fb.querySelectorAll(".fb-btn").forEach(b => {
+        b.classList.remove("active-up", "active-down", "active-clarify");
+      });
+      if (fb.dataset.value) {
+        btn.classList.add(`active-${value}`);
+        panel.classList.add("show");
+      } else {
+        panel.classList.remove("show");
+      }
+    });
+  });
+  fb.querySelector(".local-feedback").addEventListener("click", () => {
+    const selected = fb.dataset.value;
+    if (!selected) return;
+    const item = {
+      section,
+      feedback: selected === "clarify" ? "needs-clarification" : selected,
+      notes: fb.querySelector(".fb-notes").value || "",
+      requested_agent_action: selected === "up" ? "accept-as-is" : selected === "down" ? "investigate-and-revise" : "clarify-before-approval"
+    };
+    fb.querySelector(".local-yaml").value = feedbackYaml([item]);
+  });
+  fb.querySelector(".local-copy").addEventListener("click", () => {
+    const area = fb.querySelector(".local-yaml");
+    if (!area.value) fb.querySelector(".local-feedback").click();
+    copyText(area.value, document.getElementById("compile-status"));
+  });
+});
+
+document.getElementById("compile-feedback").addEventListener("click", () => {
+  const yaml = feedbackYaml([]);
+  document.getElementById("compiled-yaml").value = yaml;
+  copyText(yaml, document.getElementById("compile-status"));
+});
+
+document.getElementById("compile-answers").addEventListener("click", () => {
+  const remaining = updateStatus();
+  if (remaining.length) {
+    const first = document.querySelector(`input[name="${remaining[0].name}"]`);
+    first?.scrollIntoView({ behavior: "smooth", block: "center" });
+    return;
+  }
+  const yaml = answersYaml();
+  document.getElementById("compiled-yaml").value = yaml;
+  copyText(yaml, document.getElementById("compile-status"));
+});
+
+document.getElementById("copy-final").addEventListener("click", () => {
+  const area = document.getElementById("compiled-yaml");
+  copyText(area.value, document.getElementById("compile-status"));
+});
+
+updateStatus();
+</script>
+</body>
+</html>
