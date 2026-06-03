@@ -1,7 +1,7 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Animation Code Walkthrough — Pack Drawer 16-Step State Machine</title>
 <style>
@@ -16,44 +16,137 @@
   --red: #f85149;
   --orange: #d29922;
   --purple: #bc8cff;
+  --code-bg: #1c2128;
 }
-*, *::before, *::after { box-sizing: border-box; }
+* { box-sizing: border-box; }
 body {
+  margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-  line-height: 1.6;
-  margin: 0;
-  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.55;
 }
 main {
+  width: min(960px, calc(100% - 32px));
   max-width: 100%;
-  overflow-wrap: break-word;
   margin: 0 auto;
-  padding: 2rem 1.5rem 4rem;
-  max-width: 960px;
+  padding: 32px 0 56px;
+  overflow-wrap: break-word;
 }
-h1 { color: #fff; font-size: 1.75rem; margin-bottom: 0.25rem; }
-h2 { color: var(--accent); font-size: 1.35rem; margin-top: 2.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.4rem; }
-h3 { color: #fff; font-size: 1.1rem; margin-top: 1.5rem; }
-a { color: var(--accent); text-decoration: none; }
-a:hover { text-decoration: underline; }
-p.subtitle { color: var(--text-muted); margin-top: 0.25rem; }
-
-/* TOC */
-.toc {
-  background: var(--surface);
+a { color: var(--accent); }
+h1, h2, h3 { color: #fff; line-height: 1.2; }
+h1 { margin: 0 0 8px; font-size: 1.75rem; }
+h2 { margin: 0; font-size: 1.35rem; color: var(--accent); }
+h3 { margin: 22px 0 8px; font-size: 1.05rem; }
+p { color: var(--text); }
+code {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 5px;
+  color: #e6edf3;
+}
+section {
+  margin: 24px 0;
+  padding: 22px;
+  background: rgba(22, 27, 34, 0.72);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 1rem 1.25rem;
-  margin: 1.5rem 0 2rem;
 }
-.toc h3 { margin-top: 0; color: var(--accent); font-size: 1rem; }
-.toc ul { margin: 0.5rem 0 0; padding-left: 1.25rem; }
-.toc li { margin: 0.25rem 0; }
-.toc li a { font-size: 0.9rem; }
+.hero {
+  padding: 28px 0 10px;
+  border: 0;
+  background: transparent;
+}
+.muted { color: var(--text-muted); }
+.toc {
+  background: var(--surface);
+}
+.toc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(210px, 100%), 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+.toc-grid a {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #11161d;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.feedback {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  min-width: min(320px, 100%);
+}
+.fb-row { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.fb-btn, button, .radio-option {
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 6px;
+  cursor: pointer;
+  font: inherit;
+}
+.fb-btn.active-up { border-color: var(--green); color: var(--green); background: rgba(63, 185, 80, .12); }
+.fb-btn.active-down { border-color: var(--red); color: var(--red); background: rgba(248, 81, 73, .12); }
+.fb-btn.active-clarify { border-color: var(--orange); color: var(--orange); background: rgba(210, 153, 34, .12); }
+.fb-panel {
+  display: none;
+  width: 100%;
+  background: #11161d;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+}
+.fb-panel.show { display: block; }
+textarea {
+  width: 100%;
+  min-height: 90px;
+  resize: vertical;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #0b1017;
+  color: var(--text);
+  padding: 10px;
+  font: inherit;
+}
+.yaml { min-height: 150px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.gate {
+  background: #1c2333;
+  border: 1px solid var(--purple);
+  border-radius: 8px;
+  padding: 14px;
+  margin: 14px 0;
+}
+.gate h3 { color: var(--purple); margin-top: 0; }
+.radio-stack { display: grid; gap: 8px; margin-top: 10px; }
+.radio-option { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; }
+.conditional-note { display: none; margin-top: 8px; }
+.conditional-note.show { display: block; }
+.status { color: var(--orange); min-height: 1.5em; }
+.compile-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0; }
+button.primary { background: var(--accent); border-color: var(--accent); color: #08111f; font-weight: 700; }
+button:disabled { opacity: .45; cursor: not-allowed; }
 
-/* Phase banner */
+/* ====== Walkthrough-specific styles ====== */
 .phase-banner {
   display: inline-block;
   padding: 0.2rem 0.75rem;
@@ -66,7 +159,6 @@ p.subtitle { color: var(--text-muted); margin-top: 0.25rem; }
 .phase-open { background: rgba(59, 185, 80, 0.15); color: var(--green); border: 1px solid rgba(59, 185, 80, 0.3); }
 .phase-close { background: rgba(248, 81, 73, 0.15); color: var(--red); border: 1px solid rgba(248, 81, 73, 0.3); }
 
-/* Step card */
 .step-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -115,7 +207,6 @@ p.subtitle { color: var(--text-muted); margin-top: 0.25rem; }
 .step-name { font-weight: 700; color: #fff; font-size: 1.05rem; }
 .step-id { color: var(--text-muted); font-size: 0.8rem; font-family: monospace; }
 
-/* Metadata grid */
 .meta-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(210px, 100%), 1fr));
@@ -141,7 +232,6 @@ p.subtitle { color: var(--text-muted); margin-top: 0.25rem; }
   font-family: monospace;
 }
 
-/* Transition arrow */
 .transition-row {
   display: flex;
   flex-wrap: wrap;
@@ -161,7 +251,6 @@ p.subtitle { color: var(--text-muted); margin-top: 0.25rem; }
 }
 .transition-arrow { color: var(--text-muted); font-size: 1.1rem; }
 
-/* Code block */
 .code-block {
   background: #010409;
   border: 1px solid var(--border);
@@ -185,7 +274,6 @@ p.subtitle { color: var(--text-muted); margin-top: 0.25rem; }
   font-family: monospace;
 }
 
-/* State change list */
 .state-changes { margin: 0.5rem 0; padding-left: 0; list-style: none; }
 .state-changes li {
   display: flex;
@@ -196,7 +284,7 @@ p.subtitle { color: var(--text-muted); margin-top: 0.25rem; }
   font-size: 0.85rem;
 }
 .state-changes li::before {
-  content: '→';
+  content: '\2192';
   color: var(--green);
   font-weight: 700;
   flex-shrink: 0;
@@ -205,7 +293,6 @@ p.subtitle { color: var(--text-muted); margin-top: 0.25rem; }
 .field-from { color: var(--text-muted); }
 .field-to { color: var(--green); font-weight: 600; }
 
-/* Cross-ref */
 .cross-ref {
   background: #1c2333;
   border-left: 3px solid var(--purple);
@@ -217,237 +304,66 @@ p.subtitle { color: var(--text-muted); margin-top: 0.25rem; }
 }
 .cross-ref strong { color: var(--purple); }
 
-/* Section feedback */
-.section-feedback {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-  margin-top: 0.75rem;
-}
-.fb-btn {
-  min-height: 44px;
-  padding: 10px 16px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text-muted);
-  cursor: pointer;
-  font-size: 0.85rem;
-  transition: all 0.15s;
-}
-.fb-btn:hover { border-color: var(--text-muted); }
-.fb-btn.active-up { border-color: var(--green); color: var(--green); background: rgba(59, 185, 80, 0.1); }
-.fb-btn.active-down { border-color: var(--red); color: var(--red); background: rgba(248, 81, 73, 0.1); }
-.fb-btn.active-clarify { border-color: var(--orange); color: var(--orange); background: rgba(210, 153, 34, 0.1); }
-.fb-area {
-  display: none;
-  width: 100%;
-  margin-top: 0.5rem;
-}
-.fb-area.visible { display: block; }
-.fb-area textarea {
-  width: 100%;
-  min-height: 60px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--text);
-  padding: 0.5rem;
-  font-family: inherit;
-  font-size: 0.85rem;
-  resize: vertical;
-}
-.fb-local-yaml {
-  display: none;
-  margin-top: 0.5rem;
-}
-.fb-local-yaml.visible { display: block; }
-.fb-local-yaml textarea {
-  width: 100%;
-  min-height: 60px;
-  background: #010409;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--text);
-  padding: 0.5rem;
-  font-family: 'SF Mono', monospace;
-  font-size: 0.75rem;
-  resize: vertical;
-}
-.fb-local-yaml .yaml-btns {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 0.4rem;
-}
-
-/* Gate section */
-.gate-section {
-  background: #1c2333;
-  border: 1px solid var(--purple);
-  border-radius: 8px;
-  padding: 1.25rem;
-  margin: 1.5rem 0;
-}
-.gate-section h3 { color: var(--purple); margin-top: 0; }
-.question-block {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 1rem;
-  margin: 0.75rem 0;
-}
-.question-block p { margin: 0 0 0.5rem; font-weight: 600; color: #fff; }
-.radio-group label {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
-  padding: 0.4rem 0;
-  cursor: pointer;
-  min-height: 44px;
-  font-size: 0.9rem;
-}
-.radio-group input[type="radio"] { margin-top: 0.25rem; flex-shrink: 0; }
-.notes-box {
-  display: none;
-  margin-top: 0.5rem;
-}
-.notes-box.visible { display: block; }
-.notes-box textarea {
-  width: 100%;
-  min-height: 50px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--text);
-  padding: 0.5rem;
-  font-family: inherit;
-  font-size: 0.85rem;
-  resize: vertical;
-}
-
-/* Compile section */
-.compile-section {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 1.5rem;
-  margin: 2rem 0;
-}
-.compile-section h3 { margin-top: 0; }
-.compile-btn {
-  min-height: 44px;
-  padding: 10px 20px;
-  border-radius: 6px;
-  border: 1px solid var(--accent);
-  background: rgba(88, 166, 255, 0.1);
-  color: var(--accent);
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 600;
-  transition: all 0.15s;
-  margin-right: 0.75rem;
-  margin-bottom: 0.5rem;
-}
-.compile-btn:hover:not(:disabled) { background: rgba(88, 166, 255, 0.2); }
-.compile-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.compile-btn.fb-compile {
-  border-color: var(--orange);
-  color: var(--orange);
-  background: rgba(210, 153, 34, 0.1);
-}
-.compile-btn.fb-compile:hover:not(:disabled) { background: rgba(210, 153, 34, 0.2); }
-.compile-output {
-  margin-top: 1rem;
-  display: none;
-}
-.compile-output.visible { display: block; }
-.compile-output textarea {
-  width: 100%;
-  min-height: 120px;
-  background: #010409;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--text);
-  padding: 0.75rem;
-  font-family: 'SF Mono', monospace;
-  font-size: 0.75rem;
-  resize: vertical;
-}
-.copy-btn {
-  min-height: 44px;
-  padding: 10px 16px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text);
-  cursor: pointer;
-  font-size: 0.85rem;
-  margin-top: 0.5rem;
-}
-.copy-btn:hover { border-color: var(--text-muted); }
-.copy-status { color: var(--green); font-size: 0.8rem; margin-left: 0.75rem; }
-.unanswered-count { color: var(--orange); font-size: 0.85rem; margin-top: 0.5rem; }
-
-/* Responsive */
 @media (max-width: 860px) {
-  main { padding: 1.5rem 1rem 3rem; }
+  main { width: min(100% - 24px, 960px); padding-top: 22px; }
+  section { padding: 18px; }
   .meta-grid { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 560px) {
-  main { padding: 1rem 0.75rem 2rem; }
+  main { width: min(100% - 16px, 960px); }
   h1 { font-size: 1.4rem; }
   .meta-grid { grid-template-columns: 1fr; }
   .step-header { gap: 0.35rem; }
   .code-block { font-size: 0.72rem; padding: 0.5rem; }
+  .fb-row, .compile-actions { width: 100%; }
+  button, .fb-btn, .radio-option { width: 100%; justify-content: center; }
 }
 </style>
 </head>
 <body>
 <main>
 
-<h1>Animation Code Walkthrough</h1>
-<p class="subtitle">Pack-drawer 16-step state machine — exact code paths, state changes, and transition arrows for each step.</p>
+  <section class="hero" id="top">
+    <h1>Animation Code Walkthrough</h1>
+    <p class="muted">Pack-drawer 16-step state machine — exact code paths, state changes, and transition arrows for each step.</p>
+  </section>
 
-<!-- Table of Contents -->
-<nav class="toc" id="toc">
-<h3>Table of Contents</h3>
-<ul>
-  <li><a href="#open-phase">Open Phase (8 steps)</a></li>
-  <li style="padding-left:1rem"><a href="#step-1">1. Tear edge</a></li>
-  <li style="padding-left:1rem"><a href="#step-2">2. Card lift (drag-up)</a></li>
-  <li style="padding-left:1rem"><a href="#step-3">3. Card rise (click)</a></li>
-  <li style="padding-left:1rem"><a href="#step-4">4. Elevate card</a></li>
-  <li style="padding-left:1rem"><a href="#step-5">5. Request drawer open</a></li>
-  <li style="padding-left:1rem"><a href="#step-6">6. Sheet slide-up</a></li>
-  <li style="padding-left:1rem"><a href="#step-7">7. layoutId morph in</a></li>
-  <li style="padding-left:1rem"><a href="#step-8">8. Fan-out springs</a></li>
-  <li><a href="#close-phase">Close Phase (8 steps)</a></li>
-  <li style="padding-left:1rem"><a href="#step-9">9. Close trigger</a></li>
-  <li style="padding-left:1rem"><a href="#step-10">10. Collapse measure</a></li>
-  <li style="padding-left:1rem"><a href="#step-11">11. Collapse fan-in</a></li>
-  <li style="padding-left:1rem"><a href="#step-12">12. Collapse complete</a></li>
-  <li style="padding-left:1rem"><a href="#step-13">13. Drawer teardown</a></li>
-  <li style="padding-left:1rem"><a href="#step-14">14. Sheet exit</a></li>
-  <li style="padding-left:1rem"><a href="#step-15">15. layoutId morph back (APEX)</a></li>
-  <li style="padding-left:1rem"><a href="#step-16">16. Drop elevation (APEX)</a></li>
-  <li><a href="#gate-coverage">Gate: Code Coverage</a></li>
-  <li><a href="#gate-accuracy">Gate: Step Accuracy</a></li>
-  <li><a href="#compile">Compile &amp; Approve</a></li>
-</ul>
-</nav>
+  <section class="toc" id="toc">
+    <div class="section-head">
+      <h2>Table of Contents</h2>
+      <div class="feedback" data-section="Table of Contents"></div>
+    </div>
+    <div class="toc-grid">
+      <a href="#open-phase">Open Phase (8 steps)</a>
+      <a href="#step-1">1. Tear edge</a>
+      <a href="#step-2">2. Card lift (drag-up)</a>
+      <a href="#step-3">3. Card rise (click)</a>
+      <a href="#step-4">4. Elevate card</a>
+      <a href="#step-5">5. Request drawer open</a>
+      <a href="#step-6">6. Sheet slide-up</a>
+      <a href="#step-7">7. layoutId morph in</a>
+      <a href="#step-8">8. Fan-out springs</a>
+      <a href="#close-phase">Close Phase (8 steps)</a>
+      <a href="#step-9">9. Close trigger</a>
+      <a href="#step-10">10. Collapse measure</a>
+      <a href="#step-11">11. Collapse fan-in</a>
+      <a href="#step-12">12. Collapse complete</a>
+      <a href="#step-13">13. Drawer teardown</a>
+      <a href="#step-14">14. Sheet exit</a>
+      <a href="#step-15">15. layoutId morph back (APEX)</a>
+      <a href="#step-16">16. Drop elevation (APEX)</a>
+      <a href="#gates">Approval Gates</a>
+      <a href="#compile">Compile &amp; Approve</a>
+    </div>
+  </section>
 
-<!-- ==================== OPEN PHASE ==================== -->
-<h2 id="open-phase"><span class="phase-banner phase-open">Open</span> Open Phase — 8 Steps</h2>
-<p>The open phase is largely event-driven: once the drawer mounts, concurrent reactions fire. Only the in-chain boundaries (gate calls) truly freeze in stepped mode.</p>
-
-<div class="section-feedback" data-section="open-phase">
-  <button class="fb-btn" data-fb="up" onclick="toggleFb(this)">&#128077;</button>
-  <button class="fb-btn" data-fb="down" onclick="toggleFb(this)">&#128078;</button>
-  <button class="fb-btn" data-fb="clarify" onclick="toggleFb(this)">&#10067;</button>
-  <div class="fb-area"><textarea placeholder="Feedback on open phase..."></textarea></div>
-  <div class="fb-local-yaml"><textarea readonly></textarea><div class="yaml-btns"><button class="compile-btn fb-compile" onclick="compileLocalFb(this)">Compile Feedback YAML</button><button class="copy-btn" onclick="copyLocalFb(this)">Copy YAML</button></div><span class="copy-status"></span></div>
-</div>
+  <!-- ==================== OPEN PHASE ==================== -->
+  <section id="open-phase">
+    <div class="section-head">
+      <h2><span class="phase-banner phase-open">Open</span> Open Phase — 8 Steps</h2>
+      <div class="feedback" data-section="Open Phase"></div>
+    </div>
+    <p>The open phase is largely event-driven: once the drawer mounts, concurrent reactions fire. Only the in-chain boundaries (gate calls) truly freeze in stepped mode.</p>
 
 <!-- Step 1: tear -->
 <div class="step-card" id="step-1">
@@ -474,7 +390,7 @@ p.subtitle { color: var(--text-muted); margin-top: 0.25rem; }
 
   <div class="transition-row">
     <span class="transition-node">pack-dragX</span>
-    <span class="transition-arrow">→</span>
+    <span class="transition-arrow">&rarr;</span>
     <span class="transition-node">pack-curlOpacity</span>
   </div>
 
@@ -501,9 +417,9 @@ p.subtitle { color: var(--text-muted); margin-top: 0.25rem; }
 
   <h4>State Changes</h4>
   <ul class="state-changes">
-    <li><span class="field-name">pack.dragX</span> <span class="field-from">0</span> → <span class="field-to">PACK_WIDTH (192)</span></li>
-    <li><span class="field-name">pack.curlOpacity</span> <span class="field-from">1</span> → <span class="field-to">0</span></li>
-    <li><span class="field-name">pack.pendingOpen</span> <span class="field-from">false</span> → <span class="field-to">true (if autoOpenOnTear)</span></li>
+    <li><span class="field-name">pack.dragX</span> <span class="field-from">0</span> &rarr; <span class="field-to">PACK_WIDTH (192)</span></li>
+    <li><span class="field-name">pack.curlOpacity</span> <span class="field-from">1</span> &rarr; <span class="field-to">0</span></li>
+    <li><span class="field-name">pack.pendingOpen</span> <span class="field-from">false</span> &rarr; <span class="field-to">true (if autoOpenOnTear)</span></li>
   </ul>
 
   <div class="cross-ref">
@@ -536,7 +452,7 @@ p.subtitle { color: var(--text-muted); margin-top: 0.25rem; }
 
   <div class="transition-row">
     <span class="transition-node">pack-cardDragY</span>
-    <span class="transition-arrow">→</span>
+    <span class="transition-arrow">&rarr;</span>
     <span class="transition-node">pack-cardElevated</span>
   </div>
 
@@ -563,7 +479,7 @@ p.subtitle { color: var(--text-muted); margin-top: 0.25rem; }
 
   <h4>State Changes</h4>
   <ul class="state-changes">
-    <li><span class="field-name">pack.cardDragY</span> <span class="field-from">user drag value</span> → <span class="field-to">180</span></li>
+    <li><span class="field-name">pack.cardDragY</span> <span class="field-from">user drag value</span> &rarr; <span class="field-to">180</span></li>
   </ul>
 
   <div class="cross-ref">
@@ -596,7 +512,7 @@ p.subtitle { color: var(--text-muted); margin-top: 0.25rem; }
 
   <div class="transition-row">
     <span class="transition-node">pack-cardSlideY</span>
-    <span class="transition-arrow">→</span>
+    <span class="transition-arrow">&rarr;</span>
     <span class="transition-node">pack-cardElevated</span>
   </div>
 
@@ -616,7 +532,7 @@ p.subtitle { color: var(--text-muted); margin-top: 0.25rem; }
 
   <h4>State Changes</h4>
   <ul class="state-changes">
-    <li><span class="field-name">pack.cardSlideY</span> <span class="field-from">0</span> → <span class="field-to">-180</span></li>
+    <li><span class="field-name">pack.cardSlideY</span> <span class="field-from">0</span> &rarr; <span class="field-to">-180</span></li>
   </ul>
 
   <div class="cross-ref">
@@ -649,7 +565,7 @@ p.subtitle { color: var(--text-muted); margin-top: 0.25rem; }
 
   <div class="transition-row">
     <span class="transition-node">pack-cardElevated</span>
-    <span class="transition-arrow">→</span>
+    <span class="transition-arrow">&rarr;</span>
     <span class="transition-node">page-openPack</span>
   </div>
 
@@ -667,8 +583,8 @@ p.subtitle { color: var(--text-muted); margin-top: 0.25rem; }
 
   <h4>State Changes</h4>
   <ul class="state-changes">
-    <li><span class="field-name">pack.cardElevated</span> <span class="field-from">false</span> → <span class="field-to">true</span></li>
-    <li><span class="field-name">pack.cardZIndex</span> <span class="field-from">"unset"</span> → <span class="field-to">60</span></li>
+    <li><span class="field-name">pack.cardElevated</span> <span class="field-from">false</span> &rarr; <span class="field-to">true</span></li>
+    <li><span class="field-name">pack.cardZIndex</span> <span class="field-from">"unset"</span> &rarr; <span class="field-to">60</span></li>
   </ul>
 
   <div class="cross-ref">
@@ -701,7 +617,7 @@ p.subtitle { color: var(--text-muted); margin-top: 0.25rem; }
 
   <div class="transition-row">
     <span class="transition-node">page-openPack</span>
-    <span class="transition-arrow">→</span>
+    <span class="transition-arrow">&rarr;</span>
     <span class="transition-node">page-isSheetMounted</span>
   </div>
 
@@ -724,10 +640,10 @@ p.subtitle { color: var(--text-muted); margin-top: 0.25rem; }
 
   <h4>State Changes</h4>
   <ul class="state-changes">
-    <li><span class="field-name">page.openPack</span> <span class="field-from">null</span> → <span class="field-to">{ packName, origin }</span></li>
-    <li><span class="field-name">page.isSheetMounted</span> <span class="field-from">false</span> → <span class="field-to">true</span></li>
-    <li><span class="field-name">page.openedPacks</span> <span class="field-from">[]</span> → <span class="field-to">[packName]</span></li>
-    <li><span class="field-name">page.isDrawerClosing</span> <span class="field-from">any</span> → <span class="field-to">false</span></li>
+    <li><span class="field-name">page.openPack</span> <span class="field-from">null</span> &rarr; <span class="field-to">{ packName, origin }</span></li>
+    <li><span class="field-name">page.isSheetMounted</span> <span class="field-from">false</span> &rarr; <span class="field-to">true</span></li>
+    <li><span class="field-name">page.openedPacks</span> <span class="field-from">[]</span> &rarr; <span class="field-to">[packName]</span></li>
+    <li><span class="field-name">page.isDrawerClosing</span> <span class="field-from">any</span> &rarr; <span class="field-to">false</span></li>
   </ul>
 
   <div class="cross-ref">
@@ -754,13 +670,13 @@ p.subtitle { color: var(--text-muted); margin-top: 0.25rem; }
     </div>
     <div class="meta-item">
       <div class="meta-label">Animation</div>
-      <div class="meta-value">y: "100%" → 0, duration: 0.3</div>
+      <div class="meta-value">y: "100%" &rarr; 0, duration: 0.3</div>
     </div>
   </div>
 
   <div class="transition-row">
     <span class="transition-node">page-isSheetMounted</span>
-    <span class="transition-arrow">→</span>
+    <span class="transition-arrow">&rarr;</span>
     <span class="transition-node">sheet-open</span>
   </div>
 
@@ -788,9 +704,9 @@ p.subtitle { color: var(--text-muted); margin-top: 0.25rem; }
 
   <h4>State Changes</h4>
   <ul class="state-changes">
-    <li><span class="field-name">sheet.mounted</span> <span class="field-from">false</span> → <span class="field-to">true</span></li>
-    <li><span class="field-name">sheet.open</span> <span class="field-from">false</span> → <span class="field-to">true</span></li>
-    <li><span class="field-name">sheet.sheetY</span> <span class="field-from">"100%"</span> → <span class="field-to">0</span></li>
+    <li><span class="field-name">sheet.mounted</span> <span class="field-from">false</span> &rarr; <span class="field-to">true</span></li>
+    <li><span class="field-name">sheet.open</span> <span class="field-from">false</span> &rarr; <span class="field-to">true</span></li>
+    <li><span class="field-name">sheet.sheetY</span> <span class="field-from">"100%"</span> &rarr; <span class="field-to">0</span></li>
   </ul>
 
   <div class="cross-ref">
@@ -823,7 +739,7 @@ p.subtitle { color: var(--text-muted); margin-top: 0.25rem; }
 
   <div class="transition-row">
     <span class="transition-node">pack-cardElevated</span>
-    <span class="transition-arrow">→</span>
+    <span class="transition-arrow">&rarr;</span>
     <span class="transition-node">drawer-card0</span>
   </div>
 
@@ -844,8 +760,8 @@ p.subtitle { color: var(--text-muted); margin-top: 0.25rem; }
 
   <h4>State Changes</h4>
   <ul class="state-changes">
-    <li><span class="field-name">drawer.card0X</span> <span class="field-from">0</span> → <span class="field-to">layout-resolved position</span></li>
-    <li><span class="field-name">drawer.card0Y</span> <span class="field-from">0</span> → <span class="field-to">layout-resolved position</span></li>
+    <li><span class="field-name">drawer.card0X</span> <span class="field-from">0</span> &rarr; <span class="field-to">layout-resolved position</span></li>
+    <li><span class="field-name">drawer.card0Y</span> <span class="field-from">0</span> &rarr; <span class="field-to">layout-resolved position</span></li>
   </ul>
 
   <div class="cross-ref">
@@ -878,7 +794,7 @@ p.subtitle { color: var(--text-muted); margin-top: 0.25rem; }
 
   <div class="transition-row">
     <span class="transition-node">drawer-card0</span>
-    <span class="transition-arrow">→</span>
+    <span class="transition-arrow">&rarr;</span>
     <span class="transition-node">drawer-fanOffsets</span>
   </div>
 
@@ -908,7 +824,7 @@ const isLastFan = i === skills.length - 1;
 
   <h4>State Changes</h4>
   <ul class="state-changes">
-    <li><span class="field-name">drawer.fanOffsets</span> <span class="field-from">null</span> → <span class="field-to">[{ x, y }, ...] (measured in useLayoutEffect)</span></li>
+    <li><span class="field-name">drawer.fanOffsets</span> <span class="field-from">null</span> &rarr; <span class="field-to">[{ x, y }, ...] (measured in useLayoutEffect)</span></li>
   </ul>
 
   <div class="cross-ref">
@@ -916,17 +832,15 @@ const isLastFan = i === skills.length - 1;
   </div>
 </div>
 
-<!-- ==================== CLOSE PHASE ==================== -->
-<h2 id="close-phase"><span class="phase-banner phase-close">Close</span> Close Phase — 8 Steps</h2>
-<p>The close phase is a genuine sequential callback chain. Stepping freezes the apex frame by frame — this is where the two APEX steps live.</p>
+  </section>
 
-<div class="section-feedback" data-section="close-phase">
-  <button class="fb-btn" data-fb="up" onclick="toggleFb(this)">&#128077;</button>
-  <button class="fb-btn" data-fb="down" onclick="toggleFb(this)">&#128078;</button>
-  <button class="fb-btn" data-fb="clarify" onclick="toggleFb(this)">&#10067;</button>
-  <div class="fb-area"><textarea placeholder="Feedback on close phase..."></textarea></div>
-  <div class="fb-local-yaml"><textarea readonly></textarea><div class="yaml-btns"><button class="compile-btn fb-compile" onclick="compileLocalFb(this)">Compile Feedback YAML</button><button class="copy-btn" onclick="copyLocalFb(this)">Copy YAML</button></div><span class="copy-status"></span></div>
-</div>
+  <!-- ==================== CLOSE PHASE ==================== -->
+  <section id="close-phase">
+    <div class="section-head">
+      <h2><span class="phase-banner phase-close">Close</span> Close Phase — 8 Steps</h2>
+      <div class="feedback" data-section="Close Phase"></div>
+    </div>
+    <p>The close phase is a genuine sequential callback chain. Stepping freezes the apex frame by frame — this is where the two APEX steps live.</p>
 
 <!-- Step 9: close-trigger -->
 <div class="step-card" id="step-9">
@@ -939,7 +853,7 @@ const isLastFan = i === skills.length - 1;
   <div class="meta-grid">
     <div class="meta-item">
       <div class="meta-label">Boundary</div>
-      <div class="meta-value">page.handleClose → isClosing=true</div>
+      <div class="meta-value">page.handleClose &rarr; isClosing=true</div>
     </div>
     <div class="meta-item">
       <div class="meta-label">Owner Component</div>
@@ -953,7 +867,7 @@ const isLastFan = i === skills.length - 1;
 
   <div class="transition-row">
     <span class="transition-node">sheet-dismissable</span>
-    <span class="transition-arrow">→</span>
+    <span class="transition-arrow">&rarr;</span>
     <span class="transition-node">page-isDrawerClosing</span>
   </div>
 
@@ -967,7 +881,7 @@ const isLastFan = i === skills.length - 1;
 
   <h4>State Changes</h4>
   <ul class="state-changes">
-    <li><span class="field-name">page.isDrawerClosing</span> <span class="field-from">false</span> → <span class="field-to">true</span></li>
+    <li><span class="field-name">page.isDrawerClosing</span> <span class="field-from">false</span> &rarr; <span class="field-to">true</span></li>
   </ul>
 
   <div class="cross-ref">
@@ -1000,7 +914,7 @@ const isLastFan = i === skills.length - 1;
 
   <div class="transition-row">
     <span class="transition-node">page-isDrawerClosing</span>
-    <span class="transition-arrow">→</span>
+    <span class="transition-arrow">&rarr;</span>
     <span class="transition-node">drawer-collapseState</span>
   </div>
 
@@ -1040,11 +954,11 @@ const isLastFan = i === skills.length - 1;
 
   <h4>State Changes</h4>
   <ul class="state-changes">
-    <li><span class="field-name">drawer.collapseState</span> <span class="field-from">null</span> → <span class="field-to">{ targetIndex, offsets }</span></li>
-    <li><span class="field-name">drawer.targetIndex</span> <span class="field-from">null</span> → <span class="field-to">visible top-left card index</span></li>
-    <li><span class="field-name">drawer.collapseCount</span> <span class="field-from">0</span> → <span class="field-to">0 (reset)</span></li>
-    <li><span class="field-name">drawer.expectedCollapseCount</span> <span class="field-from">0</span> → <span class="field-to">skills.length - 1</span></li>
-    <li><span class="field-name">drawer.collapseCompleteFiredRef</span> <span class="field-from">false</span> → <span class="field-to">false (reset)</span></li>
+    <li><span class="field-name">drawer.collapseState</span> <span class="field-from">null</span> &rarr; <span class="field-to">{ targetIndex, offsets }</span></li>
+    <li><span class="field-name">drawer.targetIndex</span> <span class="field-from">null</span> &rarr; <span class="field-to">visible top-left card index</span></li>
+    <li><span class="field-name">drawer.collapseCount</span> <span class="field-from">0</span> &rarr; <span class="field-to">0 (reset)</span></li>
+    <li><span class="field-name">drawer.expectedCollapseCount</span> <span class="field-from">0</span> &rarr; <span class="field-to">skills.length - 1</span></li>
+    <li><span class="field-name">drawer.collapseCompleteFiredRef</span> <span class="field-from">false</span> &rarr; <span class="field-to">false (reset)</span></li>
   </ul>
 
   <div class="cross-ref">
@@ -1077,7 +991,7 @@ const isLastFan = i === skills.length - 1;
 
   <div class="transition-row">
     <span class="transition-node">drawer-collapseState</span>
-    <span class="transition-arrow">→</span>
+    <span class="transition-arrow">&rarr;</span>
     <span class="transition-node">drawer-card0</span>
   </div>
 
@@ -1108,13 +1022,13 @@ const isLastFan = i === skills.length - 1;
 
   <h4>State Changes</h4>
   <ul class="state-changes">
-    <li><span class="field-name">drawer.card0X</span> <span class="field-from">0</span> → <span class="field-to">offsets[0].x (if target !== 0)</span></li>
-    <li><span class="field-name">drawer.card0Y</span> <span class="field-from">0</span> → <span class="field-to">offsets[0].y (if target !== 0)</span></li>
-    <li><span class="field-name">drawer.collapseCount</span> <span class="field-from">0</span> → <span class="field-to">incrementing toward expectedCollapseCount</span></li>
+    <li><span class="field-name">drawer.card0X</span> <span class="field-from">0</span> &rarr; <span class="field-to">offsets[0].x (if target !== 0)</span></li>
+    <li><span class="field-name">drawer.card0Y</span> <span class="field-from">0</span> &rarr; <span class="field-to">offsets[0].y (if target !== 0)</span></li>
+    <li><span class="field-name">drawer.collapseCount</span> <span class="field-from">0</span> &rarr; <span class="field-to">incrementing toward expectedCollapseCount</span></li>
   </ul>
 
   <div class="cross-ref">
-    <strong>Feeds next:</strong> Each non-target card fires <code>handleCardCollapseComplete</code> → <code>dispatchCollapseComplete()</code> which increments <code>collapseCount</code>. When <code>collapseCount >= expectedCollapseCount</code>, fires <code>completeCollapse()</code> (step 12).
+    <strong>Feeds next:</strong> Each non-target card fires <code>handleCardCollapseComplete</code> &rarr; <code>dispatchCollapseComplete()</code> which increments <code>collapseCount</code>. When <code>collapseCount >= expectedCollapseCount</code>, fires <code>completeCollapse()</code> (step 12).
   </div>
 </div>
 
@@ -1143,7 +1057,7 @@ const isLastFan = i === skills.length - 1;
 
   <div class="transition-row">
     <span class="transition-node">drawer-collapseCounters</span>
-    <span class="transition-arrow">→</span>
+    <span class="transition-arrow">&rarr;</span>
     <span class="transition-node">drawer-collapseCompleteFired</span>
   </div>
 
@@ -1168,7 +1082,7 @@ const isLastFan = i === skills.length - 1;
 
   <h4>State Changes</h4>
   <ul class="state-changes">
-    <li><span class="field-name">drawer.collapseCompleteFiredRef</span> <span class="field-from">false</span> → <span class="field-to">true</span></li>
+    <li><span class="field-name">drawer.collapseCompleteFiredRef</span> <span class="field-from">false</span> &rarr; <span class="field-to">true</span></li>
   </ul>
 
   <div class="cross-ref">
@@ -1187,7 +1101,7 @@ const isLastFan = i === skills.length - 1;
   <div class="meta-grid">
     <div class="meta-item">
       <div class="meta-label">Boundary</div>
-      <div class="meta-value">page.handleCollapseComplete → isSheetMounted=false</div>
+      <div class="meta-value">page.handleCollapseComplete &rarr; isSheetMounted=false</div>
     </div>
     <div class="meta-item">
       <div class="meta-label">Owner Component</div>
@@ -1201,7 +1115,7 @@ const isLastFan = i === skills.length - 1;
 
   <div class="transition-row">
     <span class="transition-node">drawer-collapseCompleteFired</span>
-    <span class="transition-arrow">→</span>
+    <span class="transition-arrow">&rarr;</span>
     <span class="transition-node">page-isSheetMounted</span>
   </div>
 
@@ -1213,7 +1127,7 @@ const isLastFan = i === skills.length - 1;
 
   <h4>State Changes</h4>
   <ul class="state-changes">
-    <li><span class="field-name">page.isSheetMounted</span> <span class="field-from">true</span> → <span class="field-to">false</span></li>
+    <li><span class="field-name">page.isSheetMounted</span> <span class="field-from">true</span> &rarr; <span class="field-to">false</span></li>
   </ul>
 
   <div class="cross-ref">
@@ -1240,13 +1154,13 @@ const isLastFan = i === skills.length - 1;
     </div>
     <div class="meta-item">
       <div class="meta-label">Animation</div>
-      <div class="meta-value">y: 0 → "100%", duration: 0.3</div>
+      <div class="meta-value">y: 0 &rarr; "100%", duration: 0.3</div>
     </div>
   </div>
 
   <div class="transition-row">
     <span class="transition-node">page-isSheetMounted</span>
-    <span class="transition-arrow">→</span>
+    <span class="transition-arrow">&rarr;</span>
     <span class="transition-node">sheet-exiting</span>
   </div>
 
@@ -1269,9 +1183,9 @@ const isLastFan = i === skills.length - 1;
 
   <h4>State Changes</h4>
   <ul class="state-changes">
-    <li><span class="field-name">sheet.mounted</span> <span class="field-from">true</span> → <span class="field-to">false</span></li>
-    <li><span class="field-name">sheet.open</span> <span class="field-from">true</span> → <span class="field-to">false</span></li>
-    <li><span class="field-name">sheet.exiting</span> <span class="field-from">true</span> → <span class="field-to">false</span></li>
+    <li><span class="field-name">sheet.mounted</span> <span class="field-from">true</span> &rarr; <span class="field-to">false</span></li>
+    <li><span class="field-name">sheet.open</span> <span class="field-from">true</span> &rarr; <span class="field-to">false</span></li>
+    <li><span class="field-name">sheet.exiting</span> <span class="field-from">true</span> &rarr; <span class="field-to">false</span></li>
   </ul>
 
   <div class="cross-ref">
@@ -1282,7 +1196,7 @@ const isLastFan = i === skills.length - 1;
   <div class="code-block"><pre>const handleSheetExited = useCallback(() => {
   isDrawerClosingRef.current = false;
   setIsDrawerClosing(false);
-  setOpenPack(null);  // ← triggers layoutId morph back
+  setOpenPack(null);  // &larr; triggers layoutId morph back
 }, []);</pre></div>
 </div>
 
@@ -1311,7 +1225,7 @@ const isLastFan = i === skills.length - 1;
 
   <div class="transition-row">
     <span class="transition-node">sheet-exiting</span>
-    <span class="transition-arrow">→</span>
+    <span class="transition-arrow">&rarr;</span>
     <span class="transition-node">pack-wasInDrawer</span>
   </div>
 
@@ -1325,7 +1239,7 @@ if (!isDrawerOpen && wasInDrawer.current
     machine: { pack: { isCloseMorphBackInFlight: true } },
   });
   await dbg.gate("layout-morph-out");
-  await dbg.gate("drop-elevation");  // ← step 16
+  await dbg.gate("drop-elevation");  // &larr; step 16
   wasInDrawer.current = false;
   setCardElevated(false);
   debugReport({
@@ -1346,7 +1260,7 @@ if (!isDrawerOpen && wasInDrawer.current
 
   <h4>State Changes</h4>
   <ul class="state-changes">
-    <li><span class="field-name">pack.isCloseMorphBackInFlight</span> <span class="field-from">false</span> → <span class="field-to">true</span></li>
+    <li><span class="field-name">pack.isCloseMorphBackInFlight</span> <span class="field-from">false</span> &rarr; <span class="field-to">true</span></li>
   </ul>
 
   <div class="cross-ref">
@@ -1379,7 +1293,7 @@ if (!isDrawerOpen && wasInDrawer.current
 
   <div class="transition-row">
     <span class="transition-node">pack-wasInDrawer</span>
-    <span class="transition-arrow">→</span>
+    <span class="transition-arrow">&rarr;</span>
     <span class="transition-node">pack-cardElevated</span>
   </div>
 
@@ -1404,11 +1318,11 @@ if (!isDrawerOpen && wasInDrawer.current
 
   <h4>State Changes</h4>
   <ul class="state-changes">
-    <li><span class="field-name">pack.wasInDrawer</span> <span class="field-from">true</span> → <span class="field-to">false</span></li>
-    <li><span class="field-name">pack.cardElevated</span> <span class="field-from">true</span> → <span class="field-to">false</span></li>
-    <li><span class="field-name">pack.cardZIndex</span> <span class="field-from">60</span> → <span class="field-to">"unset"</span></li>
-    <li><span class="field-name">pack.cardSlideY</span> <span class="field-from">-180</span> → <span class="field-to">0</span></li>
-    <li><span class="field-name">pack.isCloseMorphBackInFlight</span> <span class="field-from">true</span> → <span class="field-to">false (after spring)</span></li>
+    <li><span class="field-name">pack.wasInDrawer</span> <span class="field-from">true</span> &rarr; <span class="field-to">false</span></li>
+    <li><span class="field-name">pack.cardElevated</span> <span class="field-from">true</span> &rarr; <span class="field-to">false</span></li>
+    <li><span class="field-name">pack.cardZIndex</span> <span class="field-from">60</span> &rarr; <span class="field-to">"unset"</span></li>
+    <li><span class="field-name">pack.cardSlideY</span> <span class="field-from">-180</span> &rarr; <span class="field-to">0</span></li>
+    <li><span class="field-name">pack.isCloseMorphBackInFlight</span> <span class="field-from">true</span> &rarr; <span class="field-to">false (after spring)</span></li>
   </ul>
 
   <div class="cross-ref">
@@ -1416,257 +1330,246 @@ if (!isDrawerOpen && wasInDrawer.current
   </div>
 </div>
 
-<!-- ==================== GATES ==================== -->
-<div class="gate-section" id="gate-coverage">
-  <h3>Gate: Code Coverage</h3>
-  <p style="color: var(--text-muted); font-size: 0.9rem;">Does this walkthrough cover the code paths you need to understand?</p>
+  </section>
 
-  <div class="question-block" data-gate="coverage" data-gate-type="evidence-coverage">
-    <p>Are all 16 animation steps accurately mapped to their source code?</p>
-    <div class="radio-group">
-      <label><input type="radio" name="q-coverage" value="yes" onchange="handleRadio(this)"> Yes — all steps are mapped correctly</label>
-      <label><input type="radio" name="q-coverage" value="mostly" onchange="handleRadio(this)"> Mostly — minor gaps or inaccuracies</label>
-      <label><input type="radio" name="q-coverage" value="other" onchange="handleRadio(this)"> Other / None of the above</label>
-      <label><input type="radio" name="q-coverage" value="clarify" onchange="handleRadio(this)"> Need clarification</label>
+  <!-- ==================== GATES ==================== -->
+  <section id="gates">
+    <div class="section-head">
+      <h2>Approval Gates</h2>
+      <div class="feedback" data-section="Approval Gates"></div>
     </div>
-    <div class="notes-box"><textarea placeholder="Notes..."></textarea></div>
-  </div>
 
-  <div class="section-feedback" data-section="gate-coverage">
-    <button class="fb-btn" data-fb="up" onclick="toggleFb(this)">&#128077;</button>
-    <button class="fb-btn" data-fb="down" onclick="toggleFb(this)">&#128078;</button>
-    <button class="fb-btn" data-fb="clarify" onclick="toggleFb(this)">&#10067;</button>
-    <div class="fb-area"><textarea placeholder="Feedback on coverage gate..."></textarea></div>
-    <div class="fb-local-yaml"><textarea readonly></textarea><div class="yaml-btns"><button class="compile-btn fb-compile" onclick="compileLocalFb(this)">Compile Feedback YAML</button><button class="copy-btn" onclick="copyLocalFb(this)">Copy YAML</button></div><span class="copy-status"></span></div>
-  </div>
-</div>
-
-<div class="gate-section" id="gate-accuracy">
-  <h3>Gate: Step Accuracy</h3>
-  <p style="color: var(--text-muted); font-size: 0.9rem;">Are the transition arrows and state changes accurate to the runtime behavior?</p>
-
-  <div class="question-block" data-gate="accuracy" data-gate-type="scope">
-    <p>Do the state transition arrows and field changes match what you observe at runtime?</p>
-    <div class="radio-group">
-      <label><input type="radio" name="q-accuracy" value="yes" onchange="handleRadio(this)"> Yes — transitions match runtime behavior</label>
-      <label><input type="radio" name="q-accuracy" value="discrepancy" onchange="handleRadio(this)"> No — I see discrepancies</label>
-      <label><input type="radio" name="q-accuracy" value="other" onchange="handleRadio(this)"> Other / None of the above</label>
-      <label><input type="radio" name="q-accuracy" value="clarify" onchange="handleRadio(this)"> Need clarification</label>
+    <div class="gate" data-gate="evidence-coverage">
+      <h3>Gate: Code Coverage</h3>
+      <p>Does this walkthrough cover the code paths you need to understand?</p>
+      <div class="radio-stack" data-question="Code Coverage">
+        <label class="radio-option"><input type="radio" name="q1" value="Yes — all steps are mapped correctly"> Yes — all steps are mapped correctly</label>
+        <label class="radio-option"><input type="radio" name="q1" value="Mostly — minor gaps or inaccuracies"> Mostly — minor gaps or inaccuracies</label>
+        <label class="radio-option"><input type="radio" name="q1" value="Other / None of the above"> Other / None of the above</label>
+        <label class="radio-option"><input type="radio" name="q1" value="Need clarification"> Need clarification</label>
+        <textarea class="conditional-note" data-for="q1" placeholder="Optional notes, missing coverage, or clarification request"></textarea>
+      </div>
     </div>
-    <div class="notes-box"><textarea placeholder="Notes..."></textarea></div>
-  </div>
 
-  <div class="section-feedback" data-section="gate-accuracy">
-    <button class="fb-btn" data-fb="up" onclick="toggleFb(this)">&#128077;</button>
-    <button class="fb-btn" data-fb="down" onclick="toggleFb(this)">&#128078;</button>
-    <button class="fb-btn" data-fb="clarify" onclick="toggleFb(this)">&#10067;</button>
-    <div class="fb-area"><textarea placeholder="Feedback on accuracy gate..."></textarea></div>
-    <div class="fb-local-yaml"><textarea readonly></textarea><div class="yaml-btns"><button class="compile-btn fb-compile" onclick="compileLocalFb(this)">Compile Feedback YAML</button><button class="copy-btn" onclick="copyLocalFb(this)">Copy YAML</button></div><span class="copy-status"></span></div>
-  </div>
-</div>
+    <div class="gate" data-gate="scope">
+      <h3>Gate: Step Accuracy</h3>
+      <p>Are the transition arrows and state changes accurate to the runtime behavior?</p>
+      <div class="radio-stack" data-question="Step Accuracy">
+        <label class="radio-option"><input type="radio" name="q2" value="Yes — transitions match runtime behavior"> Yes — transitions match runtime behavior</label>
+        <label class="radio-option"><input type="radio" name="q2" value="No — I see discrepancies"> No — I see discrepancies</label>
+        <label class="radio-option"><input type="radio" name="q2" value="Other / None of the above"> Other / None of the above</label>
+        <label class="radio-option"><input type="radio" name="q2" value="Need clarification"> Need clarification</label>
+        <textarea class="conditional-note" data-for="q2" placeholder="Optional notes, discrepancies, or clarification request"></textarea>
+      </div>
+    </div>
+  </section>
 
-<!-- ==================== COMPILE SECTION ==================== -->
-<div class="compile-section" id="compile">
-  <h3>Compile &amp; Approve</h3>
-
-  <button class="compile-btn fb-compile" id="compile-feedback-btn" onclick="compileFeedbackYaml()" disabled>Compile Feedback YAML</button>
-  <button class="compile-btn" id="compile-answers-btn" onclick="compileAnswers()" disabled>Compile Answers</button>
-
-  <div class="unanswered-count" id="unanswered-msg"></div>
-
-  <div class="compile-output" id="feedback-output">
-    <textarea readonly id="feedback-yaml"></textarea>
-    <button class="copy-btn" onclick="copyYaml('feedback-yaml')">Copy YAML</button>
-    <span class="copy-status" id="feedback-copy-status"></span>
-  </div>
-
-  <div class="compile-output" id="answers-output">
-    <textarea readonly id="answers-yaml"></textarea>
-    <button class="copy-btn" onclick="copyYaml('answers-yaml')">Copy YAML</button>
-    <span class="copy-status" id="answers-copy-status"></span>
-  </div>
-</div>
+  <!-- ==================== COMPILE SECTION ==================== -->
+  <section id="compile">
+    <div class="section-head">
+      <h2>Compile &amp; Approve</h2>
+      <div class="feedback" data-section="Compile"></div>
+    </div>
+    <p class="muted">Use feedback YAML for revision requests before final approval. Use final answers after all required gates are answered.</p>
+    <div class="compile-actions">
+      <button id="compile-feedback">Compile Feedback YAML</button>
+      <button class="primary" id="compile-answers">Compile Answers</button>
+      <button id="copy-final">Copy YAML</button>
+    </div>
+    <p class="status" id="compile-status">Required questions remaining: 2</p>
+    <textarea class="yaml" id="compiled-yaml" readonly></textarea>
+  </section>
 
 </main>
-
 <script>
-const ALIGNMENT_PAGE = 'apps/skills-showcase/alignment/animation-code-walkthrough.html';
-const REQUIRED_QUESTIONS = ['q-coverage', 'q-accuracy'];
+const ALIGNMENT_PAGE = "apps/skills-showcase/alignment/animation-code-walkthrough.html";
+const questionNames = ["q1", "q2"];
 
-function toggleFb(btn) {
-  const container = btn.closest('.section-feedback');
-  const fbType = btn.dataset.fb;
-  const wasActive = btn.classList.contains('active-up') || btn.classList.contains('active-down') || btn.classList.contains('active-clarify');
-  container.querySelectorAll('.fb-btn').forEach(b => {
-    b.classList.remove('active-up', 'active-down', 'active-clarify');
+function yamlEscape(value) {
+  return String(value ?? "")
+    .replace(/\\/g, "\\\\")
+    .replace(/"/g, "\\\"")
+    .replace(/\n/g, "\\n");
+}
+
+function collectQuestionAnswers() {
+  return questionNames.map((name) => {
+    const input = document.querySelector(`input[name="${name}"]:checked`);
+    const block = document.querySelector(`[data-for="${name}"]`);
+    const stack = document.querySelector(`input[name="${name}"]`)?.closest("[data-question]");
+    const gate = stack?.closest(".gate");
+    return {
+      name,
+      section: stack?.dataset.question || name,
+      gateType: gate?.dataset.gate || name,
+      answer: input?.value || "",
+      notes: block?.value || "",
+      answered: Boolean(input)
+    };
   });
-  const area = container.querySelector('.fb-area');
-  const localYaml = container.querySelector('.fb-local-yaml');
-  if (wasActive) {
-    area.classList.remove('visible');
-    localYaml.classList.remove('visible');
-  } else {
-    const cls = fbType === 'up' ? 'active-up' : fbType === 'down' ? 'active-down' : 'active-clarify';
-    btn.classList.add(cls);
-    area.classList.add('visible');
-    localYaml.classList.add('visible');
-  }
-  updateCompileButtons();
 }
 
-function handleRadio(radio) {
-  const block = radio.closest('.question-block');
-  const notesBox = block.querySelector('.notes-box');
-  if (radio.value === 'other' || radio.value === 'clarify') {
-    notesBox.classList.add('visible');
-  } else {
-    const otherChecked = block.querySelector('input[value="other"]:checked, input[value="clarify"]:checked');
-    if (!otherChecked) notesBox.classList.remove('visible');
-    else notesBox.classList.add('visible');
-  }
-  updateCompileButtons();
-}
-
-function getActiveFeedback() {
-  const entries = [];
-  document.querySelectorAll('.section-feedback').forEach(container => {
-    const section = container.dataset.section;
-    const activeBtn = container.querySelector('.fb-btn.active-up, .fb-btn.active-down, .fb-btn.active-clarify');
-    if (!activeBtn) return;
-    const fb = activeBtn.classList.contains('active-up') ? 'up' : activeBtn.classList.contains('active-down') ? 'down' : 'needs-clarification';
-    const notes = container.querySelector('.fb-area textarea')?.value || '';
-    const action = fb === 'up' ? 'accept-as-is' : fb === 'down' ? 'investigate-and-revise' : 'clarify-before-approval';
-    entries.push({ section, feedback: fb, notes: notes || undefined, requested_agent_action: action });
+function selectedFeedback() {
+  return Array.from(document.querySelectorAll(".feedback")).flatMap((fb) => {
+    const selected = fb.dataset.value;
+    if (!selected) return [];
+    const notes = fb.querySelector(".fb-notes")?.value || "";
+    const action = selected === "up" ? "accept-as-is" : selected === "down" ? "investigate-and-revise" : "clarify-before-approval";
+    return [{
+      section: fb.dataset.section || "Unknown section",
+      feedback: selected === "clarify" ? "needs-clarification" : selected,
+      notes,
+      requested_agent_action: action
+    }];
   });
-  return entries;
 }
 
-function updateCompileButtons() {
-  const hasFeedback = getActiveFeedback().length > 0;
-  document.getElementById('compile-feedback-btn').disabled = !hasFeedback;
+function feedbackYaml(items) {
+  const unanswered = collectQuestionAnswers().filter(q => !q.answered).map(q => q.section);
+  const feedbackItems = items.length ? items : selectedFeedback();
+  const lines = [
+    `alignment_page: ${ALIGNMENT_PAGE}`,
+    "feedback_status: revision-request",
+    "approval_status: not-approved",
+    "unanswered_required_questions:",
+    ...unanswered.map(q => `  - "${yamlEscape(q)}"`),
+    "section_feedback:",
+    ...feedbackItems.map(item => [
+      `  - section: "${yamlEscape(item.section)}"`,
+      `    feedback: "${yamlEscape(item.feedback)}"`,
+      `    notes: "${yamlEscape(item.notes)}"`,
+      `    requested_agent_action: "${yamlEscape(item.requested_agent_action)}"`
+    ].join("\n"))
+  ];
+  if (feedbackItems.length === 0) lines.push("  []");
+  return lines.join("\n");
+}
 
-  const answered = REQUIRED_QUESTIONS.filter(name => document.querySelector(`input[name="${name}"]:checked`)).length;
-  const remaining = REQUIRED_QUESTIONS.length - answered;
-  const msg = document.getElementById('unanswered-msg');
-  if (remaining > 0) {
-    msg.textContent = `${remaining} required question${remaining > 1 ? 's' : ''} unanswered`;
-    document.getElementById('compile-answers-btn').disabled = true;
-  } else {
-    msg.textContent = '';
-    document.getElementById('compile-answers-btn').disabled = false;
+function answersYaml() {
+  const answers = collectQuestionAnswers();
+  const feedback = selectedFeedback();
+  const lines = [
+    `alignment_page: ${ALIGNMENT_PAGE}`,
+    "approval_status: ready-for-agent-review",
+    "gate_answers:",
+    ...answers.map(a => [
+      `  - section: "${yamlEscape(a.section)}"`,
+      `    gate_type: "${yamlEscape(a.gateType)}"`,
+      `    status: "${a.answer === "Other / None of the above" ? "other" : a.answer === "Need clarification" ? "needs-clarification" : "answered"}"`,
+      `    answer: "${yamlEscape(a.answer)}"`,
+      `    notes: "${yamlEscape(a.notes)}"`
+    ].join("\n")),
+    "section_feedback:",
+    ...(feedback.length ? feedback.map(item => [
+      `  - section: "${yamlEscape(item.section)}"`,
+      `    feedback: "${yamlEscape(item.feedback)}"`,
+      `    notes: "${yamlEscape(item.notes)}"`,
+      `    requested_agent_action: "${yamlEscape(item.requested_agent_action)}"`
+    ].join("\n")) : ["  []"])
+  ];
+  return lines.join("\n");
+}
+
+async function copyText(text, target) {
+  try {
+    await navigator.clipboard.writeText(text);
+    if (target) target.textContent = "Copied YAML to clipboard.";
+  } catch (_) {
+    if (target) target.textContent = "Clipboard blocked. YAML is selected for copying.";
+    const area = document.getElementById("compiled-yaml");
+    if (area) area.select();
   }
 }
 
-function buildFeedbackYaml(entries) {
-  const unanswered = REQUIRED_QUESTIONS.filter(name => !document.querySelector(`input[name="${name}"]:checked`)).map(name => name.replace('q-', ''));
-  let yaml = `alignment_page: ${ALIGNMENT_PAGE}\n`;
-  yaml += `feedback_status: revision-request\n`;
-  yaml += `approval_status: not-approved\n`;
-  if (unanswered.length) yaml += `unanswered_required_questions:\n${unanswered.map(q => `  - ${q}`).join('\n')}\n`;
-  yaml += `section_feedback:\n`;
-  entries.forEach(e => {
-    yaml += `  - section: "${e.section}"\n`;
-    yaml += `    feedback: "${e.feedback}"\n`;
-    if (e.notes) yaml += `    notes: "${e.notes.replace(/"/g, '\\"')}"\n`;
-    yaml += `    requested_agent_action: "${e.requested_agent_action}"\n`;
+function updateStatus() {
+  const remaining = collectQuestionAnswers().filter(q => !q.answered);
+  document.getElementById("compile-status").textContent = `Required questions remaining: ${remaining.length}`;
+  return remaining;
+}
+
+document.querySelectorAll("input[type=radio]").forEach(input => {
+  input.addEventListener("change", () => {
+    const note = document.querySelector(`[data-for="${input.name}"]`);
+    if (note) note.classList.add("show");
+    updateStatus();
   });
-  return yaml;
-}
+});
 
-function compileFeedbackYaml() {
-  const entries = getActiveFeedback();
-  if (!entries.length) return;
-  const yaml = buildFeedbackYaml(entries);
-  const output = document.getElementById('feedback-output');
-  document.getElementById('feedback-yaml').value = yaml;
-  output.classList.add('visible');
-  tryCopy(yaml, 'feedback-copy-status');
-}
+document.querySelectorAll(".feedback").forEach((fb) => {
+  const section = fb.dataset.section || "Section";
+  fb.innerHTML = `
+    <div class="fb-row">
+      <button type="button" class="fb-btn" data-value="up" title="Approve section">Thumbs up</button>
+      <button type="button" class="fb-btn" data-value="down" title="Flag concern">Thumbs down</button>
+      <button type="button" class="fb-btn" data-value="clarify" title="Need clarification">Clarify</button>
+    </div>
+    <div class="fb-panel">
+      <textarea class="fb-notes" placeholder="Section feedback for ${section}"></textarea>
+      <div class="compile-actions">
+        <button type="button" class="local-feedback">Compile Feedback YAML</button>
+        <button type="button" class="local-copy">Copy YAML</button>
+      </div>
+      <textarea class="yaml local-yaml" readonly></textarea>
+    </div>
+  `;
+  const panel = fb.querySelector(".fb-panel");
+  fb.querySelectorAll(".fb-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const value = btn.dataset.value;
+      fb.dataset.value = fb.dataset.value === value ? "" : value;
+      fb.querySelectorAll(".fb-btn").forEach(b => {
+        b.classList.remove("active-up", "active-down", "active-clarify");
+      });
+      if (fb.dataset.value) {
+        btn.classList.add(`active-${value}`);
+        panel.classList.add("show");
+      } else {
+        panel.classList.remove("show");
+      }
+    });
+  });
+  fb.querySelector(".local-feedback").addEventListener("click", () => {
+    const selected = fb.dataset.value;
+    if (!selected) return;
+    const item = {
+      section,
+      feedback: selected === "clarify" ? "needs-clarification" : selected,
+      notes: fb.querySelector(".fb-notes").value || "",
+      requested_agent_action: selected === "up" ? "accept-as-is" : selected === "down" ? "investigate-and-revise" : "clarify-before-approval"
+    };
+    fb.querySelector(".local-yaml").value = feedbackYaml([item]);
+  });
+  fb.querySelector(".local-copy").addEventListener("click", () => {
+    const area = fb.querySelector(".local-yaml");
+    if (!area.value) fb.querySelector(".local-feedback").click();
+    copyText(area.value, document.getElementById("compile-status"));
+  });
+});
 
-function compileLocalFb(btn) {
-  const container = btn.closest('.section-feedback');
-  const section = container.dataset.section;
-  const activeBtn = container.querySelector('.fb-btn.active-up, .fb-btn.active-down, .fb-btn.active-clarify');
-  if (!activeBtn) return;
-  const fb = activeBtn.classList.contains('active-up') ? 'up' : activeBtn.classList.contains('active-down') ? 'down' : 'needs-clarification';
-  const notes = container.querySelector('.fb-area textarea')?.value || '';
-  const action = fb === 'up' ? 'accept-as-is' : fb === 'down' ? 'investigate-and-revise' : 'clarify-before-approval';
-  const entry = { section, feedback: fb, notes: notes || undefined, requested_agent_action: action };
-  const yaml = buildFeedbackYaml([entry]);
-  const yamlArea = container.querySelector('.fb-local-yaml textarea');
-  yamlArea.value = yaml;
-}
+document.getElementById("compile-feedback").addEventListener("click", () => {
+  const yaml = feedbackYaml([]);
+  document.getElementById("compiled-yaml").value = yaml;
+  copyText(yaml, document.getElementById("compile-status"));
+});
 
-function copyLocalFb(btn) {
-  const container = btn.closest('.fb-local-yaml');
-  const yaml = container.querySelector('textarea').value;
-  const status = container.querySelector('.copy-status');
-  tryCopy(yaml, null, status);
-}
-
-function compileAnswers() {
-  const allAnswered = REQUIRED_QUESTIONS.every(name => document.querySelector(`input[name="${name}"]:checked`));
-  if (!allAnswered) {
-    const first = REQUIRED_QUESTIONS.find(name => !document.querySelector(`input[name="${name}"]:checked`));
-    const el = document.querySelector(`input[name="${first}"]`);
-    if (el) el.closest('.question-block').scrollIntoView({ behavior: 'smooth', block: 'center' });
+document.getElementById("compile-answers").addEventListener("click", () => {
+  const remaining = updateStatus();
+  if (remaining.length) {
+    const first = document.querySelector(`input[name="${remaining[0].name}"]`);
+    first?.scrollIntoView({ behavior: "smooth", block: "center" });
     return;
   }
+  const yaml = answersYaml();
+  document.getElementById("compiled-yaml").value = yaml;
+  copyText(yaml, document.getElementById("compile-status"));
+});
 
-  let yaml = `alignment_page: ${ALIGNMENT_PAGE}\napproval_status: ready-for-agent-review\ngates:\n`;
-  REQUIRED_QUESTIONS.forEach(name => {
-    const radio = document.querySelector(`input[name="${name}"]:checked`);
-    const block = radio.closest('.question-block');
-    const section = block.closest('.gate-section')?.id || '';
-    const gateType = block.dataset.gateType || '';
-    const answer = radio.value;
-    const status = (answer === 'other') ? 'other' : (answer === 'clarify') ? 'needs-clarification' : 'answered';
-    const notes = block.querySelector('.notes-box textarea')?.value || '';
-    yaml += `  - section: "${section}"\n`;
-    yaml += `    gate_type: "${gateType}"\n`;
-    yaml += `    status: "${status}"\n`;
-    yaml += `    answer: "${answer}"\n`;
-    if (notes) yaml += `    notes: "${notes.replace(/"/g, '\\"')}"\n`;
-  });
+document.getElementById("copy-final").addEventListener("click", () => {
+  const area = document.getElementById("compiled-yaml");
+  copyText(area.value, document.getElementById("compile-status"));
+});
 
-  const feedback = getActiveFeedback();
-  if (feedback.length) {
-    yaml += `section_feedback:\n`;
-    feedback.forEach(e => {
-      yaml += `  - section: "${e.section}"\n`;
-      yaml += `    feedback: "${e.feedback}"\n`;
-      if (e.notes) yaml += `    notes: "${e.notes.replace(/"/g, '\\"')}"\n`;
-      yaml += `    requested_agent_action: "${e.requested_agent_action}"\n`;
-    });
-  }
-
-  const output = document.getElementById('answers-output');
-  document.getElementById('answers-yaml').value = yaml;
-  output.classList.add('visible');
-  tryCopy(yaml, 'answers-copy-status');
-}
-
-function copyYaml(textareaId) {
-  const yaml = document.getElementById(textareaId).value;
-  const statusId = textareaId.replace('-yaml', '-copy-status');
-  tryCopy(yaml, statusId);
-}
-
-function tryCopy(text, statusId, statusEl) {
-  const el = statusEl || (statusId ? document.getElementById(statusId) : null);
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(text).then(() => {
-      if (el) { el.textContent = 'Copied!'; setTimeout(() => el.textContent = '', 2000); }
-    }).catch(() => {
-      if (el) el.textContent = 'Select textarea to copy manually';
-    });
-  } else {
-    if (el) el.textContent = 'Select textarea to copy manually';
-  }
-}
-
-updateCompileButtons();
+updateStatus();
 </script>
-
 </body>
 </html>
