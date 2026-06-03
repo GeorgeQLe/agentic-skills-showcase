@@ -2,8 +2,9 @@
  * BottomSheet.tsx - slide-up drawer container for the pack-opener content.
  *
  * AnimatePresence exit drives the close morph-back sequence: when isOpen flips
- * false the sheet slides out, and onExitComplete fires the chain that clears
- * openPack and lets the shared-layout card morph back to the SealedPack.
+ * false the sheet slides out, and onExitComplete advances the page phase so
+ * the shared-layout card can morph back to the SealedPack while activePack is
+ * still retained.
  */
 "use client";
 

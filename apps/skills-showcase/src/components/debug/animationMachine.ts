@@ -54,11 +54,22 @@ export interface AnimationMachineLaneDef {
   y: number;
 }
 
+export type PackFlowPhase =
+  | "sealed"
+  | "opening-apex"
+  | "drawer-open"
+  | "closing-collapse"
+  | "sheet-exiting"
+  | "layout-morph-out"
+  | "drop-elevation";
+
 export interface AnimationMachinePageRuntime {
-  openPack: string | null;
+  phase: PackFlowPhase;
+  activePack: string | null;
   openedPacks: string[];
+  isSheetOpen: boolean;
   isDrawerClosing: boolean;
-  isSheetMounted: boolean;
+  canDismiss: boolean;
 }
 
 export interface AnimationMachinePackRuntime {
@@ -73,6 +84,7 @@ export interface AnimationMachinePackRuntime {
   isDrawerOpen: boolean;
   isClosingFromDrawer: boolean;
   cardZIndex: number | "unset";
+  flowPhase: PackFlowPhase;
 }
 
 export interface AnimationMachineDrawerRuntime {
@@ -178,14 +190,25 @@ export function getAnimationMachineStepNodeId(stepId: string): string {
 
 export const ANIMATION_MACHINE_NODES: AnimationMachineNode[] = [
   {
-    id: "page-openPack",
-    label: "openPack",
+    id: "page-phase",
+    label: "phase",
     lane: "page",
     phase: "open",
     kind: "state",
-    trackedFields: ["page.openPack"],
-    description: "The page-level identity for the pack that owns the drawer and shared-layout morph.",
+    trackedFields: ["page.phase"],
+    description: "Single page-level lifecycle authority for the pack and drawer flow.",
     x: 88,
+    y: nodeY("page"),
+  },
+  {
+    id: "page-activePack",
+    label: "activePack",
+    lane: "page",
+    phase: "open",
+    kind: "state",
+    trackedFields: ["page.activePack"],
+    description: "The page-level identity for the pack that owns the drawer and shared-layout morph.",
+    x: 248,
     y: nodeY("page"),
   },
   {
@@ -196,7 +219,18 @@ export const ANIMATION_MACHINE_NODES: AnimationMachineNode[] = [
     kind: "state",
     trackedFields: ["page.openedPacks"],
     description: "Session-local pack names that have been unsealed, which gates first-tear auto-open behavior.",
-    x: 248,
+    x: 426,
+    y: nodeY("page"),
+  },
+  {
+    id: "page-isSheetOpen",
+    label: "isSheetOpen",
+    lane: "page",
+    phase: "open",
+    kind: "state",
+    trackedFields: ["page.isSheetOpen"],
+    description: "Derived from phase; keeps BottomSheet mounted during drawer-open and closing-collapse.",
+    x: 626,
     y: nodeY("page"),
   },
   {
@@ -206,19 +240,19 @@ export const ANIMATION_MACHINE_NODES: AnimationMachineNode[] = [
     phase: "close",
     kind: "state",
     trackedFields: ["page.isDrawerClosing"],
-    description: "Close-phase state that tells PackOpener to collapse cards while the sheet remains mounted.",
-    x: 430,
+    description: "Derived from phase; tells PackOpener to collapse cards while the sheet remains mounted.",
+    x: 820,
     y: nodeY("page"),
   },
   {
-    id: "page-isSheetMounted",
-    label: "isSheetMounted",
+    id: "page-canDismiss",
+    label: "canDismiss",
     lane: "page",
-    phase: "open",
+    phase: "close",
     kind: "state",
-    trackedFields: ["page.isSheetMounted"],
-    description: "The sheet lifetime flag, intentionally separate from openPack during close exit.",
-    x: 626,
+    trackedFields: ["page.canDismiss"],
+    description: "Derived from phase; dismissal is allowed only while the drawer is fully open.",
+    x: 1010,
     y: nodeY("page"),
   },
   {
@@ -351,7 +385,7 @@ export const ANIMATION_MACHINE_NODES: AnimationMachineNode[] = [
     kind: "state",
     stepId: "sheet-exit",
     trackedFields: ["sheet.exiting"],
-    description: "The sheet is exiting; openPack is intentionally still retained until exit completion.",
+    description: "The sheet is exiting; activePack is intentionally retained for the close morph that follows.",
     x: 568,
     y: nodeY("bottom-sheet"),
   },
@@ -438,7 +472,7 @@ export const ANIMATION_MACHINE_NODES: AnimationMachineNode[] = [
     lane: "debug-gates",
     phase: "reset",
     kind: "gate",
-    trackedFields: ["debug.reachedSteps", "page.openPack"],
+    trackedFields: ["debug.reachedSteps", "page.activePack", "page.phase"],
     description: "Reset clears reached/paused graph state, page state, and target pack motion values.",
     x: 1464,
     y: nodeY("debug-gates"),
@@ -488,24 +522,24 @@ export const ANIMATION_MACHINE_TRANSITIONS: AnimationMachineTransition[] = [
   {
     id: "elevate-card",
     from: "pack-cardElevated",
-    to: "page-openPack",
+    to: "page-phase",
     trigger: "elevate-card",
     source: "SealedPack.proceedToOpen",
-    effect: "Set cardElevated before page open request",
+    effect: "Set cardElevated and move page phase to opening-apex",
     stepId: "elevate-card",
   },
   {
     id: "request-open",
-    from: "page-openPack",
-    to: "page-isSheetMounted",
+    from: "page-phase",
+    to: "page-activePack",
     trigger: "request-open",
     source: "PrototypePage.handleOpen",
-    effect: "Set openPack, isSheetMounted, and openedPacks",
+    effect: "Set activePack, openedPacks, and phase=drawer-open",
     stepId: "request-open",
   },
   {
     id: "sheet-open",
-    from: "page-isSheetMounted",
+    from: "page-isSheetOpen",
     to: "sheet-open",
     trigger: "sheet-open",
     source: "BottomSheet onAnimationComplete",
@@ -533,15 +567,15 @@ export const ANIMATION_MACHINE_TRANSITIONS: AnimationMachineTransition[] = [
   {
     id: "close-trigger",
     from: "sheet-dismissable",
-    to: "page-isDrawerClosing",
+    to: "page-phase",
     trigger: "close",
     source: "PrototypePage.handleClose",
-    effect: "Mark close-trigger and set isDrawerClosing",
+    effect: "Mark close-trigger and set phase=closing-collapse",
     stepId: "close-trigger",
   },
   {
     id: "collapse-measure",
-    from: "page-isDrawerClosing",
+    from: "page-phase",
     to: "drawer-collapseState",
     trigger: "collapse",
     source: "PackOpener collapse useLayoutEffect",
@@ -569,28 +603,28 @@ export const ANIMATION_MACHINE_TRANSITIONS: AnimationMachineTransition[] = [
   {
     id: "drawer-teardown",
     from: "drawer-collapseCompleteFired",
-    to: "page-isSheetMounted",
+    to: "page-phase",
     trigger: "drawer-teardown",
     source: "PrototypePage.handleCollapseComplete",
-    effect: "Unmount sheet content without clearing openPack",
+    effect: "Advance to phase=sheet-exiting without clearing activePack",
     stepId: "drawer-teardown",
   },
   {
     id: "sheet-exit",
-    from: "page-isSheetMounted",
+    from: "page-phase",
     to: "sheet-exiting",
     trigger: "sheet-exit",
     source: "BottomSheet AnimatePresence onExitComplete",
-    effect: "Mark sheet-exit and then clear openPack",
+    effect: "Advance to phase=layout-morph-out while preserving activePack",
     stepId: "sheet-exit",
   },
   {
     id: "layout-morph-out",
-    from: "sheet-exiting",
+    from: "page-phase",
     to: "pack-wasInDrawer",
     trigger: "morph-out",
     source: "SealedPack close onLayoutAnimationComplete",
-    effect: "Hold the apex z-index frame before body/elevation state changes",
+    effect: "Hold the apex z-index frame, then advance phase=drop-elevation",
     stepId: "layout-morph-out",
   },
   {
@@ -605,7 +639,7 @@ export const ANIMATION_MACHINE_TRANSITIONS: AnimationMachineTransition[] = [
   {
     id: "reset-state",
     from: "debug-reset",
-    to: "page-openPack",
+    to: "page-activePack",
     trigger: "reset",
     source: "DebugProvider.reset",
     effect: "Clear page, pack, drawer, sheet, reached, paused, and active graph state",
@@ -622,10 +656,12 @@ export const ANIMATION_MACHINE_MODEL: AnimationMachineModel = {
 
 export const DEFAULT_ANIMATION_MACHINE_RUNTIME: AnimationMachineRuntimeState = {
   page: {
-    openPack: null,
+    phase: "sealed",
+    activePack: null,
     openedPacks: [],
+    isSheetOpen: false,
     isDrawerClosing: false,
-    isSheetMounted: false,
+    canDismiss: false,
   },
   pack: {
     dragX: 0,
@@ -639,6 +675,7 @@ export const DEFAULT_ANIMATION_MACHINE_RUNTIME: AnimationMachineRuntimeState = {
     isDrawerOpen: false,
     isClosingFromDrawer: false,
     cardZIndex: "unset",
+    flowPhase: "sealed",
   },
   drawer: {
     fanOffsets: null,
@@ -695,10 +732,15 @@ export function buildAnimationMachineSnapshot(
   const resetNodeIds = new Set<string>();
   const reachedStepIds = new Set(debug.reachedSteps);
 
-  if (runtime.page.openPack) activeNodeIds.add("page-openPack");
+  if (runtime.page.phase !== "sealed") activeNodeIds.add("page-phase");
+  if (runtime.page.activePack) activeNodeIds.add("page-activePack");
   if (runtime.page.openedPacks.length > 0) activeNodeIds.add("page-openedPacks");
+  if (runtime.page.isSheetOpen) activeNodeIds.add("page-isSheetOpen");
   if (runtime.page.isDrawerClosing) activeNodeIds.add("page-isDrawerClosing");
-  if (runtime.page.isSheetMounted) activeNodeIds.add("page-isSheetMounted");
+  if (runtime.page.canDismiss) activeNodeIds.add("page-canDismiss");
+  if (runtime.page.phase !== "sealed" && !runtime.page.canDismiss) {
+    blockedNodeIds.add("page-canDismiss");
+  }
 
   if (Math.abs(runtime.pack.dragX) > 0.5) activeNodeIds.add("pack-dragX");
   if (runtime.pack.curlOpacity < 0.99) activeNodeIds.add("pack-curlOpacity");
@@ -731,10 +773,9 @@ export function buildAnimationMachineSnapshot(
   }
 
   const isReset =
-    !runtime.page.openPack &&
+    runtime.page.phase === "sealed" &&
+    !runtime.page.activePack &&
     runtime.page.openedPacks.length === 0 &&
-    !runtime.page.isDrawerClosing &&
-    !runtime.page.isSheetMounted &&
     !runtime.pack.cardElevated &&
     !runtime.drawer.collapseState &&
     debug.reachedSteps.length === 0 &&

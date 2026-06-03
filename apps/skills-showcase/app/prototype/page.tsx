@@ -21,6 +21,15 @@ interface OpenPackState {
   origin: { x: number; y: number };
 }
 
+type PackFlowPhase =
+  | "sealed"
+  | "opening-apex"
+  | "drawer-open"
+  | "closing-collapse"
+  | "sheet-exiting"
+  | "layout-morph-out"
+  | "drop-elevation";
+
 export default function PrototypePage() {
   return (
     <DebugProvider>
@@ -34,23 +43,27 @@ function PrototypeInner() {
   const dbg = useDebug();
   const debugReport = dbg.report;
   const data = useSkillsData();
-  const [openPack, setOpenPack] = useState<OpenPackState | null>(null);
+  const [activePack, setActivePack] = useState<OpenPackState | null>(null);
   const [openedPacks, setOpenedPacks] = useState<Set<string>>(new Set());
-  const [isDrawerClosing, setIsDrawerClosing] = useState(false);
-  const [isSheetMounted, setIsSheetMounted] = useState(false);
-  const isDrawerClosingRef = useRef(false);
+  const [phase, setPhase] = useState<PackFlowPhase>("sealed");
+
+  const isSheetOpen = phase === "drawer-open" || phase === "closing-collapse";
+  const drawerIsClosing = phase === "closing-collapse";
+  const canDismiss = phase === "drawer-open";
 
   // Debug harness drives pack index 0 ("global") through the exact
   // production callbacks via this imperative handle. Index 0 is the
   // canonical test target so every debug session starts deterministic.
   const targetPackRef = useRef<SealedPackHandle>(null);
 
+  const handleOpeningApex = useCallback(() => {
+    setPhase((current) => (current === "sealed" ? "opening-apex" : current));
+  }, []);
+
   const handleOpen = useCallback((packName: string, origin: { x: number; y: number }) => {
-    const nextOpenPack = { packName, origin };
-    isDrawerClosingRef.current = false;
-    setOpenPack(nextOpenPack);
-    setIsDrawerClosing(false);
-    setIsSheetMounted(true);
+    const nextActivePack = { packName, origin };
+    setActivePack(nextActivePack);
+    setPhase("drawer-open");
     setOpenedPacks((prev) => {
       if (prev.has(packName)) return prev;
       const next = new Set(prev);
@@ -69,21 +82,31 @@ function PrototypeInner() {
   }, []);
 
   const handleClose = useCallback(() => {
-    if (isDrawerClosingRef.current) return;
+    if (phase !== "drawer-open") return;
     dbg.mark("close-trigger");
-    isDrawerClosingRef.current = true;
-    setIsDrawerClosing(true);
-  }, [dbg]);
+    setPhase("closing-collapse");
+  }, [dbg, phase]);
 
   const handleCollapseComplete = useCallback(() => {
     dbg.mark("drawer-teardown");
-    setIsSheetMounted(false);
+    setPhase("sheet-exiting");
   }, [dbg]);
 
   const handleSheetExited = useCallback(() => {
-    isDrawerClosingRef.current = false;
-    setIsDrawerClosing(false);
-    setOpenPack(null);
+    setPhase((current) =>
+      current === "sheet-exiting" ? "layout-morph-out" : current
+    );
+  }, []);
+
+  const handleCloseMorphComplete = useCallback(() => {
+    setPhase((current) =>
+      current === "layout-morph-out" ? "drop-elevation" : current
+    );
+  }, []);
+
+  const handleDropElevationComplete = useCallback(() => {
+    setActivePack(null);
+    setPhase("sealed");
   }, []);
 
   // Register imperative drivers for the debug panel.
@@ -93,10 +116,8 @@ function PrototypeInner() {
       openTear: () => targetPackRef.current?.openViaTear(),
       close: () => handleClose(),
       reset: () => {
-        isDrawerClosingRef.current = false;
-        setIsDrawerClosing(false);
-        setIsSheetMounted(false);
-        setOpenPack(null);
+        setPhase("sealed");
+        setActivePack(null);
         setOpenedPacks(new Set());
         targetPackRef.current?.resetValues();
       },
@@ -107,14 +128,16 @@ function PrototypeInner() {
     debugReport({
       machine: {
         page: {
-          openPack: openPack?.packName ?? null,
+          phase,
+          activePack: activePack?.packName ?? null,
           openedPacks: [...openedPacks],
-          isDrawerClosing,
-          isSheetMounted,
+          isSheetOpen,
+          isDrawerClosing: drawerIsClosing,
+          canDismiss,
         },
       },
     });
-  }, [debugReport, openPack, openedPacks, isDrawerClosing, isSheetMounted]);
+  }, [debugReport, activePack, openedPacks, phase, isSheetOpen, drawerIsClosing, canDismiss]);
 
   if (!data) {
     return (
@@ -132,8 +155,8 @@ function PrototypeInner() {
     return { name, skills };
   }).filter((p) => p.skills.length > 0);
 
-  const openPackData = openPack
-    ? packs.find((p) => p.name === openPack.packName)
+  const activePackData = activePack
+    ? packs.find((p) => p.name === activePack.packName)
     : null;
 
   return (
@@ -151,35 +174,48 @@ function PrototypeInner() {
           morphs) so packs don't interfere with each other during transitions. */}
       <LayoutGroup>
         <div className="flex flex-wrap justify-center gap-6 mb-12">
-          {packs.map((pack, index) => (
-            <SealedPack
-              key={pack.name}
-              ref={index === 0 ? targetPackRef : undefined}
-              debugTarget={index === 0}
-              name={pack.name}
-              skillCount={pack.skills.length}
-              previewSkill={pack.skills[0] ?? null}
-              onOpen={(origin) => handleOpen(pack.name, origin)}
-              onTear={() => handleTear(pack.name)}
-              autoOpenOnTear={openedPacks.size === 0}
-              isOpened={openedPacks.has(pack.name)}
-              isDrawerOpen={openPack?.packName === pack.name}
-            />
-          ))}
+          {packs.map((pack, index) => {
+            const isActivePack = activePack?.packName === pack.name;
+            const isDrawerResident =
+              isActivePack &&
+              (phase === "drawer-open" ||
+                phase === "closing-collapse" ||
+                phase === "sheet-exiting");
+
+            return (
+              <SealedPack
+                key={pack.name}
+                ref={index === 0 ? targetPackRef : undefined}
+                debugTarget={index === 0}
+                name={pack.name}
+                skillCount={pack.skills.length}
+                previewSkill={pack.skills[0] ?? null}
+                onOpeningApex={handleOpeningApex}
+                onOpen={(origin) => handleOpen(pack.name, origin)}
+                onTear={() => handleTear(pack.name)}
+                onCloseMorphComplete={handleCloseMorphComplete}
+                onDropElevationComplete={handleDropElevationComplete}
+                autoOpenOnTear={openedPacks.size === 0}
+                isOpened={openedPacks.has(pack.name)}
+                isDrawerOpen={isDrawerResident}
+                flowPhase={isActivePack ? phase : "sealed"}
+              />
+            );
+          })}
         </div>
 
         <BottomSheet
-          isOpen={isSheetMounted}
+          isOpen={isSheetOpen}
           onClose={handleClose}
           onExitComplete={handleSheetExited}
-          dismissable={!isDrawerClosing}
+          dismissable={canDismiss}
         >
-          {openPackData && (
+          {activePackData && (
             <PackOpener
-              packName={openPackData.name}
-              skills={openPackData.skills}
-              origin={openPack!.origin}
-              isClosing={isDrawerClosing}
+              packName={activePackData.name}
+              skills={activePackData.skills}
+              origin={activePack!.origin}
+              isClosing={drawerIsClosing}
               onCollapseComplete={handleCollapseComplete}
             />
           )}

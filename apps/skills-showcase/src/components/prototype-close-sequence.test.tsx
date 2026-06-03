@@ -6,6 +6,7 @@ import { type ReactNode } from "react";
 
 const debugHarness = vi.hoisted(() => ({
   drivers: {} as Record<string, (() => void) | undefined>,
+  sealedPackResetValues: vi.fn(),
   debug: {
     mark: vi.fn(),
     report: vi.fn(),
@@ -53,17 +54,32 @@ vi.mock("@/components/SealedPack", async () => {
     React.useImperativeHandle(ref, () => ({
       openViaClick: () => props.onOpen({ x: 100, y: 100 }),
       openViaTear: () => props.onOpen({ x: 100, y: 100 }),
-      resetValues: vi.fn(),
+      resetValues: debugHarness.sealedPackResetValues,
     }));
 
     return React.createElement(
-      "button",
+      "div",
       {
         "data-testid": `pack-${props.name}`,
         "data-drawer-open": String(!!props.isDrawerOpen),
-        onClick: () => props.onOpen({ x: 100, y: 100 }),
+        "data-flow-phase": props.flowPhase,
       },
-      props.name
+      React.createElement(
+        "button",
+        {
+          "data-testid": `pack-open-${props.name}`,
+          onClick: () => props.onOpen({ x: 100, y: 100 }),
+        },
+        props.name
+      ),
+      React.createElement("button", {
+        "data-testid": `pack-morph-${props.name}`,
+        onClick: props.onCloseMorphComplete,
+      }),
+      React.createElement("button", {
+        "data-testid": `pack-drop-${props.name}`,
+        onClick: props.onDropElevationComplete,
+      })
     );
   });
   MockSealedPack.displayName = "MockSealedPack";
@@ -75,10 +91,14 @@ vi.mock("@/components/BottomSheet", async () => {
   const React = await vi.importActual<typeof import("react")>("react");
 
   return {
-    default: ({ isOpen, onClose, onExitComplete, children }: any) =>
+    default: ({ isOpen, onClose, onExitComplete, dismissable, children }: any) =>
       React.createElement(
         "section",
-        { "data-testid": "bottom-sheet", "data-open": String(!!isOpen) },
+        {
+          "data-testid": "bottom-sheet",
+          "data-open": String(!!isOpen),
+          "data-dismissable": String(!!dismissable),
+        },
         React.createElement("button", {
           "data-testid": "sheet-close",
           onClick: onClose,
@@ -118,6 +138,7 @@ describe("prototype close sequence", () => {
     debugHarness.debug.mark.mockClear();
     debugHarness.debug.report.mockClear();
     debugHarness.debug.registerDrivers.mockClear();
+    debugHarness.sealedPackResetValues.mockClear();
     for (const key of Object.keys(debugHarness.drivers)) {
       delete debugHarness.drivers[key];
     }
@@ -127,40 +148,101 @@ describe("prototype close sequence", () => {
     cleanup();
   });
 
-  it("keeps the sheet mounted until PackOpener reports collapse complete", () => {
+  function expectLatestPageState(expected: Record<string, unknown>) {
+    expect(debugHarness.debug.report).toHaveBeenCalledWith({
+      machine: {
+        page: expect.objectContaining(expected),
+      },
+    });
+  }
+
+  it("walks the close phase chain without clearing activePack before elevation drops", () => {
     render(<PrototypePage />);
 
     expect(screen.getByTestId("bottom-sheet")).toHaveAttribute("data-open", "false");
 
-    fireEvent.click(screen.getByTestId("pack-global"));
+    fireEvent.click(screen.getByTestId("pack-open-global"));
 
     expect(screen.getByTestId("bottom-sheet")).toHaveAttribute("data-open", "true");
+    expect(screen.getByTestId("bottom-sheet")).toHaveAttribute("data-dismissable", "true");
     expect(screen.getByTestId("pack-opener")).toHaveAttribute("data-closing", "false");
     expect(screen.getByTestId("pack-global")).toHaveAttribute("data-drawer-open", "true");
+    expect(screen.getByTestId("pack-global")).toHaveAttribute("data-flow-phase", "drawer-open");
+    expectLatestPageState({
+      phase: "drawer-open",
+      activePack: "global",
+      isSheetOpen: true,
+      isDrawerClosing: false,
+      canDismiss: true,
+    });
 
     fireEvent.click(screen.getByTestId("sheet-close"));
 
     expect(debugHarness.debug.mark).toHaveBeenCalledWith("close-trigger");
+    expectLatestPageState({
+      phase: "closing-collapse",
+      activePack: "global",
+      isSheetOpen: true,
+      isDrawerClosing: true,
+      canDismiss: false,
+    });
     expect(screen.getByTestId("bottom-sheet")).toHaveAttribute("data-open", "true");
+    expect(screen.getByTestId("bottom-sheet")).toHaveAttribute("data-dismissable", "false");
     expect(screen.getByTestId("pack-opener")).toHaveAttribute("data-closing", "true");
     expect(screen.getByTestId("pack-global")).toHaveAttribute("data-drawer-open", "true");
+    expect(screen.getByTestId("pack-global")).toHaveAttribute("data-flow-phase", "closing-collapse");
 
     fireEvent.click(screen.getByTestId("collapse-complete"));
 
     expect(debugHarness.debug.mark).toHaveBeenCalledWith("drawer-teardown");
+    expectLatestPageState({
+      phase: "sheet-exiting",
+      activePack: "global",
+      isSheetOpen: false,
+      isDrawerClosing: false,
+      canDismiss: false,
+    });
     expect(screen.getByTestId("bottom-sheet")).toHaveAttribute("data-open", "false");
     expect(screen.queryByTestId("pack-opener")).not.toBeInTheDocument();
     expect(screen.getByTestId("pack-global")).toHaveAttribute("data-drawer-open", "true");
+    expect(screen.getByTestId("pack-global")).toHaveAttribute("data-flow-phase", "sheet-exiting");
 
     fireEvent.click(screen.getByTestId("sheet-exit"));
 
+    expectLatestPageState({
+      phase: "layout-morph-out",
+      activePack: "global",
+      isSheetOpen: false,
+    });
     expect(screen.getByTestId("pack-global")).toHaveAttribute("data-drawer-open", "false");
+    expect(screen.getByTestId("pack-global")).toHaveAttribute("data-flow-phase", "layout-morph-out");
+
+    fireEvent.click(screen.getByTestId("pack-morph-global"));
+
+    expectLatestPageState({
+      phase: "drop-elevation",
+      activePack: "global",
+      isSheetOpen: false,
+    });
+    expect(screen.getByTestId("pack-global")).toHaveAttribute("data-flow-phase", "drop-elevation");
+
+    fireEvent.click(screen.getByTestId("pack-drop-global"));
+
+    expectLatestPageState({
+      phase: "sealed",
+      activePack: null,
+      isSheetOpen: false,
+      isDrawerClosing: false,
+      canDismiss: false,
+    });
+    expect(screen.getByTestId("pack-global")).toHaveAttribute("data-drawer-open", "false");
+    expect(screen.getByTestId("pack-global")).toHaveAttribute("data-flow-phase", "sealed");
   });
 
   it("lets the registered debug close driver start the same collapse handoff", () => {
     render(<PrototypePage />);
 
-    fireEvent.click(screen.getByTestId("pack-global"));
+    fireEvent.click(screen.getByTestId("pack-open-global"));
 
     act(() => {
       debugHarness.drivers.close?.();
@@ -170,34 +252,16 @@ describe("prototype close sequence", () => {
     expect(screen.getByTestId("bottom-sheet")).toHaveAttribute("data-open", "true");
     expect(screen.getByTestId("pack-opener")).toHaveAttribute("data-closing", "true");
     expect(screen.getByTestId("pack-global")).toHaveAttribute("data-drawer-open", "true");
+    expectLatestPageState({
+      phase: "closing-collapse",
+      activePack: "global",
+    });
   });
 
-  it("reports page machine state through close and reset", () => {
+  it("reset seals the phase, clears pack identity and opened packs, and resets target values", () => {
     render(<PrototypePage />);
 
-    fireEvent.click(screen.getByTestId("pack-global"));
-
-    expect(debugHarness.debug.report).toHaveBeenCalledWith({
-      machine: {
-        page: expect.objectContaining({
-          openPack: "global",
-          isSheetMounted: true,
-          isDrawerClosing: false,
-        }),
-      },
-    });
-
-    fireEvent.click(screen.getByTestId("sheet-close"));
-
-    expect(debugHarness.debug.report).toHaveBeenCalledWith({
-      machine: {
-        page: expect.objectContaining({
-          openPack: "global",
-          isSheetMounted: true,
-          isDrawerClosing: true,
-        }),
-      },
-    });
+    fireEvent.click(screen.getByTestId("pack-open-global"));
 
     act(() => {
       debugHarness.drivers.reset?.();
@@ -206,13 +270,16 @@ describe("prototype close sequence", () => {
     expect(debugHarness.debug.report).toHaveBeenCalledWith({
       machine: {
         page: {
-          openPack: null,
+          phase: "sealed",
+          activePack: null,
           openedPacks: [],
+          isSheetOpen: false,
           isDrawerClosing: false,
-          isSheetMounted: false,
+          canDismiss: false,
         },
       },
     });
+    expect(debugHarness.sealedPackResetValues).toHaveBeenCalledTimes(1);
   });
 
   it("keeps the close apex debug gates before elevation drops", () => {
@@ -237,5 +304,19 @@ describe("prototype close sequence", () => {
     expect(completeCollapse).toContain('dbgRef.current.gate("collapse-complete")');
     expect(source).toContain("if (skills.length <= 1)");
     expect(source).toContain("expectedCollapseRef.current = skills.length - 1");
+  });
+
+  it("does not keep page-level lifecycle boolean state declarations", () => {
+    const source = readFileSync(
+      resolve(__dirname, "../../app/prototype/page.tsx"),
+      "utf8"
+    );
+
+    expect(source).not.toContain("const [isSheetMounted");
+    expect(source).not.toContain("const [isDrawerClosing");
+    expect(source).not.toContain("const isDrawerClosing");
+    expect(source).not.toContain("isDrawerClosingRef");
+    expect(source).not.toContain("setIsSheetMounted");
+    expect(source).not.toContain("setIsDrawerClosing");
   });
 });

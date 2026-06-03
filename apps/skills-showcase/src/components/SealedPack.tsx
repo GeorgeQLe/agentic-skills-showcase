@@ -11,8 +11,19 @@ interface SealedPackProps {
   name: string;
   skillCount: number;
   previewSkill: Skill | null;
+  flowPhase?:
+    | "sealed"
+    | "opening-apex"
+    | "drawer-open"
+    | "closing-collapse"
+    | "sheet-exiting"
+    | "layout-morph-out"
+    | "drop-elevation";
+  onOpeningApex?: () => void;
   onOpen: (origin: { x: number; y: number }) => void;
   onTear?: () => void;
+  onCloseMorphComplete?: () => void;
+  onDropElevationComplete?: () => void;
   /** When true, tearing this pack auto-opens the drawer (first-tear onboarding). */
   autoOpenOnTear?: boolean;
   isOpened?: boolean;
@@ -38,7 +49,21 @@ function clamp(value: number, min: number, max: number) {
 const DRAG_UP_THRESHOLD = 80;
 
 const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function SealedPack(
-  { name, skillCount, previewSkill, onOpen, onTear, autoOpenOnTear, isOpened, isDrawerOpen, debugTarget },
+  {
+    name,
+    skillCount,
+    previewSkill,
+    flowPhase = "sealed",
+    onOpeningApex,
+    onOpen,
+    onTear,
+    onCloseMorphComplete,
+    onDropElevationComplete,
+    autoOpenOnTear,
+    isOpened,
+    isDrawerOpen,
+    debugTarget,
+  },
   ref
 ) {
   const dbg = useDebug();
@@ -94,6 +119,7 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
   // setTimeout reproduces production timing exactly.
   async function proceedToOpen() {
     setCardElevated(true);
+    onOpeningApex?.();
     await dbg.gate("elevate-card");
     await dbg.gate("request-open");
     if (dbg.isStepping()) {
@@ -280,10 +306,11 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
           isDrawerOpen: !!isDrawerOpen,
           isClosingFromDrawer,
           cardZIndex: z,
+          flowPhase,
         },
       },
     });
-  }, [debugTarget, cardElevated, isClosingFromDrawer, isDrawerOpen, debugReport]);
+  }, [debugTarget, cardElevated, isClosingFromDrawer, isDrawerOpen, flowPhase, debugReport]);
 
   useEffect(() => {
     if (!debugTarget || !debugEnabled) return;
@@ -407,10 +434,16 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
                 }
                 // CLOSE morph-back — THE APEX. Gate before touching elevation so
                 // the z-index-60 frame can be held and inspected.
-                if (!isDrawerOpen && wasInDrawer.current && !isCloseMorphBackInFlight.current) {
+                if (
+                  flowPhase === "layout-morph-out" &&
+                  !isDrawerOpen &&
+                  wasInDrawer.current &&
+                  !isCloseMorphBackInFlight.current
+                ) {
                   isCloseMorphBackInFlight.current = true;
                   debugReport({ machine: { pack: { isCloseMorphBackInFlight: true } } });
                   await dbg.gate("layout-morph-out");
+                  onCloseMorphComplete?.();
                   await dbg.gate("drop-elevation");
                   wasInDrawer.current = false;
                   setCardElevated(false);
@@ -422,6 +455,7 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
                       },
                     },
                   });
+                  onDropElevationComplete?.();
                   animate(
                     cardSlideY,
                     0,

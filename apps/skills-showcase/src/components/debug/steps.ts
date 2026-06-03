@@ -33,11 +33,11 @@ export const OPEN_STEPS: StepDef[] = [
 ];
 
 export const CLOSE_STEPS: StepDef[] = [
-  { id: "close-trigger", label: "Close trigger", phase: "close", boundary: "page.handleClose → isClosing=true" },
+  { id: "close-trigger", label: "Close trigger", phase: "close", boundary: "page.handleClose -> phase=closing-collapse" },
   { id: "collapse-measure", label: "Collapse measure", phase: "close", boundary: "PackOpener collapse useLayoutEffect" },
   { id: "collapse-fan", label: "Collapse fan-in", phase: "close", boundary: "PackOpener collapse springs" },
   { id: "collapse-complete", label: "Collapse complete", phase: "close", boundary: "PackOpener onCollapseComplete" },
-  { id: "drawer-teardown", label: "Drawer teardown", phase: "close", boundary: "page.handleCollapseComplete → isSheetMounted=false" },
+  { id: "drawer-teardown", label: "Drawer teardown", phase: "close", boundary: "page.handleCollapseComplete -> phase=sheet-exiting" },
   { id: "sheet-exit", label: "Sheet exit", phase: "close", boundary: "BottomSheet AnimatePresence onExitComplete" },
   { id: "layout-morph-out", label: "layoutId morph back (APEX)", phase: "close", boundary: "SealedPack onLayoutAnimationComplete (pre-body)", apex: true },
   { id: "drop-elevation", label: "Drop elevation / z-index (APEX)", phase: "close", boundary: "SealedPack setCardElevated(false)", apex: true },
