@@ -301,6 +301,17 @@ describe("prototype close sequence", () => {
     expect(elevationDrop).toBeGreaterThan(settlingGate);
   });
 
+  it("keeps the fallback card-settling debug gate before elevation drops", () => {
+    const source = readFileSync(resolve(__dirname, "SealedPack.tsx"), "utf8");
+    const fallbackEffect = source.slice(source.indexOf('flowPhase === "card-settling"'));
+
+    const fallbackGate = fallbackEffect.indexOf('await dbg.gate("card-settling")');
+    const elevationDrop = fallbackEffect.indexOf("setCardElevated(false)");
+
+    expect(fallbackGate).toBeGreaterThanOrEqual(0);
+    expect(elevationDrop).toBeGreaterThan(fallbackGate);
+  });
+
   it("guards PackOpener collapse completion as a one-shot handoff", () => {
     const source = readFileSync(resolve(__dirname, "PackOpener.tsx"), "utf8");
     const completeCollapse = source.slice(source.indexOf("const completeCollapse"));

@@ -260,19 +260,32 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
   }, []);
 
   useEffect(() => {
-    if (flowPhase === "card-settling" && cardElevated && !isCloseMorphBackInFlight.current && !wasInDrawer.current) {
+    if (flowPhase === "card-settling" && cardElevated && !isCloseMorphBackInFlight.current) {
       isCloseMorphBackInFlight.current = true;
-      wasInDrawer.current = false;
-      setCardElevated(false);
-      animate(cardSlideY, 0, dbg.scaleT({
-        type: "spring", stiffness: 300, damping: 25,
-      })).then(() => {
-        hasCardTriggered.current = false;
-        isCloseMorphBackInFlight.current = false;
-        onCardSettleComplete?.();
-      });
+      debugReport({ machine: { pack: { isCloseMorphBackInFlight: true } } });
+      (async () => {
+        await dbg.gate("card-settling");
+        wasInDrawer.current = false;
+        setCardElevated(false);
+        debugReport({
+          machine: {
+            pack: {
+              wasInDrawer: false,
+              cardElevated: false,
+            },
+          },
+        });
+        animate(cardSlideY, 0, dbg.scaleT({
+          type: "spring", stiffness: 300, damping: 25,
+        })).then(() => {
+          hasCardTriggered.current = false;
+          isCloseMorphBackInFlight.current = false;
+          debugReport({ machine: { pack: { isCloseMorphBackInFlight: false } } });
+          onCardSettleComplete?.();
+        });
+      })();
     }
-  }, [flowPhase, cardElevated, onCardSettleComplete, dbg, cardSlideY]);
+  }, [flowPhase, cardElevated, onCardSettleComplete, dbg, cardSlideY, debugReport]);
 
   const combinedY = useTransform(
     [cardDragY, cardSlideY],
