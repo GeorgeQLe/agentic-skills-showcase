@@ -274,7 +274,7 @@ function PrototypeInner() {
                 onTear={() => handleTear(set.slug)}
                 onCardSettleComplete={handleCardSettleComplete}
                 apexAlignRef={isActiveSet ? headerRef : undefined}
-                autoOpenOnTear={openedPacks.size === 0}
+                autoOpenOnTear
                 isOpened={openedPacks.has(set.slug)}
                 isDrawerOpen={isDrawerResident}
                 flowPhase={isActiveSet ? phase : "sealed"}

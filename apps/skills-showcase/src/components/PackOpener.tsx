@@ -16,6 +16,7 @@ interface PackOpenerProps {
   onCollapseComplete?: () => void;
   isRisingToApex?: boolean;
   onApexComplete?: () => void;
+  onOpenMorphComplete?: () => void;
 }
 
 interface CollapseState {
@@ -24,7 +25,7 @@ interface CollapseState {
   animatedSet: Set<number>;
 }
 
-export default function PackOpener({ skills, packName, isClosing, onCollapseComplete, isRisingToApex, onApexComplete }: PackOpenerProps) {
+export default function PackOpener({ skills, packName, isClosing, onCollapseComplete, isRisingToApex, onApexComplete, onOpenMorphComplete }: PackOpenerProps) {
   const dbg = useDebug();
   const debugEnabled = dbg.enabled;
   const debugReport = dbg.report;
@@ -281,7 +282,10 @@ export default function PackOpener({ skills, packName, isClosing, onCollapseComp
                 transition={dbg.scaleT({
                   layout: { type: "spring", stiffness: 200, damping: 25 },
                 })}
-                onLayoutAnimationComplete={() => dbg.mark("layout-morph-in")}
+                onLayoutAnimationComplete={() => {
+                  dbg.mark("layout-morph-in");
+                  onOpenMorphComplete?.();
+                }}
               >
                 <SkillCard skill={skill} />
               </motion.div>

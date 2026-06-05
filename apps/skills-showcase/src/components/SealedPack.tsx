@@ -208,21 +208,23 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
 
   useLayoutEffect(() => {
     if (!prevDrawerOpen.current && isDrawerOpen) {
-      cardSlideY.set(0);
-      cardDragY.set(0);
-      setCardElevated(false);
-      if (debugTarget) {
-        debugReport({
-          machine: {
-            pack: {
-              isDrawerOpen: true,
-              cardElevated: false,
-              cardDragY: 0,
-              cardSlideY: 0,
+      requestAnimationFrame(() => {
+        cardSlideY.set(0);
+        cardDragY.set(0);
+        setCardElevated(false);
+        if (debugTarget) {
+          debugReport({
+            machine: {
+              pack: {
+                isDrawerOpen: true,
+                cardElevated: false,
+                cardDragY: 0,
+                cardSlideY: 0,
+              },
             },
-          },
-        });
-      }
+          });
+        }
+      });
     }
     if (prevDrawerOpen.current && !isDrawerOpen) {
       wasInDrawer.current = true;
@@ -291,8 +293,7 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
     cardDragY.set(dy);
   }
 
-  function handleCardPointerUp() {
-    if (!isCardDragging.current || hasCardTriggered.current) return;
+  function finishCardDrag() {
     isCardDragging.current = false;
     const current = cardDragY.get();
 
@@ -312,10 +313,14 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
     }
   }
 
+  function handleCardPointerUp() {
+    if (!isCardDragging.current || hasCardTriggered.current) return;
+    finishCardDrag();
+  }
+
   function handleCardLostCapture() {
     if (isCardDragging.current && !hasCardTriggered.current) {
-      isCardDragging.current = false;
-      animate(cardDragY, 0, dbg.scaleT({ type: "spring", stiffness: 400, damping: 25 }));
+      finishCardDrag();
     }
   }
 
@@ -452,6 +457,7 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
                 top: 2,
                 y: combinedY,
                 zIndex: (cardElevated || isClosingFromDrawer) ? 60 : 0,
+                opacity: isDrawerOpen ? 0 : 1,
                 touchAction: "none",
               }}
               whileHover={isOpened && !cardElevated && !isDrawerOpen ? { y: -4, boxShadow: "0 0 12px rgba(88,166,255,0.3)" } : undefined}
