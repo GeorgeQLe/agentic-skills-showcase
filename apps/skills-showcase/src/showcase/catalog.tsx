@@ -374,18 +374,14 @@ export default function CatalogClient() {
 
       const packAnnotations: Record<string, string[]> = {
         "alignment-loop": ["domain", "business", "planning"],
-        "business-app-kanban": ["overlay", "business", "kanban"],
         "business-discovery": ["domain", "business"],
         "business-growth": ["domain", "business"],
         "business-ops": ["domain", "business"],
         "code-quality": ["overlay", "quality"],
         "creator-foundation": ["domain", "creator"],
         devtool: ["domain", "devtool", "alias"],
-        "devtool-kanban": ["overlay", "devtool", "kanban"],
         game: ["domain", "game", "alias"],
-        "game-kanban": ["overlay", "game", "kanban"],
         monorepo: ["overlay", "monorepo"],
-        "poketowork-kanban": ["overlay", "kanban", "alias"],
         "project-fleet": ["domain", "business"],
         remotion: ["domain", "creator"],
         "youtube-ops": ["domain", "creator"]
@@ -393,18 +389,14 @@ export default function CatalogClient() {
 
       const packPurpose: Record<string, string> = {
         "alignment-loop": "Keeps decision loops explicit when strategy, research, and implementation need repeated alignment.",
-        "business-app-kanban": "Kanban execution overlay for business application projects.",
         "business-discovery": "Researches market, user, ICP, and product direction before build work.",
         "business-growth": "Supports acquisition, monetization, launch, and growth-system work.",
         "business-ops": "Covers operating workflows for internal business systems and repeatable delivery.",
         "code-quality": "Adds adversarial review and quality gates around risky source changes.",
         "creator-foundation": "Builds creator research foundations, evidence schemas, and platform dossiers.",
         devtool: "Compatibility alias for devtool workflow coverage.",
-        "devtool-kanban": "Kanban execution overlay for developer-tool product work.",
         game: "Compatibility alias for game workflow coverage.",
-        "game-kanban": "Kanban execution overlay for game development work.",
         monorepo: "Adds package-boundary planning, lane specs, and monorepo validation guardrails.",
-        "poketowork-kanban": "Compatibility kanban overlay for Poketowork-style project boards.",
         "project-fleet": "Coordinates portfolio and multi-project fleet operations.",
         remotion: "Scopes video-production workflows away from general creator research.",
         "youtube-ops": "Handles YouTube-specific research, operations, and evidence workflows."
