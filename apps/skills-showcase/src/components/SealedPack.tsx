@@ -260,7 +260,7 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
   }, []);
 
   useEffect(() => {
-    if (flowPhase === "card-settling" && cardElevated && !isCloseMorphBackInFlight.current) {
+    if (flowPhase === "card-settling" && cardElevated && !isCloseMorphBackInFlight.current && !wasInDrawer.current) {
       isCloseMorphBackInFlight.current = true;
       wasInDrawer.current = false;
       setCardElevated(false);
