@@ -6,41 +6,52 @@ import SkillCard from "./SkillCard";
 import type { Skill } from "@/hooks/useSkillsData";
 import { useDebug } from "./debug/DebugController";
 
+const COLLAPSE_FADE_DURATION = 0.15;
+
 interface PackOpenerProps {
   skills: Skill[];
   packName: string;
   origin: { x: number; y: number };
   isClosing?: boolean;
   onCollapseComplete?: () => void;
+  isRisingToApex?: boolean;
+  onApexComplete?: () => void;
 }
 
 interface CollapseState {
   targetIndex: number;
   offsets: Array<{ x: number; y: number }>;
+  animatedSet: Set<number>;
 }
 
-export default function PackOpener({ skills, packName, isClosing, onCollapseComplete }: PackOpenerProps) {
+export default function PackOpener({ skills, packName, isClosing, onCollapseComplete, isRisingToApex, onApexComplete }: PackOpenerProps) {
   const dbg = useDebug();
   const debugEnabled = dbg.enabled;
   const debugReport = dbg.report;
   const containerRef = useRef<HTMLDivElement>(null);
   const [fanOffsets, setFanOffsets] = useState<Array<{ x: number; y: number }> | null>(null);
   const [collapseState, setCollapseState] = useState<CollapseState | null>(null);
-
   const card0X = useMotionValue(0);
   const card0Y = useMotionValue(0);
 
-  const collapseCountRef = useRef(0);
-  const expectedCollapseRef = useRef(0);
   const collapseCompleteFiredRef = useRef(false);
   const onCollapseCompleteRef = useRef(onCollapseComplete);
   onCollapseCompleteRef.current = onCollapseComplete;
+  const onApexCompleteRef = useRef(onApexComplete);
+  onApexCompleteRef.current = onApexComplete;
 
   // Keep the latest debug context in a ref so callbacks running outside render
   // (animation .then / onAnimationComplete) never read stale closures and the
   // collapse useLayoutEffect doesn't churn on speed changes.
   const dbgRef = useRef(dbg);
   dbgRef.current = dbg;
+
+  useLayoutEffect(() => {
+    if (!isRisingToApex) return;
+    const currentY = card0Y.get();
+    animate(card0Y, currentY - 180, dbgRef.current.scaleT({ type: "spring", stiffness: 400, damping: 25 }))
+      .then(() => onApexCompleteRef.current?.());
+  }, [isRisingToApex, card0Y]);
 
   const completeCollapse = useCallback(() => {
     if (collapseCompleteFiredRef.current) return;
@@ -49,8 +60,6 @@ export default function PackOpener({ skills, packName, isClosing, onCollapseComp
       machine: {
         drawer: {
           collapseCompleteFiredRef: true,
-          collapseCount: collapseCountRef.current,
-          expectedCollapseCount: expectedCollapseRef.current,
         },
       },
     });
@@ -59,24 +68,6 @@ export default function PackOpener({ skills, packName, isClosing, onCollapseComp
       onCollapseCompleteRef.current?.();
     })();
   }, [debugReport]);
-
-  // Count one collapsing card; when all have landed, gate the apex hand-off
-  // (collapse-complete) before notifying the page to tear the drawer down.
-  const dispatchCollapseComplete = useCallback(() => {
-    if (collapseCompleteFiredRef.current) return;
-    collapseCountRef.current += 1;
-    debugReport({
-      machine: {
-        drawer: {
-          collapseCount: collapseCountRef.current,
-          expectedCollapseCount: expectedCollapseRef.current,
-        },
-      },
-    });
-    if (collapseCountRef.current >= expectedCollapseRef.current) {
-      completeCollapse();
-    }
-  }, [completeCollapse, debugReport]);
 
   const rotations = useMemo(
     () => skills.map(() => -6 + Math.random() * 12),
@@ -105,8 +96,6 @@ export default function PackOpener({ skills, packName, isClosing, onCollapseComp
     dbgRef.current.mark("collapse-measure");
 
     if (skills.length <= 1) {
-      expectedCollapseRef.current = 0;
-      collapseCountRef.current = 0;
       collapseCompleteFiredRef.current = false;
       completeCollapse();
       return;
@@ -114,8 +103,6 @@ export default function PackOpener({ skills, packName, isClosing, onCollapseComp
 
     const container = containerRef.current;
     if (!container) {
-      expectedCollapseRef.current = 0;
-      collapseCountRef.current = 0;
       collapseCompleteFiredRef.current = false;
       completeCollapse();
       return;
@@ -164,17 +151,56 @@ export default function PackOpener({ skills, packName, isClosing, onCollapseComp
       return { x: targetRect.left - rect.left, y: targetRect.top - rect.top };
     });
 
-    collapseCountRef.current = 0;
+    // Group cards into rows by top position, then determine which rows are
+    // visible in the scroll viewport + 1 buffer row above/below.
+    const cardTops = cards.map((c) => c.getBoundingClientRect().top);
+    const rowTopValues: number[] = [];
+    const cardRowIndex: number[] = [];
+    for (let i = 0; i < cardTops.length; i++) {
+      let matched = false;
+      for (let r = 0; r < rowTopValues.length; r++) {
+        if (Math.abs(cardTops[i] - rowTopValues[r]) <= TOP_TOLERANCE) {
+          cardRowIndex[i] = r;
+          matched = true;
+          break;
+        }
+      }
+      if (!matched) {
+        cardRowIndex[i] = rowTopValues.length;
+        rowTopValues.push(cardTops[i]);
+      }
+    }
+
+    const totalRows = rowTopValues.length;
+    const visibleRows = new Set<number>();
+    for (let i = 0; i < cards.length; i++) {
+      const rect = cards[i].getBoundingClientRect();
+      if (rect.bottom >= viewport.top && rect.top <= viewport.bottom) {
+        visibleRows.add(cardRowIndex[i]);
+      }
+    }
+
+    const minVisible = Math.min(...visibleRows);
+    const maxVisible = Math.max(...visibleRows);
+    const animatedRows = new Set(visibleRows);
+    if (minVisible > 0) animatedRows.add(minVisible - 1);
+    if (maxVisible < totalRows - 1) animatedRows.add(maxVisible + 1);
+
+    const animatedSet = new Set<number>();
+    for (let i = 0; i < cards.length; i++) {
+      if (animatedRows.has(cardRowIndex[i])) animatedSet.add(i);
+    }
+    animatedSet.add(targetIndex);
+    animatedSet.add(0);
+
     collapseCompleteFiredRef.current = false;
-    expectedCollapseRef.current = skills.length - 1;
-    setCollapseState({ targetIndex, offsets });
+    setCollapseState({ targetIndex, offsets, animatedSet });
     debugReport({
       machine: {
         drawer: {
           collapseState: { targetIndex, offsets },
+          animatedSetSize: animatedSet.size,
           targetIndex,
-          collapseCount: 0,
-          expectedCollapseCount: skills.length - 1,
           collapseCompleteFiredRef: false,
         },
       },
@@ -184,18 +210,16 @@ export default function PackOpener({ skills, packName, isClosing, onCollapseComp
 
     // Card 0 owns the shared layoutId, so framer controls its animate prop
     // for the morph. Drive collapse imperatively via motion values instead.
-    if (targetIndex !== 0) {
-      const springConfig = dbgRef.current.scaleT({ type: "spring" as const, stiffness: 200, damping: 25 });
+    if (targetIndex !== 0 && animatedSet.has(0)) {
+      const springConfig = dbgRef.current.scaleT({ type: "spring" as const, stiffness: 200, damping: 25, restDelta: 0.5, restSpeed: 10, delay: COLLAPSE_FADE_DURATION });
       animate(card0X, offsets[0].x, springConfig);
       animate(card0Y, offsets[0].y, springConfig).then(() => {
-        dispatchCollapseComplete();
+        completeCollapse();
       });
+    } else if (targetIndex === 0) {
+      setTimeout(() => completeCollapse(), COLLAPSE_FADE_DURATION * 1000);
     }
-  }, [isClosing, collapseState, skills.length, card0X, card0Y, dispatchCollapseComplete, completeCollapse]);
-
-  const handleCardCollapseComplete = useCallback(() => {
-    dispatchCollapseComplete();
-  }, [dispatchCollapseComplete]);
+  }, [isClosing, collapseState, skills.length, card0X, card0Y, completeCollapse]);
 
   useLayoutEffect(() => {
     debugReport({
@@ -204,8 +228,6 @@ export default function PackOpener({ skills, packName, isClosing, onCollapseComp
           fanOffsets,
           collapseState,
           targetIndex: collapseState?.targetIndex ?? null,
-          collapseCount: collapseCountRef.current,
-          expectedCollapseCount: expectedCollapseRef.current,
           collapseCompleteFiredRef: collapseCompleteFiredRef.current,
         },
       },
@@ -278,8 +300,19 @@ export default function PackOpener({ skills, packName, isClosing, onCollapseComp
           if (collapseState) {
             const offset = collapseState.offsets[i] || { x: 0, y: 0 };
             const isTarget = i === collapseState.targetIndex;
-            const reverseIndex = skills.length - 1 - i;
-            const staggerDelay = isTarget ? 0 : reverseIndex * 0.02;
+            const isAnimated = collapseState.animatedSet.has(i);
+
+            if (!isAnimated) {
+              return (
+                <motion.div
+                  key={skill.id}
+                  animate={{ opacity: 0 }}
+                  transition={{ duration: 0 }}
+                >
+                  <SkillCard skill={skill} />
+                </motion.div>
+              );
+            }
 
             return (
               <motion.div
@@ -288,16 +321,12 @@ export default function PackOpener({ skills, packName, isClosing, onCollapseComp
                   x: offset.x,
                   y: offset.y,
                   opacity: isTarget ? 1 : 0,
-                  scale: isTarget ? 1 : 0.6,
+                  scale: isTarget ? 1 : 0.8,
                   rotateZ: isTarget ? 0 : rotations[i],
                 }}
                 transition={dbg.scaleT({
-                  type: "spring",
-                  stiffness: 200,
-                  damping: 25,
-                  delay: staggerDelay,
+                  duration: COLLAPSE_FADE_DURATION,
                 })}
-                onAnimationComplete={isTarget ? undefined : handleCardCollapseComplete}
               >
                 <SkillCard skill={skill} />
               </motion.div>
@@ -315,7 +344,7 @@ export default function PackOpener({ skills, packName, isClosing, onCollapseComp
                 x: offset.x,
                 y: offset.y,
                 opacity: 0,
-                scale: 0.6,
+                scale: 0.8,
                 rotateZ: rotations[i],
               }}
               animate={{

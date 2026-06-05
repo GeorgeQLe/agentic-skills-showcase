@@ -59,9 +59,9 @@ export type PackFlowPhase =
   | "opening-apex"
   | "drawer-open"
   | "closing-collapse"
+  | "closing-apex"
   | "sheet-exiting"
-  | "layout-morph-out"
-  | "drop-elevation";
+  | "card-settling";
 
 export interface AnimationMachinePageRuntime {
   phase: PackFlowPhase;
@@ -93,8 +93,7 @@ export interface AnimationMachineDrawerRuntime {
   targetIndex: number | null;
   card0X: number;
   card0Y: number;
-  collapseCount: number;
-  expectedCollapseCount: number;
+  animatedSetSize: number;
   collapseCompleteFiredRef: boolean;
 }
 
@@ -445,17 +444,6 @@ export const ANIMATION_MACHINE_NODES: AnimationMachineNode[] = [
     y: nodeY("pack-opener"),
   },
   {
-    id: "drawer-collapseCounters",
-    label: "collapse counters",
-    lane: "pack-opener",
-    phase: "close",
-    kind: "ref",
-    trackedFields: ["drawer.collapseCount", "drawer.expectedCollapseCount"],
-    description: "Count of completed card-collapse animations versus the expected handoff count.",
-    x: 826,
-    y: nodeY("pack-opener"),
-  },
-  {
     id: "drawer-collapseCompleteFired",
     label: "complete fired",
     lane: "pack-opener",
@@ -593,7 +581,7 @@ export const ANIMATION_MACHINE_TRANSITIONS: AnimationMachineTransition[] = [
   },
   {
     id: "collapse-complete",
-    from: "drawer-collapseCounters",
+    from: "drawer-card0",
     to: "drawer-collapseCompleteFired",
     trigger: "collapse-complete",
     source: "PackOpener.completeCollapse",
@@ -683,8 +671,7 @@ export const DEFAULT_ANIMATION_MACHINE_RUNTIME: AnimationMachineRuntimeState = {
     targetIndex: null,
     card0X: 0,
     card0Y: 0,
-    collapseCount: 0,
-    expectedCollapseCount: 0,
+    animatedSetSize: 0,
     collapseCompleteFiredRef: false,
   },
   sheet: {
@@ -762,9 +749,6 @@ export function buildAnimationMachineSnapshot(
   if (runtime.drawer.targetIndex !== null) activeNodeIds.add("drawer-targetIndex");
   if (Math.abs(runtime.drawer.card0X) > 0.5 || Math.abs(runtime.drawer.card0Y) > 0.5) {
     activeNodeIds.add("drawer-card0");
-  }
-  if (runtime.drawer.expectedCollapseCount > 0 || runtime.drawer.collapseCount > 0) {
-    activeNodeIds.add("drawer-collapseCounters");
   }
   if (runtime.drawer.collapseCompleteFiredRef) activeNodeIds.add("drawer-collapseCompleteFired");
 

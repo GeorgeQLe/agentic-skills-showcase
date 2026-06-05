@@ -26,9 +26,9 @@ type PackFlowPhase =
   | "opening-apex"
   | "drawer-open"
   | "closing-collapse"
+  | "closing-apex"
   | "sheet-exiting"
-  | "layout-morph-out"
-  | "drop-elevation";
+  | "card-settling";
 
 export default function PrototypePage() {
   return (
@@ -47,8 +47,10 @@ function PrototypeInner() {
   const [openedPacks, setOpenedPacks] = useState<Set<string>>(new Set());
   const [phase, setPhase] = useState<PackFlowPhase>("sealed");
 
-  const isSheetOpen = phase === "drawer-open" || phase === "closing-collapse";
-  const drawerIsClosing = phase === "closing-collapse";
+  const headerRef = useRef<HTMLElement>(null);
+  const isSheetOpen = phase === "drawer-open" || phase === "closing-collapse" || phase === "closing-apex";
+  const drawerIsClosing = phase === "closing-collapse" || phase === "closing-apex";
+  const isRisingToApex = phase === "closing-apex";
   const canDismiss = phase === "drawer-open";
 
   // Debug harness drives pack index 0 ("global") through the exact
@@ -89,25 +91,31 @@ function PrototypeInner() {
 
   const handleCollapseComplete = useCallback(() => {
     dbg.mark("drawer-teardown");
-    setPhase("sheet-exiting");
+    setPhase(current => current === "closing-collapse" ? "closing-apex" : current);
   }, [dbg]);
 
+  const handleApexComplete = useCallback(() => {
+    setPhase(current => current === "closing-apex" ? "sheet-exiting" : current);
+  }, []);
+
   const handleSheetExited = useCallback(() => {
-    setPhase((current) =>
-      current === "sheet-exiting" ? "layout-morph-out" : current
-    );
+    setPhase(current => current === "sheet-exiting" ? "card-settling" : current);
   }, []);
 
-  const handleCloseMorphComplete = useCallback(() => {
-    setPhase((current) =>
-      current === "layout-morph-out" ? "drop-elevation" : current
-    );
-  }, []);
-
-  const handleDropElevationComplete = useCallback(() => {
+  const handleCardSettleComplete = useCallback(() => {
     setActivePack(null);
     setPhase("sealed");
   }, []);
+
+  useEffect(() => {
+    if (phase === "card-settling") {
+      const timeout = setTimeout(() => {
+        setActivePack(null);
+        setPhase(current => current === "card-settling" ? "sealed" : current);
+      }, 800);
+      return () => clearTimeout(timeout);
+    }
+  }, [phase]);
 
   // Register imperative drivers for the debug panel.
   useEffect(() => {
@@ -161,7 +169,7 @@ function PrototypeInner() {
 
   return (
     <div className="fixed inset-0 z-50 bg-[#0f0f13] overflow-auto min-h-screen py-16 px-4">
-      <header className="text-center mb-16">
+      <header ref={headerRef} className="text-center mb-16">
         <h1 className="text-3xl font-bold text-zinc-100 mb-2">
           Skill Card Packs
         </h1>
@@ -180,7 +188,7 @@ function PrototypeInner() {
               isActivePack &&
               (phase === "drawer-open" ||
                 phase === "closing-collapse" ||
-                phase === "sheet-exiting");
+                phase === "closing-apex");
 
             return (
               <SealedPack
@@ -193,8 +201,8 @@ function PrototypeInner() {
                 onOpeningApex={handleOpeningApex}
                 onOpen={(origin) => handleOpen(pack.name, origin)}
                 onTear={() => handleTear(pack.name)}
-                onCloseMorphComplete={handleCloseMorphComplete}
-                onDropElevationComplete={handleDropElevationComplete}
+                onCardSettleComplete={handleCardSettleComplete}
+                apexAlignRef={isActivePack ? headerRef : undefined}
                 autoOpenOnTear={openedPacks.size === 0}
                 isOpened={openedPacks.has(pack.name)}
                 isDrawerOpen={isDrawerResident}
@@ -209,6 +217,8 @@ function PrototypeInner() {
           onClose={handleClose}
           onExitComplete={handleSheetExited}
           dismissable={canDismiss}
+          unclipContent={isRisingToApex}
+          fadeExit={phase === "sheet-exiting"}
         >
           {activePackData && (
             <PackOpener
@@ -217,6 +227,8 @@ function PrototypeInner() {
               origin={activePack!.origin}
               isClosing={drawerIsClosing}
               onCollapseComplete={handleCollapseComplete}
+              isRisingToApex={isRisingToApex}
+              onApexComplete={handleApexComplete}
             />
           )}
         </BottomSheet>

@@ -25,6 +25,8 @@ interface BottomSheetProps {
   onExitComplete?: () => void;
   children: ReactNode;
   dismissable?: boolean;
+  unclipContent?: boolean;
+  fadeExit?: boolean;
 }
 
 export default function BottomSheet({
@@ -33,6 +35,8 @@ export default function BottomSheet({
   onExitComplete,
   children,
   dismissable = true,
+  unclipContent = false,
+  fadeExit = false,
 }: BottomSheetProps) {
   const dbg = useDebug();
   const debugEnabled = dbg.enabled;
@@ -40,6 +44,8 @@ export default function BottomSheet({
   const sheetY = useMotionValue(0);
   const dragControls = useDragControls();
   const [isExiting, setIsExiting] = useState(false);
+  const [scrimPulse, setScrimPulse] = useState(false);
+  const prevDismissable = useRef(dismissable);
   // Track prior open state in a ref so the effect below can detect the
   // open-to-closed transition and trigger exit animation before AnimatePresence
   // unmounts the children.
@@ -52,6 +58,16 @@ export default function BottomSheet({
       animate(sheetY, 0, dbg.scaleT({ type: "spring", stiffness: 300, damping: 30 }));
     }
   }
+
+  useEffect(() => {
+    if (!prevDismissable.current && dismissable) {
+      setScrimPulse(true);
+    }
+    if (!dismissable) {
+      setScrimPulse(false);
+    }
+    prevDismissable.current = dismissable;
+  }, [dismissable]);
 
   useEffect(() => {
     if (wasOpenRef.current && !isOpen) {
@@ -116,13 +132,13 @@ export default function BottomSheet({
         <>
           <motion.div
             key="scrim"
-            className="fixed inset-0 z-40 bg-black/50"
+            className={`fixed inset-0 z-40 bg-black/50${scrimPulse ? " scrim-pulse" : ""}`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={dbg.scaleT({ duration: 0.3 })}
-            // Dismiss is disabled during collapse so the user can't tap the scrim
-            // mid-animation, which would break the close sequence ordering.
+            exit={fadeExit
+              ? { opacity: 0, transition: { duration: 0.01 } }
+              : { opacity: 0 }}
+            transition={dbg.scaleT({ duration: 0.15 })}
             onClick={dismissable ? onClose : undefined}
           />
           <motion.div
@@ -136,8 +152,10 @@ export default function BottomSheet({
             onDragEnd={handleDragEnd}
             initial={{ y: "100%" }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ y: "100%" }}
-            transition={dbg.scaleT({ duration: 0.3 })}
+            exit={fadeExit
+              ? { opacity: 0, transition: { duration: 0.01 } }
+              : { y: "100%" }}
+            transition={dbg.scaleT({ duration: 0.15 })}
             onAnimationComplete={() => {
               dbg.mark("sheet-open");
               debugReport({
@@ -160,7 +178,7 @@ export default function BottomSheet({
             >
               <div className="w-10 h-1 rounded-full bg-zinc-600" />
             </div>
-            <div className="flex-1 pb-8 overflow-y-auto" style={{ overscrollBehavior: "contain" }}>
+            <div className={`flex-1 pb-8 ${unclipContent ? 'overflow-visible' : 'overflow-y-auto'}`} style={{ overscrollBehavior: "contain" }}>
               {children}
             </div>
           </motion.div>
