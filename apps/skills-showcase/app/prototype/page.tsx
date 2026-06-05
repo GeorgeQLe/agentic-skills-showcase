@@ -7,14 +7,82 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { LayoutGroup } from "framer-motion";
-import { useSkillsData, getPackSkills, getGlobalSkills } from "@/hooks/useSkillsData";
+import { useSkillsData, getPackSkills, getGlobalSkills, type Skill } from "@/hooks/useSkillsData";
 import SealedPack, { type SealedPackHandle } from "@/components/SealedPack";
 import PackOpener from "@/components/PackOpener";
 import BottomSheet from "@/components/BottomSheet";
 import { DebugProvider, useDebug } from "@/components/debug/DebugController";
 import DebugPanel from "@/components/debug/DebugPanel";
 
-const FEATURED_PACKS = ["global", "business-discovery", "devtool", "game"];
+interface SetDef {
+  name: string;
+  slug: string;
+  packs: string[];
+  phases: string[];
+}
+
+const SETS: SetDef[] = [
+  {
+    name: "Market Intel",
+    slug: "market-intel",
+    packs: ["business-discovery", "customer-lifecycle"],
+    phases: ["LAB-01", "LAB-02"],
+  },
+  {
+    name: "Growth Engine",
+    slug: "growth-engine",
+    packs: ["business-growth", "business-ops"],
+    phases: ["LAB-02", "LAB-03", "LAB-07"],
+  },
+  {
+    name: "Creator Studio",
+    slug: "creator-studio",
+    packs: ["creator-foundation", "youtube-ops", "remotion"],
+    phases: ["LAB-01", "LAB-02", "LAB-07"],
+  },
+  {
+    name: "Design Lab",
+    slug: "design-lab",
+    packs: ["product-design", "product-testing", "guided-walkthrough", "alignment-loop", "research-admin"],
+    phases: ["LAB-02", "LAB-04", "LAB-05", "LAB-06"],
+  },
+  {
+    name: "Domain Decks",
+    slug: "domain-decks",
+    packs: ["devtool", "game"],
+    phases: ["LAB-01", "LAB-02", "LAB-03", "LAB-04", "LAB-05", "LAB-07"],
+  },
+  {
+    name: "Forge",
+    slug: "forge",
+    packs: ["exec-loop", "agent-work-admin", "monorepo", "code-review", "code-debug", "code-quality", "code-maintenance", "gitops", "release-ops", "docs-health"],
+    phases: ["LAB-06", "LAB-07"],
+  },
+  {
+    name: "Foundation",
+    slug: "foundation",
+    packs: ["global", "skill-dev", "agentic-skills-bench", "session-analytics", "project-fleet", "alignment-page-admin", "teardown", "knowledge-check", "agent-bridge", "context-transfer", "exec-profile", "repo-maintenance", "report-gen", "website-polish"],
+    phases: ["LAB-01", "LAB-07"],
+  },
+];
+
+function getSetSkills(allSkills: Skill[], set: SetDef): Skill[] {
+  const seen = new Set<string>();
+  const result: Skill[] = [];
+  for (const packName of set.packs) {
+    const packSkills = packName === "global"
+      ? getGlobalSkills(allSkills)
+      : getPackSkills(allSkills, packName);
+    for (const s of packSkills) {
+      const key = s.pack + "/" + s.name;
+      if (!seen.has(key)) {
+        seen.add(key);
+        result.push(s);
+      }
+    }
+  }
+  return result;
+}
 
 interface OpenPackState {
   packName: string;
@@ -46,6 +114,7 @@ function PrototypeInner() {
   const [activePack, setActivePack] = useState<OpenPackState | null>(null);
   const [openedPacks, setOpenedPacks] = useState<Set<string>>(new Set());
   const [phase, setPhase] = useState<PackFlowPhase>("sealed");
+  const [openMorphComplete, setOpenMorphComplete] = useState(true);
 
   const headerRef = useRef<HTMLElement>(null);
   const isSheetOpen = phase === "drawer-open" || phase === "closing-collapse" || phase === "closing-apex";
@@ -53,9 +122,8 @@ function PrototypeInner() {
   const isRisingToApex = phase === "closing-apex";
   const canDismiss = phase === "drawer-open";
 
-  // Debug harness drives pack index 0 ("global") through the exact
-  // production callbacks via this imperative handle. Index 0 is the
-  // canonical test target so every debug session starts deterministic.
+  // Debug harness drives set index 0 ("Market Intel") through the exact
+  // production callbacks via this imperative handle.
   const targetPackRef = useRef<SealedPackHandle>(null);
 
   const handleOpeningApex = useCallback(() => {
@@ -66,6 +134,7 @@ function PrototypeInner() {
     const nextActivePack = { packName, origin };
     setActivePack(nextActivePack);
     setPhase("drawer-open");
+    setOpenMorphComplete(false);
     setOpenedPacks((prev) => {
       if (prev.has(packName)) return prev;
       const next = new Set(prev);
@@ -107,6 +176,10 @@ function PrototypeInner() {
     setPhase("sealed");
   }, []);
 
+  const handleOpenMorphComplete = useCallback(() => {
+    setOpenMorphComplete(true);
+  }, []);
+
   useEffect(() => {
     if (phase === "card-settling") {
       const timeout = setTimeout(() => {
@@ -127,6 +200,7 @@ function PrototypeInner() {
         setPhase("sealed");
         setActivePack(null);
         setOpenedPacks(new Set());
+        setOpenMorphComplete(true);
         targetPackRef.current?.resetValues();
       },
     });
@@ -155,26 +229,23 @@ function PrototypeInner() {
     );
   }
 
-  const packs = FEATURED_PACKS.map((name) => {
-    const skills =
-      name === "global"
-        ? getGlobalSkills(data.skills).slice(0, 20)
-        : getPackSkills(data.skills, name);
-    return { name, skills };
-  }).filter((p) => p.skills.length > 0);
+  const sets = SETS.map((set) => ({
+    ...set,
+    skills: getSetSkills(data.skills, set),
+  })).filter((s) => s.skills.length > 0);
 
-  const activePackData = activePack
-    ? packs.find((p) => p.name === activePack.packName)
+  const activeSetData = activePack
+    ? sets.find((s) => s.slug === activePack.packName)
     : null;
 
   return (
     <div className="fixed inset-0 z-50 bg-[#0f0f13] overflow-auto min-h-screen py-16 px-4">
       <header ref={headerRef} className="text-center mb-16">
         <h1 className="text-3xl font-bold text-zinc-100 mb-2">
-          Skill Card Packs
+          Skill Collection
         </h1>
         <p className="text-zinc-500 text-sm">
-          Tear along the line to open a pack
+          {data.skillCount} skills across {SETS.length} sets &mdash; tear along the line to open
         </p>
       </header>
 
@@ -182,31 +253,31 @@ function PrototypeInner() {
           morphs) so packs don't interfere with each other during transitions. */}
       <LayoutGroup>
         <div className="flex flex-wrap justify-center gap-6 mb-12">
-          {packs.map((pack, index) => {
-            const isActivePack = activePack?.packName === pack.name;
+          {sets.map((set, index) => {
+            const isActiveSet = activePack?.packName === set.slug;
             const isDrawerResident =
-              isActivePack &&
+              isActiveSet &&
               (phase === "drawer-open" ||
                 phase === "closing-collapse" ||
                 phase === "closing-apex");
 
             return (
               <SealedPack
-                key={pack.name}
+                key={set.slug}
                 ref={index === 0 ? targetPackRef : undefined}
                 debugTarget={index === 0}
-                name={pack.name}
-                skillCount={pack.skills.length}
-                previewSkill={pack.skills[0] ?? null}
+                name={set.slug}
+                skillCount={set.skills.length}
+                previewSkill={set.skills[0] ?? null}
                 onOpeningApex={handleOpeningApex}
-                onOpen={(origin) => handleOpen(pack.name, origin)}
-                onTear={() => handleTear(pack.name)}
+                onOpen={(origin) => handleOpen(set.slug, origin)}
+                onTear={() => handleTear(set.slug)}
                 onCardSettleComplete={handleCardSettleComplete}
-                apexAlignRef={isActivePack ? headerRef : undefined}
+                apexAlignRef={isActiveSet ? headerRef : undefined}
                 autoOpenOnTear={openedPacks.size === 0}
-                isOpened={openedPacks.has(pack.name)}
+                isOpened={openedPacks.has(set.slug)}
                 isDrawerOpen={isDrawerResident}
-                flowPhase={isActivePack ? phase : "sealed"}
+                flowPhase={isActiveSet ? phase : "sealed"}
               />
             );
           })}
@@ -217,18 +288,19 @@ function PrototypeInner() {
           onClose={handleClose}
           onExitComplete={handleSheetExited}
           dismissable={canDismiss}
-          unclipContent={isRisingToApex}
+          unclipContent={isRisingToApex || (phase === "drawer-open" && !openMorphComplete)}
           fadeExit={phase === "sheet-exiting"}
         >
-          {activePackData && (
+          {activeSetData && (
             <PackOpener
-              packName={activePackData.name}
-              skills={activePackData.skills}
+              packName={activeSetData.name}
+              skills={activeSetData.skills}
               origin={activePack!.origin}
               isClosing={drawerIsClosing}
               onCollapseComplete={handleCollapseComplete}
               isRisingToApex={isRisingToApex}
               onApexComplete={handleApexComplete}
+              onOpenMorphComplete={handleOpenMorphComplete}
             />
           )}
         </BottomSheet>
