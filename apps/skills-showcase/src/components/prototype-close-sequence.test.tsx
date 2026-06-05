@@ -36,14 +36,16 @@ vi.mock("@/hooks/useSkillsData", () => {
       id: "skill-0",
       name: "Skill 0",
       description: "Test skill",
-      source: "global",
+      source: "business-discovery",
+      pack: "business-discovery",
     },
   ];
 
   return {
-    useSkillsData: () => ({ skills }),
-    getGlobalSkills: () => skills,
-    getPackSkills: () => [],
+    useSkillsData: () => ({ skills, skillCount: 1 }),
+    getGlobalSkills: () => [],
+    getPackSkills: (_allSkills: unknown[], packName: string) =>
+      packName === "business-discovery" ? skills : [],
   };
 });
 
@@ -73,12 +75,8 @@ vi.mock("@/components/SealedPack", async () => {
         props.name
       ),
       React.createElement("button", {
-        "data-testid": `pack-morph-${props.name}`,
-        onClick: props.onCloseMorphComplete,
-      }),
-      React.createElement("button", {
-        "data-testid": `pack-drop-${props.name}`,
-        onClick: props.onDropElevationComplete,
+        "data-testid": `pack-settle-${props.name}`,
+        onClick: props.onCardSettleComplete,
       })
     );
   });
@@ -116,16 +114,21 @@ vi.mock("@/components/PackOpener", async () => {
   const React = await vi.importActual<typeof import("react")>("react");
 
   return {
-    default: ({ isClosing, onCollapseComplete }: any) =>
+    default: ({ isClosing, isRisingToApex, onCollapseComplete, onApexComplete }: any) =>
       React.createElement(
         "section",
         {
           "data-testid": "pack-opener",
           "data-closing": String(!!isClosing),
+          "data-rising": String(!!isRisingToApex),
         },
         React.createElement("button", {
           "data-testid": "collapse-complete",
           onClick: onCollapseComplete,
+        }),
+        React.createElement("button", {
+          "data-testid": "apex-complete",
+          onClick: onApexComplete,
         })
       ),
   };
@@ -156,21 +159,21 @@ describe("prototype close sequence", () => {
     });
   }
 
-  it("walks the close phase chain without clearing activePack before elevation drops", () => {
+  it("walks the close phase chain without clearing activePack before card settles", () => {
     render(<PrototypePage />);
 
     expect(screen.getByTestId("bottom-sheet")).toHaveAttribute("data-open", "false");
 
-    fireEvent.click(screen.getByTestId("pack-open-global"));
+    fireEvent.click(screen.getByTestId("pack-open-market-intel"));
 
     expect(screen.getByTestId("bottom-sheet")).toHaveAttribute("data-open", "true");
     expect(screen.getByTestId("bottom-sheet")).toHaveAttribute("data-dismissable", "true");
     expect(screen.getByTestId("pack-opener")).toHaveAttribute("data-closing", "false");
-    expect(screen.getByTestId("pack-global")).toHaveAttribute("data-drawer-open", "true");
-    expect(screen.getByTestId("pack-global")).toHaveAttribute("data-flow-phase", "drawer-open");
+    expect(screen.getByTestId("pack-market-intel")).toHaveAttribute("data-drawer-open", "true");
+    expect(screen.getByTestId("pack-market-intel")).toHaveAttribute("data-flow-phase", "drawer-open");
     expectLatestPageState({
       phase: "drawer-open",
-      activePack: "global",
+      activePack: "market-intel",
       isSheetOpen: true,
       isDrawerClosing: false,
       canDismiss: true,
@@ -181,7 +184,7 @@ describe("prototype close sequence", () => {
     expect(debugHarness.debug.mark).toHaveBeenCalledWith("close-trigger");
     expectLatestPageState({
       phase: "closing-collapse",
-      activePack: "global",
+      activePack: "market-intel",
       isSheetOpen: true,
       isDrawerClosing: true,
       canDismiss: false,
@@ -189,44 +192,49 @@ describe("prototype close sequence", () => {
     expect(screen.getByTestId("bottom-sheet")).toHaveAttribute("data-open", "true");
     expect(screen.getByTestId("bottom-sheet")).toHaveAttribute("data-dismissable", "false");
     expect(screen.getByTestId("pack-opener")).toHaveAttribute("data-closing", "true");
-    expect(screen.getByTestId("pack-global")).toHaveAttribute("data-drawer-open", "true");
-    expect(screen.getByTestId("pack-global")).toHaveAttribute("data-flow-phase", "closing-collapse");
+    expect(screen.getByTestId("pack-market-intel")).toHaveAttribute("data-drawer-open", "true");
+    expect(screen.getByTestId("pack-market-intel")).toHaveAttribute("data-flow-phase", "closing-collapse");
 
     fireEvent.click(screen.getByTestId("collapse-complete"));
 
     expect(debugHarness.debug.mark).toHaveBeenCalledWith("drawer-teardown");
     expectLatestPageState({
+      phase: "closing-apex",
+      activePack: "market-intel",
+      isSheetOpen: true,
+      isDrawerClosing: true,
+      canDismiss: false,
+    });
+    expect(screen.getByTestId("bottom-sheet")).toHaveAttribute("data-open", "true");
+    expect(screen.getByTestId("pack-opener")).toHaveAttribute("data-rising", "true");
+    expect(screen.getByTestId("pack-market-intel")).toHaveAttribute("data-drawer-open", "true");
+    expect(screen.getByTestId("pack-market-intel")).toHaveAttribute("data-flow-phase", "closing-apex");
+
+    fireEvent.click(screen.getByTestId("apex-complete"));
+
+    expectLatestPageState({
       phase: "sheet-exiting",
-      activePack: "global",
+      activePack: "market-intel",
       isSheetOpen: false,
       isDrawerClosing: false,
       canDismiss: false,
     });
     expect(screen.getByTestId("bottom-sheet")).toHaveAttribute("data-open", "false");
     expect(screen.queryByTestId("pack-opener")).not.toBeInTheDocument();
-    expect(screen.getByTestId("pack-global")).toHaveAttribute("data-drawer-open", "true");
-    expect(screen.getByTestId("pack-global")).toHaveAttribute("data-flow-phase", "sheet-exiting");
+    expect(screen.getByTestId("pack-market-intel")).toHaveAttribute("data-drawer-open", "false");
+    expect(screen.getByTestId("pack-market-intel")).toHaveAttribute("data-flow-phase", "sheet-exiting");
 
     fireEvent.click(screen.getByTestId("sheet-exit"));
 
     expectLatestPageState({
-      phase: "layout-morph-out",
-      activePack: "global",
+      phase: "card-settling",
+      activePack: "market-intel",
       isSheetOpen: false,
     });
-    expect(screen.getByTestId("pack-global")).toHaveAttribute("data-drawer-open", "false");
-    expect(screen.getByTestId("pack-global")).toHaveAttribute("data-flow-phase", "layout-morph-out");
+    expect(screen.getByTestId("pack-market-intel")).toHaveAttribute("data-drawer-open", "false");
+    expect(screen.getByTestId("pack-market-intel")).toHaveAttribute("data-flow-phase", "card-settling");
 
-    fireEvent.click(screen.getByTestId("pack-morph-global"));
-
-    expectLatestPageState({
-      phase: "drop-elevation",
-      activePack: "global",
-      isSheetOpen: false,
-    });
-    expect(screen.getByTestId("pack-global")).toHaveAttribute("data-flow-phase", "drop-elevation");
-
-    fireEvent.click(screen.getByTestId("pack-drop-global"));
+    fireEvent.click(screen.getByTestId("pack-settle-market-intel"));
 
     expectLatestPageState({
       phase: "sealed",
@@ -235,14 +243,14 @@ describe("prototype close sequence", () => {
       isDrawerClosing: false,
       canDismiss: false,
     });
-    expect(screen.getByTestId("pack-global")).toHaveAttribute("data-drawer-open", "false");
-    expect(screen.getByTestId("pack-global")).toHaveAttribute("data-flow-phase", "sealed");
+    expect(screen.getByTestId("pack-market-intel")).toHaveAttribute("data-drawer-open", "false");
+    expect(screen.getByTestId("pack-market-intel")).toHaveAttribute("data-flow-phase", "sealed");
   });
 
   it("lets the registered debug close driver start the same collapse handoff", () => {
     render(<PrototypePage />);
 
-    fireEvent.click(screen.getByTestId("pack-open-global"));
+    fireEvent.click(screen.getByTestId("pack-open-market-intel"));
 
     act(() => {
       debugHarness.drivers.close?.();
@@ -251,17 +259,17 @@ describe("prototype close sequence", () => {
     expect(debugHarness.debug.mark).toHaveBeenCalledWith("close-trigger");
     expect(screen.getByTestId("bottom-sheet")).toHaveAttribute("data-open", "true");
     expect(screen.getByTestId("pack-opener")).toHaveAttribute("data-closing", "true");
-    expect(screen.getByTestId("pack-global")).toHaveAttribute("data-drawer-open", "true");
+    expect(screen.getByTestId("pack-market-intel")).toHaveAttribute("data-drawer-open", "true");
     expectLatestPageState({
       phase: "closing-collapse",
-      activePack: "global",
+      activePack: "market-intel",
     });
   });
 
   it("reset seals the phase, clears pack identity and opened packs, and resets target values", () => {
     render(<PrototypePage />);
 
-    fireEvent.click(screen.getByTestId("pack-open-global"));
+    fireEvent.click(screen.getByTestId("pack-open-market-intel"));
 
     act(() => {
       debugHarness.drivers.reset?.();
@@ -282,17 +290,15 @@ describe("prototype close sequence", () => {
     expect(debugHarness.sealedPackResetValues).toHaveBeenCalledTimes(1);
   });
 
-  it("keeps the close apex debug gates before elevation drops", () => {
+  it("keeps the card-settling debug gate before elevation drops", () => {
     const source = readFileSync(resolve(__dirname, "SealedPack.tsx"), "utf8");
-    const closeBranch = source.slice(source.indexOf("CLOSE morph-back"));
+    const settlingHandler = source.slice(source.indexOf('flowPhaseRef.current === "card-settling"'));
 
-    const layoutMorphGate = closeBranch.indexOf('await dbg.gate("layout-morph-out")');
-    const dropElevationGate = closeBranch.indexOf('await dbg.gate("drop-elevation")');
-    const elevationDrop = closeBranch.indexOf("setCardElevated(false)");
+    const settlingGate = settlingHandler.indexOf('await dbg.gate("card-settling")');
+    const elevationDrop = settlingHandler.indexOf("setCardElevated(false)");
 
-    expect(layoutMorphGate).toBeGreaterThanOrEqual(0);
-    expect(dropElevationGate).toBeGreaterThan(layoutMorphGate);
-    expect(elevationDrop).toBeGreaterThan(dropElevationGate);
+    expect(settlingGate).toBeGreaterThanOrEqual(0);
+    expect(elevationDrop).toBeGreaterThan(settlingGate);
   });
 
   it("guards PackOpener collapse completion as a one-shot handoff", () => {
@@ -303,7 +309,6 @@ describe("prototype close sequence", () => {
     expect(completeCollapse).toContain("if (collapseCompleteFiredRef.current) return;");
     expect(completeCollapse).toContain('dbgRef.current.gate("collapse-complete")');
     expect(source).toContain("if (skills.length <= 1)");
-    expect(source).toContain("expectedCollapseRef.current = skills.length - 1");
   });
 
   it("does not keep page-level lifecycle boolean state declarations", () => {
