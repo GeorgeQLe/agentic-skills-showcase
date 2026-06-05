@@ -278,7 +278,7 @@ export default function PackOpener({ skills, packName, isClosing, onCollapseComp
               <motion.div
                 key={skill.id}
                 layoutId={`pack-card-${packName}`}
-                style={{ x: card0X, y: card0Y }}
+                style={{ x: card0X, y: card0Y, zIndex: collapseState ? 50 : undefined }}
                 transition={dbg.scaleT({
                   layout: { type: "spring", stiffness: 200, damping: 25 },
                 })}
