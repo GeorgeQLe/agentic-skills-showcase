@@ -298,15 +298,14 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
 
     if (current >= DRAG_UP_THRESHOLD) {
       hasCardTriggered.current = true;
-      animate(cardDragY, 0, dbg.scaleT({ duration: 0.1 })).then(() => {
-        animate(cardSlideY, -24, dbg.scaleT({ duration: 0.2 })).then(() => {
-          animate(cardSlideY, -180, dbg.scaleT({
-            type: "tween", ease: [0.34, 1.56, 0.64, 1], duration: 0.4,
-          })).then(async () => {
-            await dbg.gate("card-lift");
-            await proceedToOpen();
-          });
-        });
+      animate(cardDragY, 0, dbg.scaleT({
+        type: "tween", ease: [0.34, 1.56, 0.64, 1], duration: 0.4,
+      }));
+      animate(cardSlideY, -180, dbg.scaleT({
+        type: "tween", ease: [0.34, 1.56, 0.64, 1], duration: 0.4,
+      })).then(async () => {
+        await dbg.gate("card-lift");
+        await proceedToOpen();
       });
     } else {
       animate(cardDragY, 0, dbg.scaleT({ type: "spring", stiffness: 400, damping: 25 }));
