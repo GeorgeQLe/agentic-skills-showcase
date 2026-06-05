@@ -16,14 +16,15 @@ interface SealedPackProps {
     | "opening-apex"
     | "drawer-open"
     | "closing-collapse"
+    | "closing-apex"
     | "sheet-exiting"
-    | "layout-morph-out"
-    | "drop-elevation";
+    | "card-settling";
   onOpeningApex?: () => void;
   onOpen: (origin: { x: number; y: number }) => void;
   onTear?: () => void;
-  onCloseMorphComplete?: () => void;
-  onDropElevationComplete?: () => void;
+  onCardSettleComplete?: () => void;
+  /** Ref to an element whose top edge the card should align with at apex. */
+  apexAlignRef?: React.RefObject<HTMLElement | null>;
   /** When true, tearing this pack auto-opens the drawer (first-tear onboarding). */
   autoOpenOnTear?: boolean;
   isOpened?: boolean;
@@ -46,7 +47,7 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
 }
 
-const DRAG_UP_THRESHOLD = 80;
+const DRAG_UP_THRESHOLD = 40;
 
 const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function SealedPack(
   {
@@ -57,8 +58,8 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
     onOpeningApex,
     onOpen,
     onTear,
-    onCloseMorphComplete,
-    onDropElevationComplete,
+    onCardSettleComplete,
+    apexAlignRef,
     autoOpenOnTear,
     isOpened,
     isDrawerOpen,
@@ -201,14 +202,39 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
   const prevDrawerOpen = useRef(false);
   const wasInDrawer = useRef(false);
   const isCloseMorphBackInFlight = useRef(false);
+  const flowPhaseRef = useRef(flowPhase);
+  flowPhaseRef.current = flowPhase;
   const pendingOpenTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useLayoutEffect(() => {
+    if (!prevDrawerOpen.current && isDrawerOpen) {
+      cardSlideY.set(0);
+      cardDragY.set(0);
+      setCardElevated(false);
+      if (debugTarget) {
+        debugReport({
+          machine: {
+            pack: {
+              isDrawerOpen: true,
+              cardElevated: false,
+              cardDragY: 0,
+              cardSlideY: 0,
+            },
+          },
+        });
+      }
+    }
     if (prevDrawerOpen.current && !isDrawerOpen) {
       wasInDrawer.current = true;
       setCardElevated(true);
       cardDragY.set(0);
-      cardSlideY.set(-180);
+      let offset = -180;
+      if (apexAlignRef?.current && containerRef.current) {
+        const headerTop = apexAlignRef.current.getBoundingClientRect().top;
+        const cardNaturalTop = containerRef.current.getBoundingClientRect().top + 2;
+        offset = headerTop - cardNaturalTop;
+      }
+      cardSlideY.set(offset);
       if (debugTarget) {
         debugReport({
           machine: {
@@ -216,20 +242,35 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
               wasInDrawer: true,
               cardElevated: true,
               cardDragY: 0,
-              cardSlideY: -180,
+              cardSlideY: offset,
             },
           },
         });
       }
     }
     prevDrawerOpen.current = !!isDrawerOpen;
-  }, [isDrawerOpen, cardDragY, cardSlideY, debugTarget, debugReport]);
+  }, [isDrawerOpen, cardDragY, cardSlideY, apexAlignRef, debugTarget, debugReport]);
 
   useEffect(() => {
     return () => {
       if (pendingOpenTimer.current) clearTimeout(pendingOpenTimer.current);
     };
   }, []);
+
+  useEffect(() => {
+    if (flowPhase === "card-settling" && cardElevated && !isCloseMorphBackInFlight.current) {
+      isCloseMorphBackInFlight.current = true;
+      wasInDrawer.current = false;
+      setCardElevated(false);
+      animate(cardSlideY, 0, dbg.scaleT({
+        type: "spring", stiffness: 300, damping: 25,
+      })).then(() => {
+        hasCardTriggered.current = false;
+        isCloseMorphBackInFlight.current = false;
+        onCardSettleComplete?.();
+      });
+    }
+  }, [flowPhase, cardElevated, onCardSettleComplete, dbg, cardSlideY]);
 
   const combinedY = useTransform(
     [cardDragY, cardSlideY],
@@ -257,9 +298,15 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
 
     if (current >= DRAG_UP_THRESHOLD) {
       hasCardTriggered.current = true;
-      animate(cardDragY, 180, dbg.scaleT({ type: "spring", stiffness: 300, damping: 30 })).then(async () => {
-        await dbg.gate("card-lift");
-        await proceedToOpen();
+      animate(cardDragY, 0, dbg.scaleT({ duration: 0.1 })).then(() => {
+        animate(cardSlideY, -24, dbg.scaleT({ duration: 0.2 })).then(() => {
+          animate(cardSlideY, -180, dbg.scaleT({
+            type: "tween", ease: [0.34, 1.56, 0.64, 1], duration: 0.4,
+          })).then(async () => {
+            await dbg.gate("card-lift");
+            await proceedToOpen();
+          });
+        });
       });
     } else {
       animate(cardDragY, 0, dbg.scaleT({ type: "spring", stiffness: 400, damping: 25 }));
@@ -276,13 +323,13 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
   function handlePackClick() {
     if (hasCardTriggered.current) return;
     hasCardTriggered.current = true;
-    animate(cardSlideY, -180, dbg.scaleT({
-      type: "spring",
-      stiffness: 400,
-      damping: 25,
-    })).then(async () => {
-      await dbg.gate("card-click-rise");
-      await proceedToOpen();
+    animate(cardSlideY, -24, dbg.scaleT({ duration: 0.2 })).then(() => {
+      animate(cardSlideY, -180, dbg.scaleT({
+        type: "tween", ease: [0.34, 1.56, 0.64, 1], duration: 0.4,
+      })).then(async () => {
+        await dbg.gate("card-click-rise");
+        await proceedToOpen();
+      });
     });
   }
 
@@ -397,7 +444,7 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
           {previewSkill && (
             <motion.div
               layoutId={`pack-card-${name}`}
-              transition={dbg.scaleT({ layout: { duration: 0.3, ease: [0.42, 0, 0.58, 1] } })}
+              transition={dbg.scaleT({ layout: { duration: (flowPhase === "card-settling" || flowPhase === "sheet-exiting") ? 0.15 : 0.3, ease: [0.4, 0, 0.2, 1] } })}
               className="absolute rounded-lg overflow-hidden shadow-md cursor-grab active:cursor-grabbing"
               style={{
                 left: 6,
@@ -405,9 +452,10 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
                 height: 252,
                 top: 2,
                 y: combinedY,
-                zIndex: (cardElevated || isClosingFromDrawer) ? 60 : undefined,
+                zIndex: (cardElevated || isClosingFromDrawer) ? 60 : 0,
                 touchAction: "none",
               }}
+              whileHover={isOpened && !cardElevated && !isDrawerOpen ? { y: -4, boxShadow: "0 0 12px rgba(88,166,255,0.3)" } : undefined}
               onPointerDown={handleCardPointerDown}
               onPointerMove={handleCardPointerMove}
               onPointerUp={handleCardPointerUp}
@@ -422,29 +470,25 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
                   pendingOpen.current = false;
                   debugReport({ machine: { pack: { pendingOpen: false } } });
                   if (!isDrawerOpen) {
-                    animate(cardSlideY, -180, dbg.scaleT({
-                      type: "spring",
-                      stiffness: 400,
-                      damping: 25,
-                    })).then(() => {
-                      proceedToOpen();
+                    animate(cardSlideY, -24, dbg.scaleT({ duration: 0.2 })).then(() => {
+                      animate(cardSlideY, -180, dbg.scaleT({
+                        type: "tween", ease: [0.34, 1.56, 0.64, 1], duration: 0.4,
+                      })).then(() => {
+                        proceedToOpen();
+                      });
                     });
                   }
                   return;
                 }
-                // CLOSE morph-back — THE APEX. Gate before touching elevation so
-                // the z-index-60 frame can be held and inspected.
                 if (
-                  flowPhase === "layout-morph-out" &&
+                  flowPhaseRef.current === "card-settling" &&
                   !isDrawerOpen &&
                   wasInDrawer.current &&
                   !isCloseMorphBackInFlight.current
                 ) {
                   isCloseMorphBackInFlight.current = true;
                   debugReport({ machine: { pack: { isCloseMorphBackInFlight: true } } });
-                  await dbg.gate("layout-morph-out");
-                  onCloseMorphComplete?.();
-                  await dbg.gate("drop-elevation");
+                  await dbg.gate("card-settling");
                   wasInDrawer.current = false;
                   setCardElevated(false);
                   debugReport({
@@ -455,7 +499,6 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
                       },
                     },
                   });
-                  onDropElevationComplete?.();
                   animate(
                     cardSlideY,
                     0,
@@ -468,6 +511,7 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
                     hasCardTriggered.current = false;
                     isCloseMorphBackInFlight.current = false;
                     debugReport({ machine: { pack: { isCloseMorphBackInFlight: false } } });
+                    onCardSettleComplete?.();
                   });
                 }
               }}
