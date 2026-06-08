@@ -939,6 +939,7 @@ document.getElementById("copy-final").addEventListener("click", () => {
 updateStatus();
 </script>
 
+
 <script>
 // --- Brief Me TTS ---
 /**
@@ -981,10 +982,13 @@ const alignTTS = (() => {
   function gatherSections() {
     sections = [];
     const header = document.querySelector('header');
-    if (header) {
-      const title = header.querySelector('h1')?.textContent?.trim() || 'Alignment Page';
-      const lead = header.querySelector('.lead')?.textContent?.trim() || '';
-      sections.push({ el: header, label: 'Introduction', text: `${title}. ${lead}` });
+    const h1 = document.querySelector('h1');
+    const lead = document.querySelector('.lead');
+    const title = h1?.textContent?.trim() || 'Alignment Page';
+    const leadText = lead?.textContent?.trim() || '';
+    const introEl = header || h1?.parentElement || document.querySelector('main') || document.body;
+    if (title) {
+      sections.push({ el: introEl, label: 'Introduction', text: `${title}. ${leadText}` });
     }
     document.querySelectorAll('section').forEach(sec => {
       const id = sec.id;
@@ -1130,8 +1134,6 @@ const alignTTS = (() => {
   }
 
   function injectButton() {
-    const header = document.querySelector('header');
-    if (!header) return;
     const btn = document.createElement('button');
     btn.className = 'tts-brief-btn';
     btn.textContent = 'Brief Me';
@@ -1141,7 +1143,12 @@ const alignTTS = (() => {
       if (active) { stop(); return; }
       play();
     });
-    header.appendChild(btn);
+    const header = document.querySelector('header');
+    if (header) { header.appendChild(btn); return; }
+    const anchor = document.querySelector('.status') || document.querySelector('.lead') || document.querySelector('h1');
+    if (anchor && anchor.parentNode) { anchor.parentNode.insertBefore(btn, anchor.nextSibling); return; }
+    const main = document.querySelector('main');
+    if (main) { main.insertBefore(btn, main.querySelector('nav, section')); }
   }
 
   function injectStyles() {
