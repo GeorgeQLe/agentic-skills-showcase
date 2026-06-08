@@ -938,5 +938,279 @@ document.getElementById("copy-final").addEventListener("click", () => {
 
 updateStatus();
 </script>
+
+<script>
+// --- Brief Me TTS ---
+/**
+ * Alignment TTS — "Brief Me" text-to-speech for alignment pages.
+ *
+ * Usage: copy this entire IIFE into a <script> block in the alignment page HTML,
+ * after the existing script block. It attaches a floating "Brief Me" button that
+ * reads through each section like a spoken briefing.
+ *
+ * Features:
+ *   - Reads page section-by-section, skipping gate controls and YAML compile UI
+ *   - Highlights the active section with a glow border
+ *   - Play / pause / stop / skip-forward / skip-back controls
+ *   - Speed selector (1x, 1.25x, 1.5x, 2x)
+ *   - Keyboard: Space = toggle, Escape = stop, ArrowRight = skip forward, ArrowLeft = skip back
+ *   - Graceful degradation: hides the button if speechSynthesis is unavailable
+ *
+ * Respects the alignment page dark-mode palette via CSS variables.
+ */
+
+const alignTTS = (() => {
+  if (!('speechSynthesis' in window)) return null;
+
+  const synth = window.speechSynthesis;
+  let sections = [];
+  let currentIdx = -1;
+  let rate = 1;
+  let paused = false;
+  let active = false;
+  let bar = null;
+
+  function extractText(el) {
+    const clone = el.cloneNode(true);
+    clone.querySelectorAll('.section-feedback, .question-block, .gate, .compile-box, .radio-group, .answer-notes, .local-yaml, .local-yaml-actions, .compile-actions, button, textarea, input, .tts-bar').forEach(n => n.remove());
+    let text = clone.textContent.replace(/\s+/g, ' ').trim();
+    if (text.length > 2000) text = text.slice(0, 2000) + '... section truncated for brevity.';
+    return text;
+  }
+
+  function gatherSections() {
+    sections = [];
+    const header = document.querySelector('header');
+    if (header) {
+      const title = header.querySelector('h1')?.textContent?.trim() || 'Alignment Page';
+      const lead = header.querySelector('.lead')?.textContent?.trim() || '';
+      sections.push({ el: header, label: 'Introduction', text: `${title}. ${lead}` });
+    }
+    document.querySelectorAll('section').forEach(sec => {
+      const id = sec.id;
+      if (id === 'compile' || id === 'review-gates') return;
+      const heading = sec.querySelector('h2')?.textContent?.trim() || 'Section';
+      const text = extractText(sec);
+      if (text.length > 10) sections.push({ el: sec, label: heading, text: `${heading}. ${text}` });
+    });
+    if (!sections.length) {
+      const body = extractText(document.querySelector('main') || document.body);
+      if (body.length > 10) sections.push({ el: document.body, label: 'Page', text: body });
+    }
+  }
+
+  function highlight(el) {
+    document.querySelectorAll('.tts-active-section').forEach(e => e.classList.remove('tts-active-section'));
+    if (el) {
+      el.classList.add('tts-active-section');
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  function speak(idx) {
+    if (idx < 0 || idx >= sections.length) { stop(); return; }
+    synth.cancel();
+    currentIdx = idx;
+    const sec = sections[idx];
+    highlight(sec.el);
+    updateStatus();
+
+    const utt = new SpeechSynthesisUtterance(sec.text);
+    utt.rate = rate;
+    utt.onend = () => {
+      if (!paused && active) speak(currentIdx + 1);
+    };
+    utt.onerror = (e) => {
+      if (e.error !== 'canceled' && active) speak(currentIdx + 1);
+    };
+    synth.speak(utt);
+  }
+
+  function play() {
+    gatherSections();
+    if (!sections.length) return;
+    active = true;
+    paused = false;
+    if (currentIdx < 0) currentIdx = 0;
+    showBar();
+    speak(currentIdx);
+  }
+
+  function togglePause() {
+    if (!active) { play(); return; }
+    if (paused) {
+      paused = false;
+      synth.resume();
+      updateStatus();
+    } else {
+      paused = true;
+      synth.pause();
+      updateStatus();
+    }
+  }
+
+  function stop() {
+    synth.cancel();
+    active = false;
+    paused = false;
+    currentIdx = -1;
+    highlight(null);
+    hideBar();
+  }
+
+  function skipForward() {
+    if (!active) return;
+    paused = false;
+    speak(currentIdx + 1);
+  }
+
+  function skipBack() {
+    if (!active) return;
+    paused = false;
+    speak(Math.max(0, currentIdx - 1));
+  }
+
+  function setRate(r) {
+    rate = r;
+    if (active && !paused) {
+      speak(currentIdx);
+    }
+  }
+
+  function updateStatus() {
+    if (!bar) return;
+    const label = bar.querySelector('.tts-status');
+    if (!label) return;
+    const sec = sections[currentIdx];
+    const state = paused ? 'Paused' : 'Reading';
+    label.textContent = sec ? `${state}: ${sec.label} (${currentIdx + 1}/${sections.length})` : '';
+  }
+
+  function createBar() {
+    const el = document.createElement('div');
+    el.className = 'tts-bar';
+    el.innerHTML = `
+      <button class="tts-btn" data-action="back" title="Previous section" aria-label="Previous section">&#9664;&#9664;</button>
+      <button class="tts-btn" data-action="toggle" title="Play / Pause" aria-label="Play or Pause">&#9208;</button>
+      <button class="tts-btn" data-action="stop" title="Stop" aria-label="Stop">&#9632;</button>
+      <button class="tts-btn" data-action="forward" title="Next section" aria-label="Next section">&#9654;&#9654;</button>
+      <span class="tts-status"></span>
+      <select class="tts-speed" title="Playback speed" aria-label="Playback speed">
+        <option value="0.8">0.8x</option>
+        <option value="1" selected>1x</option>
+        <option value="1.25">1.25x</option>
+        <option value="1.5">1.5x</option>
+        <option value="2">2x</option>
+      </select>
+    `;
+    el.querySelectorAll('.tts-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const action = btn.dataset.action;
+        if (action === 'toggle') togglePause();
+        else if (action === 'stop') stop();
+        else if (action === 'forward') skipForward();
+        else if (action === 'back') skipBack();
+      });
+    });
+    el.querySelector('.tts-speed').addEventListener('change', (e) => {
+      setRate(parseFloat(e.target.value));
+    });
+    return el;
+  }
+
+  function showBar() {
+    if (bar) { bar.style.display = 'flex'; return; }
+    bar = createBar();
+    document.body.appendChild(bar);
+  }
+
+  function hideBar() {
+    if (bar) bar.style.display = 'none';
+  }
+
+  function injectButton() {
+    const header = document.querySelector('header');
+    if (!header) return;
+    const btn = document.createElement('button');
+    btn.className = 'tts-brief-btn';
+    btn.textContent = 'Brief Me';
+    btn.title = 'Read this page aloud section by section';
+    btn.setAttribute('aria-label', 'Brief Me — read this page aloud');
+    btn.addEventListener('click', () => {
+      if (active) { stop(); return; }
+      play();
+    });
+    header.appendChild(btn);
+  }
+
+  function injectStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
+      .tts-brief-btn {
+        display: inline-flex; align-items: center; gap: 6px;
+        min-height: 44px; padding: 10px 20px; border-radius: 6px;
+        border: 1px solid var(--accent, #58a6ff); background: transparent;
+        color: var(--accent, #58a6ff); font-size: 0.95rem; font-weight: 600;
+        cursor: pointer; margin: 12px 0; transition: background 0.15s, color 0.15s;
+      }
+      .tts-brief-btn:hover { background: var(--accent, #58a6ff); color: #fff; }
+
+      .tts-bar {
+        position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999;
+        display: flex; align-items: center; gap: 8px;
+        padding: 10px 16px; background: #161b22; border-top: 1px solid var(--border, #30363d);
+        box-shadow: 0 -2px 12px rgba(0,0,0,0.4); flex-wrap: wrap;
+      }
+      .tts-btn {
+        min-height: 44px; min-width: 44px; padding: 8px 12px;
+        border: 1px solid var(--border, #30363d); border-radius: 6px;
+        background: var(--bg, #0d1117); color: var(--text, #c9d1d9);
+        cursor: pointer; font-size: 1rem;
+      }
+      .tts-btn:hover { border-color: var(--accent, #58a6ff); }
+      .tts-status {
+        flex: 1; min-width: 120px; color: var(--text-muted, #8b949e);
+        font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      }
+      .tts-speed {
+        min-height: 44px; padding: 8px 12px; border: 1px solid var(--border, #30363d);
+        border-radius: 6px; background: var(--bg, #0d1117); color: var(--text, #c9d1d9);
+        font-size: 0.85rem; cursor: pointer;
+      }
+      .tts-active-section {
+        outline: 2px solid var(--accent, #58a6ff); outline-offset: 4px;
+        transition: outline-color 0.3s;
+      }
+      @media (max-width: 560px) {
+        .tts-bar { gap: 4px; padding: 8px; }
+        .tts-status { min-width: 80px; font-size: 0.8rem; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function init() {
+    injectStyles();
+    injectButton();
+    document.addEventListener('keydown', (e) => {
+      if (e.target.matches('input, textarea, select')) return;
+      if (e.key === ' ' && active) { e.preventDefault(); togglePause(); }
+      else if (e.key === 'Escape' && active) { stop(); }
+      else if (e.key === 'ArrowRight' && active) { skipForward(); }
+      else if (e.key === 'ArrowLeft' && active) { skipBack(); }
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+  return { play, stop, togglePause, skipForward, skipBack, setRate };
+})();
+
+</script>
 </body>
 </html>
