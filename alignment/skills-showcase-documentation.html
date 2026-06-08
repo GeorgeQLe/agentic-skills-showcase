@@ -942,6 +942,8 @@ updateStatus();
 
 
 
+
+
 <script>
 // --- Brief Me TTS ---
 /**
@@ -972,6 +974,7 @@ const alignTTS = (() => {
   let paused = false;
   let active = false;
   let bar = null;
+  let skipId = 0;
 
   function extractText(el) {
     const clone = el.cloneNode(true);
@@ -1027,6 +1030,7 @@ const alignTTS = (() => {
     if (idx < 0 || idx >= sections.length) { stop(); return; }
     synth.cancel();
     currentIdx = idx;
+    const id = ++skipId;
     const sec = sections[idx];
     highlight(sec.el);
     updateStatus();
@@ -1034,10 +1038,10 @@ const alignTTS = (() => {
     const utt = new SpeechSynthesisUtterance(sec.text);
     utt.rate = rate;
     utt.onend = () => {
-      if (!paused && active) speak(currentIdx + 1);
+      if (id === skipId && !paused && active) speak(currentIdx + 1);
     };
     utt.onerror = (e) => {
-      if (e.error !== 'canceled' && active) speak(currentIdx + 1);
+      if (id === skipId && e.error !== 'canceled' && active) speak(currentIdx + 1);
     };
     synth.speak(utt);
   }
@@ -1070,6 +1074,7 @@ const alignTTS = (() => {
     active = false;
     paused = false;
     currentIdx = -1;
+    skipId = 0;
     highlight(null);
     hideBar();
   }
