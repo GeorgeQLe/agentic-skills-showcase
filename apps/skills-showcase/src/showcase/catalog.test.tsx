@@ -272,6 +272,21 @@ describe("CatalogClient", () => {
       expect(map.querySelectorAll(".pack-node")).toHaveLength(2);
     });
 
+    it("renders generated skill counts on pack nodes and detail", () => {
+      document.body.innerHTML = `
+        <div data-pack-summary></div>
+        <div data-pack-map></div>
+        <div data-pack-detail></div>
+      `;
+      render(<CatalogClient />);
+
+      const map = document.querySelector("[data-pack-map]")!;
+      const detail = document.querySelector("[data-pack-detail]")!;
+      expect(map.textContent).toContain("5 skills");
+      expect(map.textContent).toContain("3 skills");
+      expect(detail.querySelector(".pack-count")?.textContent).toBe("5 skills");
+    });
+
     it("renders summary metrics", () => {
       document.body.innerHTML = `
         <div data-pack-summary></div>

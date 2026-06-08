@@ -985,6 +985,14 @@ code {
   box-shadow: inset 4px 0 0 var(--teal);
 }
 
+.pack-count {
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  font-weight: 750;
+  text-transform: uppercase;
+}
+
 /* === Catalog === */
 
 .catalog-tools {

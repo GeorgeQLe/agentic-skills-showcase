@@ -46,6 +46,11 @@ function makeTag(label: string, href?: string): HTMLElement {
   return tag;
 }
 
+function skillCountLabel(count: unknown): string {
+  const value = typeof count === "number" && Number.isFinite(count) ? count : 0;
+  return `${value} ${value === 1 ? "skill" : "skills"}`;
+}
+
 function renderEmpty(target: Element, message: string) {
   target.innerHTML = "";
   const notice = document.createElement("div");
@@ -374,11 +379,13 @@ export default function CatalogClient() {
 
       const packAnnotations: Record<string, string[]> = {
         "alignment-loop": ["domain", "business", "planning"],
+        "business-app": ["domain", "business", "alias"],
         "business-discovery": ["domain", "business"],
         "business-growth": ["domain", "business"],
         "business-ops": ["domain", "business"],
         "code-quality": ["overlay", "quality"],
         "creator-foundation": ["domain", "creator"],
+        "creator-media": ["domain", "creator", "alias"],
         devtool: ["domain", "devtool", "alias"],
         game: ["domain", "game", "alias"],
         monorepo: ["overlay", "monorepo"],
@@ -389,11 +396,13 @@ export default function CatalogClient() {
 
       const packPurpose: Record<string, string> = {
         "alignment-loop": "Keeps decision loops explicit when strategy, research, and implementation need repeated alignment.",
+        "business-app": "Compatibility alias that expands to the narrower business discovery, lifecycle, growth, and ops packs.",
         "business-discovery": "Researches market, user, ICP, and product direction before build work.",
         "business-growth": "Supports acquisition, monetization, launch, and growth-system work.",
         "business-ops": "Covers operating workflows for internal business systems and repeatable delivery.",
         "code-quality": "Adds adversarial review and quality gates around risky source changes.",
         "creator-foundation": "Builds creator research foundations, evidence schemas, and platform dossiers.",
+        "creator-media": "Compatibility alias that expands to creator foundation and YouTube operations packs.",
         devtool: "Compatibility alias for devtool workflow coverage.",
         game: "Compatibility alias for game workflow coverage.",
         monorepo: "Adds package-boundary planning, lane specs, and monorepo validation guardrails.",
@@ -447,6 +456,9 @@ export default function CatalogClient() {
         title.textContent = text(pack.title, toTitle(annotation.name));
         const purpose = document.createElement("p");
         purpose.textContent = annotation.purpose;
+        const count = document.createElement("p");
+        count.className = "pack-count";
+        count.textContent = skillCountLabel(pack.skillCount);
         const command = document.createElement("p");
         command.className = "command";
         command.textContent = install;
@@ -466,7 +478,7 @@ export default function CatalogClient() {
         link.className = "button secondary";
         link.href = `/catalog#pack-${encodeURIComponent(annotation.name)}`;
         link.textContent = "View skills";
-        detail.append(makeTag(annotation.overlay ? "overlay" : "domain pack"), title, purpose, command, skillsList, link);
+        detail.append(makeTag(annotation.overlay ? "overlay" : "domain pack"), title, purpose, count, command, skillsList, link);
       }
 
       function createPackNode(pack: Pack): HTMLElement {
@@ -492,6 +504,9 @@ export default function CatalogClient() {
         heading.textContent = text(pack.title, toTitle(annotation.name));
         const copy = document.createElement("p");
         copy.textContent = annotation.purpose;
+        const count = document.createElement("p");
+        count.className = "pack-count";
+        count.textContent = skillCountLabel(pack.skillCount);
 
         const path = document.createElement("p");
         path.className = "coordinate";
@@ -505,7 +520,7 @@ export default function CatalogClient() {
           path.textContent = "Compatibility alias; no PACK.md path recorded.";
         }
 
-        node.append(chips, heading, copy, path);
+        node.append(chips, heading, copy, count, path);
         node.addEventListener("click", () => setActivePack(pack, annotation));
         node.addEventListener("keydown", (event) => {
           if (event.key === "Enter" || event.key === " ") {
