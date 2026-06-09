@@ -1,0 +1,639 @@
+<!doctype html>
+<html lang="en" data-alignment-category="product-design" data-visual-tier="document">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Idea Scope Brief - Skills Showcase Deck-Builder Refactor</title>
+<style>
+:root { --bg:#0d1117; --surface:#161b22; --border:#30363d; --text:#c9d1d9; --text-muted:#8b949e; --accent:#58a6ff; --green:#3fb950; --red:#f85149; --orange:#d29922; --purple:#bc8cff; }
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; line-height:1.55; }
+main { width:min(1180px, calc(100% - 32px)); margin:0 auto; padding:32px 0 56px; max-width:100%; overflow-wrap:break-word; }
+h1 { color:#fff; margin:0 0 8px; font-size:2.2rem; }
+h2 { color:var(--accent); margin:0; font-size:1.45rem; }
+h3 { color:#fff; margin:24px 0 8px; font-size:1.05rem; }
+h4 { color:var(--accent); margin:18px 0 6px; font-size:0.95rem; }
+p { margin:12px 0; } a { color:var(--accent); } code { color:#fff; background:#0b1320; border:1px solid var(--border); padding:1px 5px; border-radius:4px; font-size:0.88em; }
+pre { background:#0b1320; border:1px solid var(--border); border-radius:6px; padding:14px; overflow-x:auto; color:var(--text); font-size:0.9rem; line-height:1.5; }
+.status { display:inline-flex; min-height:44px; align-items:center; padding:10px 16px; border:1px solid var(--purple); color:#fff; background:#1c2333; margin:16px 0; border-radius:6px; }
+.lead { color:#fff; font-size:1.05rem; }
+.toc, section, .compile-box { border:1px solid var(--border); background:var(--surface); border-radius:8px; padding:18px; margin:18px 0; }
+.toc ol { margin:8px 0 0; columns:2; }
+.toc a { color:var(--accent); text-decoration:none; } .toc a:hover { text-decoration:underline; }
+.section-head { display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; align-items:center; }
+.stat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(210px,100%),1fr)); gap:12px; margin:18px 0; }
+.stat-grid div { border:1px solid var(--border); background:#0f1623; padding:14px; border-radius:8px; }
+.stat-grid strong { display:block; color:#fff; font-size:1.35rem; } .stat-grid span { color:var(--text-muted); }
+.table-wrap { overflow-x:auto; margin:14px 0; border:1px solid var(--border); border-radius:8px; }
+table { border-collapse:collapse; width:100%; min-width:720px; } th,td { border-bottom:1px solid var(--border); padding:10px 12px; vertical-align:top; text-align:left; } th { background:var(--surface); color:#fff; } tr:last-child td { border-bottom:0; }
+ul,ol { padding-left:22px; } li { margin:4px 0; }
+.callout { border:1px solid var(--purple); background:#1c2333; padding:14px; border-radius:8px; margin:16px 0; }
+.callout-warn { border-color:var(--orange); }
+.callout-green { border-color:var(--green); }
+.tag { display:inline-block; padding:2px 8px; border-radius:4px; font-size:0.8rem; font-weight:600; margin-right:6px; }
+.tag-confirmed { background:rgba(63,185,80,0.15); color:var(--green); }
+.tag-inferred { background:rgba(210,153,34,0.15); color:var(--orange); }
+.tag-repo { background:rgba(88,166,255,0.15); color:var(--accent); }
+.tag-prompt { background:rgba(188,140,255,0.15); color:var(--purple); }
+
+/* Section feedback controls */
+.section-feedback { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:12px 0 16px; padding:10px; border:1px solid var(--border); border-radius:8px; background:#0f1623; }
+.section-feedback span { color:var(--text-muted); }
+button, .radio-group label { min-height:44px; padding:10px 16px; border-radius:6px; border:1px solid var(--border); background:#0d1117; color:var(--text); cursor:pointer; }
+button:hover, .radio-group label:hover { border-color:var(--accent); }
+button.active[data-feedback="emphasize"] { border-color:var(--green); color:#fff; background:#12351f; }
+button.active[data-feedback="down"] { border-color:var(--red); color:#fff; background:#351616; }
+button.active[data-feedback="needs-clarification"] { border-color:var(--orange); color:#fff; background:#33260f; }
+textarea { width:100%; min-height:90px; background:#0d1117; color:var(--text); border:1px solid var(--border); border-radius:6px; padding:10px; font:inherit; }
+.feedback-notes, .local-yaml, .local-yaml-actions { display:none; flex-basis:100%; }
+.section-feedback.has-feedback .feedback-notes, .section-feedback.has-feedback .local-yaml-actions { display:block; }
+.section-feedback.has-yaml .local-yaml { display:block; min-height:130px; }
+
+/* Gate question blocks */
+.question-block { background:#1c2333; border:1px solid var(--purple); padding:16px; border-radius:8px; margin:16px 0; }
+.radio-group { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0; }
+.radio-group label { display:flex; align-items:center; gap:8px; }
+.answer-notes { display:none; margin-top:10px; }
+.question-block.has-answer .answer-notes { display:block; }
+
+/* Compile section */
+.compile-box { border-color:var(--green); }
+.compile-actions { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:12px 0; }
+#compiled-yaml, #compiled-feedback-yaml { min-height:180px; }
+.copy-status, #answer-status, #feedback-status { color:var(--text-muted); }
+
+@media (max-width: 860px) { .toc ol { columns:1; } .stat-grid { grid-template-columns:repeat(2,minmax(min(210px,100%),1fr)); } main { width:min(100% - 24px, 1180px); } }
+@media (max-width: 560px) { .stat-grid { grid-template-columns:1fr; } h1 { font-size:1.7rem; } table { min-width:640px; } }
+</style>
+</head>
+<body>
+<main>
+
+<header>
+<h1>Skills Showcase Deck-Builder Refactor</h1>
+<p class="lead">Rebuild <code>gskillpacks.com</code> from an informational skill catalog into an interactive deck-building experience where users tear open packs, inspect skill cards, and assemble workflow decks &mdash; with dual card-game / technical branding.</p>
+<div class="status"><strong>alignment_status:</strong>&nbsp; confirmed &nbsp; <strong>generated:</strong>&nbsp; 2026-06-09 &nbsp; <strong>artifact:</strong>&nbsp; alignment/idea-scope-brief-skills-showcase.html</div>
+</header>
+
+<nav class="toc" aria-label="Table of Contents"><h2>Table Of Contents</h2><ol>
+<li><a href="#summary">Concept Summary</a></li>
+<li><a href="#branding">Dual Branding Map</a></li>
+<li><a href="#problem">Problem Hypothesis</a></li>
+<li><a href="#beneficiary">Beneficiary Hypothesis</a></li>
+<li><a href="#category">Product Category</a></li>
+<li><a href="#wedge">Value Wedge</a></li>
+<li><a href="#constraints">Constraints</a></li>
+<li><a href="#nongoals">Non-Goals</a></li>
+<li><a href="#unknowns">Assumptions &amp; Unknowns</a></li>
+<li><a href="#assets">Existing Asset Inventory</a></li>
+<li><a href="#icp">ICP Readiness</a></li>
+<li><a href="#review-gates">Review Gates</a></li>
+<li><a href="#compile">Compile YAML</a></li>
+</ol></nav>
+
+<!-- =========================================================== -->
+<section id="summary"><div class="section-head"><h2>Concept Summary</h2></div>
+<div class="section-feedback" data-section="Concept Summary" id="feedback-concept-summary">
+  <span>Section feedback</span>
+  <button type="button" data-feedback="emphasize">Emphasize</button>
+  <button type="button" data-feedback="down">Thumbs down</button>
+  <button type="button" data-feedback="needs-clarification">Clarification needed</button>
+  <textarea class="feedback-notes" placeholder="Optional notes for this section"></textarea>
+  <div class="local-yaml-actions"><button type="button" class="compile-local-feedback">Compile Feedback YAML</button><button type="button" class="copy-local-feedback">Copy YAML</button><span class="copy-status"></span></div>
+  <textarea class="local-yaml" readonly></textarea>
+</div>
+<p>Fresh-start rebuild of the skills showcase at <code>gskillpacks.com</code>. The current informational pages (Workflows, Packs, Catalog, Inspect, Benchmarks, Follow) are replaced by a deck-building card-game experience that is both the brand's visual identity and a functional tool for assembling skill libraries.</p>
+<p>Users browse sealed booster packs (categories), tear them open to reveal skill cards, inspect card stats (benchmarks, platform, tags), and add cards into deck slots that map to the four canonical workflow types. Building a deck produces actionable output: a copyable CLI command (<code>npx skillpacks install-deck ...</code>) and a downloadable <code>project.json</code> config.</p>
+<p>The site uses <strong>dual branding</strong>: card-game terminology as the primary voice (the GSkillPacks brand), with technical terms in parentheticals and tooltips so developers always know what they're actually installing.</p>
+<p>The current showcase pages and components will be archived once the deck-builder replacement is live.</p>
+</section>
+
+<!-- =========================================================== -->
+<section id="branding"><div class="section-head"><h2>Dual Branding Map</h2></div>
+<div class="section-feedback" data-section="Dual Branding Map" id="feedback-dual-branding-map">
+  <span>Section feedback</span>
+  <button type="button" data-feedback="emphasize">Emphasize</button>
+  <button type="button" data-feedback="down">Thumbs down</button>
+  <button type="button" data-feedback="needs-clarification">Clarification needed</button>
+  <textarea class="feedback-notes" placeholder="Optional notes for this section"></textarea>
+  <div class="local-yaml-actions"><button type="button" class="compile-local-feedback">Compile Feedback YAML</button><button type="button" class="copy-local-feedback">Copy YAML</button><span class="copy-status"></span></div>
+  <textarea class="local-yaml" readonly></textarea>
+</div>
+<p><span class="tag tag-confirmed">from prompt</span> Terminology rename scoped to showcase only. Docs and CLI keep current terminology.</p>
+
+<div class="table-wrap" data-tts-narrative="The dual branding map shows card-game terms alongside their technical equivalents. Decks map to named workflow sequences, Archetypes are the two workflow tempos RD and AFPS, Packs to Categories, and Cards to Skills."><table>
+<thead><tr><th>Card Game (GSkillPacks)</th><th>Technical</th><th>Current Term</th><th>Scope</th></tr></thead>
+<tbody>
+<tr><td><strong>Deck</strong></td><td>Named workflow sequence</td><td>Deck</td><td>Showcase UI</td></tr>
+<tr><td><strong>Archetype</strong></td><td>Workflow tempo class</td><td>RD / AFPS</td><td>Showcase UI</td></tr>
+<tr><td><strong>Pack / Booster</strong></td><td>Category / Pack</td><td>Pack</td><td>Showcase UI</td></tr>
+<tr><td><strong>Card</strong></td><td>Skill</td><td>Skill</td><td>Showcase UI</td></tr>
+<tr><td><strong>Tear open / Collect</strong></td><td>Install / Enable</td><td>Install</td><td>Showcase UI</td></tr>
+</tbody>
+</table></div>
+
+<h4>Two Archetypes</h4>
+<p><span class="tag tag-confirmed">from prompt</span> Archetypes are the two workflow tempo classes. Individual decks are named <strong>[descriptor] + [archetype]</strong> by default. Canonical GSkill decks follow this convention; users can rename their custom decks freely.</p>
+<div class="stat-grid">
+<div><strong>RD</strong><span>Rapid Distribution &mdash; idea to shipped in days</span></div>
+<div><strong>AFPS</strong><span>Alignment First, Prototype-Second &mdash; deliberate pipeline over weeks/months</span></div>
+</div>
+
+<h4>Four Canonical Decks</h4>
+<p>Each deck combines a domain descriptor with an archetype on a 2&times;2 matrix (domain &times; tempo):</p>
+<div class="stat-grid">
+<div><strong>VARD</strong><span>Viral App + RD</span><br><span class="tag tag-prompt">RD</span><span class="tag tag-prompt">Business</span></div>
+<div><strong>ORD</strong><span>OSS + RD</span><br><span class="tag tag-prompt">RD</span><span class="tag tag-prompt">Developer</span></div>
+<div><strong>Business AFPS</strong><span>Business + AFPS</span><br><span class="tag tag-prompt">AFPS</span><span class="tag tag-prompt">Business</span></div>
+<div><strong>Devtool AFPS</strong><span>Devtool + AFPS</span><br><span class="tag tag-prompt">AFPS</span><span class="tag tag-prompt">Developer</span></div>
+</div>
+</section>
+
+<!-- =========================================================== -->
+<section id="problem"><div class="section-head"><h2>Problem Hypothesis</h2></div>
+<div class="section-feedback" data-section="Problem Hypothesis" id="feedback-problem-hypothesis">
+  <span>Section feedback</span>
+  <button type="button" data-feedback="emphasize">Emphasize</button>
+  <button type="button" data-feedback="down">Thumbs down</button>
+  <button type="button" data-feedback="needs-clarification">Clarification needed</button>
+  <textarea class="feedback-notes" placeholder="Optional notes for this section"></textarea>
+  <div class="local-yaml-actions"><button type="button" class="compile-local-feedback">Compile Feedback YAML</button><button type="button" class="copy-local-feedback">Copy YAML</button><span class="copy-status"></span></div>
+  <textarea class="local-yaml" readonly></textarea>
+</div>
+<p><span class="tag tag-inferred">inferred</span> The current showcase presents skills as a flat searchable catalog with workflow documentation pages. Users can <em>read about</em> packs and skills but don't get an intuitive feel for how to <em>compose</em> their own skill library.</p>
+<p>The deck-building metaphor makes the selection process tactile and exploratory. Users tear open packs, inspect cards, and assemble decks &mdash; which communicates the composable nature of the system in a way that a table of names and descriptions cannot.</p>
+<p>Additionally, the existing card-game primitives (<code>SealedPack</code>, <code>SkillCard</code>, <code>PackOpener</code>) already exist on a hidden <code>/prototype</code> debug page. The investment is partially made but invisible to users.</p>
+</section>
+
+<!-- =========================================================== -->
+<section id="beneficiary"><div class="section-head"><h2>Beneficiary Hypothesis</h2></div>
+<div class="section-feedback" data-section="Beneficiary Hypothesis" id="feedback-beneficiary-hypothesis">
+  <span>Section feedback</span>
+  <button type="button" data-feedback="emphasize">Emphasize</button>
+  <button type="button" data-feedback="down">Thumbs down</button>
+  <button type="button" data-feedback="needs-clarification">Clarification needed</button>
+  <textarea class="feedback-notes" placeholder="Optional notes for this section"></textarea>
+  <div class="local-yaml-actions"><button type="button" class="compile-local-feedback">Compile Feedback YAML</button><button type="button" class="copy-local-feedback">Copy YAML</button><span class="copy-status"></span></div>
+  <textarea class="local-yaml" readonly></textarea>
+</div>
+<p><span class="tag tag-inferred">inferred</span></p>
+<ul>
+<li><strong>Primary:</strong> Developers evaluating GSkillPacks who want to understand what skills exist and how to assemble them into workflows (decks). The deck-builder is both a discovery tool and a configuration wizard.</li>
+<li><strong>Secondary:</strong> Existing users configuring new projects &mdash; they already know the system but want a faster way to pick packs for a new repo.</li>
+</ul>
+</section>
+
+<!-- =========================================================== -->
+<section id="category"><div class="section-head"><h2>Product Category Guess</h2></div>
+<div class="section-feedback" data-section="Product Category Guess" id="feedback-product-category-guess">
+  <span>Section feedback</span>
+  <button type="button" data-feedback="emphasize">Emphasize</button>
+  <button type="button" data-feedback="down">Thumbs down</button>
+  <button type="button" data-feedback="needs-clarification">Clarification needed</button>
+  <textarea class="feedback-notes" placeholder="Optional notes for this section"></textarea>
+  <div class="local-yaml-actions"><button type="button" class="compile-local-feedback">Compile Feedback YAML</button><button type="button" class="copy-local-feedback">Copy YAML</button><span class="copy-status"></span></div>
+  <textarea class="local-yaml" readonly></textarea>
+</div>
+<p><span class="tag tag-inferred">inferred</span> Developer tool interactive catalog / configuration UI with a card-game brand wrapper. Not a standalone game &mdash; the card-game metaphor is a UX convention for real skill library management and brand differentiation.</p>
+</section>
+
+<!-- =========================================================== -->
+<section id="wedge"><div class="section-head"><h2>Value Wedge</h2></div>
+<div class="section-feedback" data-section="Value Wedge" id="feedback-value-wedge">
+  <span>Section feedback</span>
+  <button type="button" data-feedback="emphasize">Emphasize</button>
+  <button type="button" data-feedback="down">Thumbs down</button>
+  <button type="button" data-feedback="needs-clarification">Clarification needed</button>
+  <textarea class="feedback-notes" placeholder="Optional notes for this section"></textarea>
+  <div class="local-yaml-actions"><button type="button" class="compile-local-feedback">Compile Feedback YAML</button><button type="button" class="copy-local-feedback">Copy YAML</button><span class="copy-status"></span></div>
+  <textarea class="local-yaml" readonly></textarea>
+</div>
+<p><span class="tag tag-confirmed">from prompt</span></p>
+<ul>
+<li>No other AI skill/agent marketplace uses a deck-builder metaphor</li>
+<li>The card-game framing makes the abstract concept of "composing AI workflow toolchains" concrete and engaging</li>
+<li>Dual branding keeps it accessible: card-game voice for brand personality, technical parentheticals for clarity</li>
+<li>The actionable output (CLI command + config download) bridges the gap from "fun browsing" to "actually installed in my project"</li>
+</ul>
+</section>
+
+<!-- =========================================================== -->
+<section id="constraints"><div class="section-head"><h2>Constraints</h2></div>
+<div class="section-feedback" data-section="Constraints" id="feedback-constraints">
+  <span>Section feedback</span>
+  <button type="button" data-feedback="emphasize">Emphasize</button>
+  <button type="button" data-feedback="down">Thumbs down</button>
+  <button type="button" data-feedback="needs-clarification">Clarification needed</button>
+  <textarea class="feedback-notes" placeholder="Optional notes for this section"></textarea>
+  <div class="local-yaml-actions"><button type="button" class="compile-local-feedback">Compile Feedback YAML</button><button type="button" class="copy-local-feedback">Copy YAML</button><span class="copy-status"></span></div>
+  <textarea class="local-yaml" readonly></textarea>
+</div>
+
+<div class="table-wrap" data-tts-narrative="Eight constraints govern the refactor: promote existing card primitives rather than rewriting them, use the 157 skills across 7 sets already mapped, coexist with npm and shadcn distribution, keep the current tech stack, no GitHub Actions, fresh start on page structure, and dual branding scoped to showcase only."><table>
+<thead><tr><th>Constraint</th><th>Source</th><th>Rationale</th></tr></thead>
+<tbody>
+<tr><td>Existing card primitives (SealedPack, SkillCard, PackOpener, BottomSheet, debug harness) are the starting asset library &mdash; promote, don't rewrite</td><td><span class="tag tag-repo">from repo</span></td><td>678-line SealedPack + full animation state machine already built</td></tr>
+<tr><td>157 skills across 7 sets from <code>tasks/pack-card-hierarchy.md</code></td><td><span class="tag tag-repo">from repo</span></td><td>Content inventory already mapped and verified</td></tr>
+<tr><td>Must coexist with npm <code>skillpacks</code> CLI distribution</td><td><span class="tag tag-repo">from repo</span></td><td>Showcase is visual; CLI is the install mechanism</td></tr>
+<tr><td>Must coexist with shadcn-style repo distribution</td><td><span class="tag tag-prompt">from prompt</span></td><td>Both distribution paths feed from the same manifest</td></tr>
+<tr><td>Next.js 16 + React 19 + Framer Motion + Tailwind 4 stack stays</td><td><span class="tag tag-repo">from repo</span></td><td>No framework migration</td></tr>
+<tr><td>No GitHub Actions</td><td><span class="tag tag-repo">from repo</span></td><td>Project convention</td></tr>
+<tr><td>Fresh start on page structure (not retrofitting existing pages)</td><td><span class="tag tag-prompt">from prompt</span></td><td>User decision &mdash; deck-builder IS the experience</td></tr>
+<tr><td>Dual branding scoped to showcase only</td><td><span class="tag tag-prompt">from prompt</span></td><td>Docs and CLI keep current terminology</td></tr>
+<tr><td>Archive old showcase once replacement is live</td><td><span class="tag tag-prompt">from prompt</span></td><td>User request &mdash; preserve old code in archive, don't delete</td></tr>
+</tbody>
+</table></div>
+</section>
+
+<!-- =========================================================== -->
+<section id="nongoals"><div class="section-head"><h2>Non-Goals</h2></div>
+<div class="section-feedback" data-section="Non-Goals" id="feedback-non-goals">
+  <span>Section feedback</span>
+  <button type="button" data-feedback="emphasize">Emphasize</button>
+  <button type="button" data-feedback="down">Thumbs down</button>
+  <button type="button" data-feedback="needs-clarification">Clarification needed</button>
+  <textarea class="feedback-notes" placeholder="Optional notes for this section"></textarea>
+  <div class="local-yaml-actions"><button type="button" class="compile-local-feedback">Compile Feedback YAML</button><button type="button" class="copy-local-feedback">Copy YAML</button><span class="copy-status"></span></div>
+  <textarea class="local-yaml" readonly></textarea>
+</div>
+<p><span class="tag tag-confirmed">confirmed</span></p>
+<ul>
+<li>No real trading/collecting system with accounts, inventories, or progression</li>
+<li>Not replacing the npm CLI distribution &mdash; the showcase is visual, the CLI is the install mechanism</li>
+<li>Not designing new animation primitives (existing state machine covers the interaction model)</li>
+<li>Not an e-commerce or paid card system</li>
+<li>Not renaming terminology outside the showcase (docs, CLI, SKILL.md frontmatter stay as-is)</li>
+</ul>
+</section>
+
+<!-- =========================================================== -->
+<section id="unknowns"><div class="section-head"><h2>Assumptions &amp; Unknowns</h2></div>
+<div class="section-feedback" data-section="Assumptions &amp; Unknowns" id="feedback-assumptions-unknowns">
+  <span>Section feedback</span>
+  <button type="button" data-feedback="emphasize">Emphasize</button>
+  <button type="button" data-feedback="down">Thumbs down</button>
+  <button type="button" data-feedback="needs-clarification">Clarification needed</button>
+  <textarea class="feedback-notes" placeholder="Optional notes for this section"></textarea>
+  <div class="local-yaml-actions"><button type="button" class="compile-local-feedback">Compile Feedback YAML</button><button type="button" class="copy-local-feedback">Copy YAML</button><span class="copy-status"></span></div>
+  <textarea class="local-yaml" readonly></textarea>
+</div>
+
+<h3>Assumptions</h3>
+<div class="table-wrap" data-tts-narrative="Four key assumptions: the 7 booster sets map to sealed packs, the 2 archetypes and 4 canonical decks are the deck-building structure, users will understand the metaphor without onboarding, and the CLI plus config export is sufficient to bridge browsing to installation."><table>
+<thead><tr><th>Assumption</th><th>Source</th><th>Status</th><th>What would change it</th></tr></thead>
+<tbody>
+<tr><td>The 7 booster sets from <code>pack-card-hierarchy.md</code> map 1:1 to sealed packs in the new experience</td><td><span class="tag tag-repo">from repo</span></td><td>Provisional</td><td>User wants a different grouping or fewer/more sets</td></tr>
+<tr><td>The 2 archetypes (RD, AFPS) and 4 canonical decks (VARD, ORD, Business AFPS, Devtool AFPS) from <code>docs/decks.md</code> are the deck-building structure users select from</td><td><span class="tag tag-repo">from repo</span></td><td>Provisional</td><td>User wants custom/freeform deck building beyond the [descriptor]+[archetype] convention</td></tr>
+<tr><td>Users understand the deck-builder metaphor without onboarding</td><td><span class="tag tag-inferred">inferred</span></td><td>Assumed</td><td>User testing reveals confusion; an onboarding flow would be needed</td></tr>
+<tr><td>CLI command + project.json export is sufficient to bridge browsing to installation</td><td><span class="tag tag-inferred">inferred</span></td><td>Assumed</td><td>Users expect a one-click web install or direct GitHub integration</td></tr>
+</tbody>
+</table></div>
+
+<h3>Unknowns to Resolve Downstream</h3>
+<ol>
+<li><strong>Deck composition UX:</strong> How does a user actually add cards to a deck? Drag-and-drop from opened pack? Click-to-add? Auto-suggest based on archetype?</li>
+<li><strong>Page/route structure:</strong> Is the entire site one interactive canvas, or are there distinct routes (e.g., <code>/</code> shelf, <code>/deck/:id</code> builder, <code>/card/:id</code> detail)?</li>
+<li><strong>Mobile experience:</strong> The current card animations are gesture-heavy (drag-to-tear). How does this work on mobile viewports?</li>
+<li><strong>Data generation pipeline:</strong> Does the existing <code>generate-skills-showcase-data.mjs</code> output need restructuring for deck-builder data shapes?</li>
+<li><strong>shadcn registry browser tie-in:</strong> Does the showcase double as the shadcn-style registry browser, or are those separate surfaces?</li>
+</ol>
+</section>
+
+<!-- =========================================================== -->
+<section id="assets"><div class="section-head"><h2>Existing Asset Inventory</h2></div>
+<div class="section-feedback" data-section="Existing Asset Inventory" id="feedback-existing-asset-inventory">
+  <span>Section feedback</span>
+  <button type="button" data-feedback="emphasize">Emphasize</button>
+  <button type="button" data-feedback="down">Thumbs down</button>
+  <button type="button" data-feedback="needs-clarification">Clarification needed</button>
+  <textarea class="feedback-notes" placeholder="Optional notes for this section"></textarea>
+  <div class="local-yaml-actions"><button type="button" class="compile-local-feedback">Compile Feedback YAML</button><button type="button" class="copy-local-feedback">Copy YAML</button><span class="copy-status"></span></div>
+  <textarea class="local-yaml" readonly></textarea>
+</div>
+<p>What's already built and ready to promote from <code>/prototype</code> to production:</p>
+
+<div class="stat-grid">
+<div><strong>7</strong><span>Sealed booster packs with tear-to-open</span></div>
+<div><strong>157</strong><span>Skill cards across all sets</span></div>
+<div><strong>7</strong><span>Animation phases in state machine</span></div>
+<div><strong>6</strong><span>Component primitives</span></div>
+</div>
+
+<div class="table-wrap" data-tts-narrative="Six existing components are ready to promote: SealedPack at 678 lines with tear-to-open interaction, SkillCard at 90 lines with flip animation, CardFace at 72 lines for the card front, PackOpener at 385 lines for fan-out drawers, BottomSheet at 194 lines for slide-up drawers, and the debug harness at roughly 500 lines."><table>
+<thead><tr><th>Component</th><th>Lines</th><th>Status</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td><code>SealedPack.tsx</code></td><td>678</td><td>Prototype</td><td>Tear-to-open with horizontal drag, shimmer foil, page curl</td></tr>
+<tr><td><code>SkillCard.tsx</code></td><td>90</td><td>Prototype</td><td>Flippable card with front/back faces, 180x252px</td></tr>
+<tr><td><code>CardFace.tsx</code></td><td>72</td><td>Prototype</td><td>Type badge, benchmark grade, title, command, version</td></tr>
+<tr><td><code>PackOpener.tsx</code></td><td>385</td><td>Prototype</td><td>Fan-out drawer with staggered springs, collapse-to-target</td></tr>
+<tr><td><code>BottomSheet.tsx</code></td><td>194</td><td>Prototype</td><td>Slide-up drawer with drag-to-dismiss</td></tr>
+<tr><td><code>debug/*</code></td><td>~500</td><td>Prototype</td><td>Full animation debug harness (keep for dev, hide in prod)</td></tr>
+</tbody>
+</table></div>
+
+<h4>Key Reference Documents</h4>
+<ul>
+<li><code>tasks/pack-card-hierarchy.md</code> &mdash; 7 sets mapped to 157 skills with TypeScript data</li>
+<li><code>docs/decks.md</code> &mdash; Four deck archetypes on domain &times; tempo matrix</li>
+<li><code>docs/skillpacks-npm-distribution.md</code> &mdash; CLI commands, manifest schema, deck metadata</li>
+<li><code>alignment/uat-card-pack-migration.html</code> &mdash; Prior UAT alignment for card pack migration</li>
+<li><code>apps/skills-showcase/alignment/animation-state-machine.html</code> &mdash; Animation state machine docs</li>
+</ul>
+</section>
+
+<!-- =========================================================== -->
+<section id="icp"><div class="section-head"><h2>ICP Readiness</h2></div>
+<div class="section-feedback" data-section="ICP Readiness" id="feedback-icp-readiness">
+  <span>Section feedback</span>
+  <button type="button" data-feedback="emphasize">Emphasize</button>
+  <button type="button" data-feedback="down">Thumbs down</button>
+  <button type="button" data-feedback="needs-clarification">Clarification needed</button>
+  <textarea class="feedback-notes" placeholder="Optional notes for this section"></textarea>
+  <div class="local-yaml-actions"><button type="button" class="compile-local-feedback">Compile Feedback YAML</button><button type="button" class="copy-local-feedback">Copy YAML</button><span class="copy-status"></span></div>
+  <textarea class="local-yaml" readonly></textarea>
+</div>
+<p>The concept is <strong>ready for ICP analysis</strong> with the following inputs:</p>
+<ul>
+<li><strong>Primary beneficiary hypothesis:</strong> Developers evaluating GSkillPacks for project adoption</li>
+<li><strong>Secondary beneficiary:</strong> Existing users configuring new projects</li>
+<li><strong>Market structure:</strong> Single-sided (developer tool catalog, not a marketplace)</li>
+<li><strong>Assumptions to test first:</strong> Whether the deck-builder metaphor resonates with developers vs. feeling gimmicky; whether the 2 archetypes (RD/AFPS) and [descriptor]+[archetype] naming convention cover real workflow patterns</li>
+<li><strong>Existing evidence:</strong> Devtool research docs in <code>research/</code> (positioning, adoption, DX journey, user map, monetization) provide market context</li>
+</ul>
+
+<div class="callout callout-warn">
+<strong>Note:</strong> The <code>business-discovery</code> pack is not currently enabled in <code>.agents/project.json</code>. ICP analysis requires: <code>/pack install business-discovery</code>
+</div>
+</section>
+
+<!-- =========================================================== -->
+<section id="review-gates"><div class="section-head"><h2>Review Gates</h2></div>
+<div class="section-feedback" data-section="Review Gates" id="feedback-review-gates">
+  <span>Section feedback</span>
+  <button type="button" data-feedback="emphasize">Emphasize</button>
+  <button type="button" data-feedback="down">Thumbs down</button>
+  <button type="button" data-feedback="needs-clarification">Clarification needed</button>
+  <textarea class="feedback-notes" placeholder="Optional notes for this section"></textarea>
+  <div class="local-yaml-actions"><button type="button" class="compile-local-feedback">Compile Feedback YAML</button><button type="button" class="copy-local-feedback">Copy YAML</button><span class="copy-status"></span></div>
+  <textarea class="local-yaml" readonly></textarea>
+</div>
+<p>Answer these gates after reviewing the concept, constraints, and assumptions above.</p>
+
+<!-- Gate: Idea Identity -->
+<div class="gate question-block" data-section="Idea Identity" data-gate-type="assumptions/confidence" data-question-id="idea-identity" data-target-path="">
+  <h3>Idea Identity &amp; Slug</h3>
+  <p>Is "Skills Showcase Deck-Builder" the right concept identity, and <code>skills-showcase</code> the right slug for the product path?</p>
+  <div class="radio-group">
+    <label><input type="radio" name="idea-identity" value="Yes — skills-showcase is correct"> <span>Yes &mdash; <code>skills-showcase</code> is correct</span></label>
+    <label><input type="radio" name="idea-identity" value="Different slug needed"> <span>Different slug needed (specify in notes)</span></label>
+    <label><input type="radio" name="idea-identity" value="Other / None of the above" data-special="other"> <span>Other / None of the above</span></label>
+    <label><input type="radio" name="idea-identity" value="Need clarification" data-special="clarification"> <span>Need clarification</span></label>
+  </div>
+  <textarea class="answer-notes" placeholder="Additional notes, replacement answer, or clarification request"></textarea>
+</div>
+
+<!-- Gate: Scope / Non-Goals -->
+<div class="gate question-block" data-section="Scope / Non-Goals" data-gate-type="scope/non-goals" data-question-id="scope-non-goals" data-target-path="">
+  <h3>Scope &amp; Non-Goals</h3>
+  <p>Are the constraints and non-goals listed above correct and complete for the deck-builder refactor?</p>
+  <div class="radio-group">
+    <label><input type="radio" name="scope-non-goals" value="Correct as listed"> <span>Correct as listed</span></label>
+    <label><input type="radio" name="scope-non-goals" value="Needs additions or corrections"> <span>Needs additions or corrections (specify in notes)</span></label>
+    <label><input type="radio" name="scope-non-goals" value="Other / None of the above" data-special="other"> <span>Other / None of the above</span></label>
+    <label><input type="radio" name="scope-non-goals" value="Need clarification" data-special="clarification"> <span>Need clarification</span></label>
+  </div>
+  <textarea class="answer-notes" placeholder="Additional notes, replacement answer, or clarification request"></textarea>
+</div>
+
+<!-- Gate: ICP Readiness -->
+<div class="gate question-block" data-section="ICP Readiness" data-gate-type="assumptions/confidence" data-question-id="icp-readiness" data-target-path="">
+  <h3>ICP Readiness</h3>
+  <p>Is the concept ready for ICP analysis with the beneficiary hypotheses listed, or does it need more scoping first?</p>
+  <div class="radio-group">
+    <label><input type="radio" name="icp-readiness" value="Ready for ICP"> <span>Ready for ICP &mdash; proceed with <code>/pack install business-discovery</code> then <code>/icp</code></span></label>
+    <label><input type="radio" name="icp-readiness" value="Skip ICP, go straight to design"> <span>Skip ICP &mdash; go straight to UX/UI design</span></label>
+    <label><input type="radio" name="icp-readiness" value="Needs more scoping first"> <span>Needs more scoping first (specify in notes)</span></label>
+    <label><input type="radio" name="icp-readiness" value="Other / None of the above" data-special="other"> <span>Other / None of the above</span></label>
+    <label><input type="radio" name="icp-readiness" value="Need clarification" data-special="clarification"> <span>Need clarification</span></label>
+  </div>
+  <textarea class="answer-notes" placeholder="Additional notes, replacement answer, or clarification request"></textarea>
+</div>
+
+<!-- Gate: Artifact Destination & Proposed File Changes -->
+<div class="gate question-block" data-section="Artifact Destination &amp; Proposed File Changes" data-gate-type="artifact destination" data-question-id="artifact-destination" data-target-path="alignment/idea-scope-brief-skills-showcase.html">
+  <h3>Artifact Destination &amp; Proposed File Changes</h3>
+  <p>Approve the output files that will be created on final approval:</p>
+  <ul style="margin:8px 0 12px;">
+    <li><code>research/skills-showcase/idea-brief.md</code> &mdash; canonical idea brief</li>
+    <li><code>research/skills-showcase/idea-brief-interview.md</code> &mdash; interview log</li>
+    <li><code>research/.progress.yaml</code> &mdash; product path manifest (new file)</li>
+  </ul>
+  <div class="radio-group">
+    <label><input type="radio" name="artifact-destination" value="Approve all three files"> <span>Approve all three files at the listed paths</span></label>
+    <label><input type="radio" name="artifact-destination" value="Different paths needed"> <span>Different paths needed (specify in notes)</span></label>
+    <label><input type="radio" name="artifact-destination" value="Review only — do not write canonical files yet"> <span>Review only &mdash; do not write canonical files yet</span></label>
+    <label><input type="radio" name="artifact-destination" value="Other / None of the above" data-special="other"> <span>Other / None of the above</span></label>
+    <label><input type="radio" name="artifact-destination" value="Need clarification" data-special="clarification"> <span>Need clarification</span></label>
+  </div>
+  <textarea class="answer-notes" placeholder="Additional notes, replacement answer, or clarification request"></textarea>
+</div>
+
+<!-- Gate: Post-Approval Route -->
+<div class="gate question-block" data-section="Post-Approval Route" data-gate-type="post-approval route" data-question-id="post-approval-route" data-target-path="">
+  <h3>Post-Approval Route</h3>
+  <p>After final approval, what should the agent do next?</p>
+  <div class="radio-group">
+    <label><input type="radio" name="post-approval-route" value="Confirm and stop — I will drive next steps manually"> <span>Confirm and stop &mdash; I will drive next steps manually</span></label>
+    <label><input type="radio" name="post-approval-route" value="/pack install business-discovery then /icp"> <span>Install business-discovery pack, then run <code>/icp</code></span></label>
+    <label><input type="radio" name="post-approval-route" value="Skip to UX/UI design directly"> <span>Skip to UX/UI design directly</span></label>
+    <label><input type="radio" name="post-approval-route" value="Other / None of the above" data-special="other"> <span>Other / None of the above</span></label>
+    <label><input type="radio" name="post-approval-route" value="Need clarification" data-special="clarification"> <span>Need clarification</span></label>
+  </div>
+  <textarea class="answer-notes" placeholder="Additional notes, replacement answer, or clarification request"></textarea>
+</div>
+
+<!-- Bottom section feedback (paired with top) -->
+<div class="section-feedback" data-section="Review Gates" id="feedback-review-gates-bottom">
+  <span>Section feedback</span>
+  <button type="button" data-feedback="emphasize">Emphasize</button>
+  <button type="button" data-feedback="down">Thumbs down</button>
+  <button type="button" data-feedback="needs-clarification">Clarification needed</button>
+  <textarea class="feedback-notes" placeholder="Optional notes for this section"></textarea>
+  <div class="local-yaml-actions"><button type="button" class="compile-local-feedback">Compile Feedback YAML</button><button type="button" class="copy-local-feedback">Copy YAML</button><span class="copy-status"></span></div>
+  <textarea class="local-yaml" readonly></textarea>
+</div>
+</section>
+
+<!-- =========================================================== -->
+<section id="compile" class="compile-box">
+<div class="section-head"><h2>Compile YAML</h2></div>
+<div class="section-feedback" data-section="Compile YAML" id="feedback-compile-yaml">
+  <span>Section feedback</span>
+  <button type="button" data-feedback="emphasize">Emphasize</button>
+  <button type="button" data-feedback="down">Thumbs down</button>
+  <button type="button" data-feedback="needs-clarification">Clarification needed</button>
+  <textarea class="feedback-notes" placeholder="Optional notes for this section"></textarea>
+  <div class="local-yaml-actions"><button type="button" class="compile-local-feedback">Compile Feedback YAML</button><button type="button" class="copy-local-feedback">Copy YAML</button><span class="copy-status"></span></div>
+  <textarea class="local-yaml" readonly></textarea>
+</div>
+<p>Use feedback YAML for emphasis requests, concerns, or clarification before answering all gates. Use final answers YAML only when every required gate is answered.</p>
+<div class="compile-actions"><button type="button" id="compile-feedback">Compile Feedback YAML</button><button type="button" id="copy-feedback">Copy YAML</button><span id="feedback-status"></span></div>
+<textarea id="compiled-feedback-yaml" readonly></textarea>
+<div class="compile-actions"><button type="button" id="compile-answers">Compile Answers</button><button type="button" id="copy-answers">Copy YAML</button><span id="answer-status"></span></div>
+<textarea id="compiled-yaml" readonly></textarea>
+</section>
+
+</main>
+
+<script>
+const alignmentPage = 'alignment/idea-scope-brief-skills-showcase.html';
+const actionFor = { emphasize: 'add-weight-to-section', down: 'investigate-and-revise', 'needs-clarification': 'clarify-before-approval' };
+
+function yamlEscape(value) { return String(value || '').replace(/\n/g, '\n    '); }
+
+function selectedFeedbackEntries() {
+  return [...document.querySelectorAll('.section-feedback.has-feedback')].filter(box => !box.id.endsWith('-bottom')).map(box => ({
+    section: box.dataset.section,
+    feedback: box.dataset.feedback,
+    notes: box.querySelector('.feedback-notes').value.trim(),
+    requested_agent_action: actionFor[box.dataset.feedback]
+  }));
+}
+
+function unansweredQuestions() {
+  return [...document.querySelectorAll('.gate')].filter(g => !g.querySelector('input[type="radio"]:checked'));
+}
+
+function feedbackYaml(entries) {
+  const unanswered = unansweredQuestions().map(g => g.dataset.questionId);
+  let y = `alignment_page: ${alignmentPage}\nfeedback_status: revision-request\napproval_status: not-approved\nunanswered_required_questions:\n`;
+  y += unanswered.length ? unanswered.map(q => `  - ${q}`).join('\n') + '\n' : '  []\n';
+  y += 'section_feedback:\n';
+  y += entries.length ? entries.map(e => `  - section: ${yamlEscape(e.section)}\n    feedback: ${e.feedback}\n    requested_agent_action: ${e.requested_agent_action}\n    notes: ${yamlEscape(e.notes)}`).join('\n') + '\n' : '  []\n';
+  return y;
+}
+
+function answersYaml() {
+  const gates = [...document.querySelectorAll('.gate')];
+  let y = `alignment_page: ${alignmentPage}\napproval_status: ready-for-agent-review\ngate_answers:\n`;
+  for (const g of gates) {
+    const checked = g.querySelector('input[type="radio"]:checked');
+    const answer = checked ? checked.value : '';
+    const status = answer === 'Need clarification' ? 'needs-clarification' : (answer === 'Other / None of the above' ? 'other' : 'answered');
+    const notes = g.querySelector('.answer-notes').value.trim();
+    y += `  - section: ${yamlEscape(g.dataset.section)}\n    gate_type: ${yamlEscape(g.dataset.gateType)}\n    status: ${status}\n    answer: ${yamlEscape(answer)}\n`;
+    if (notes) y += `    notes: ${yamlEscape(notes)}\n`;
+    if (g.dataset.targetPath) y += `    target_path: ${yamlEscape(g.dataset.targetPath)}\n`;
+  }
+  const feedback = selectedFeedbackEntries();
+  y += 'section_feedback:\n';
+  y += feedback.length ? feedback.map(e => `  - section: ${yamlEscape(e.section)}\n    feedback: ${e.feedback}\n    requested_agent_action: ${e.requested_agent_action}\n    notes: ${yamlEscape(e.notes)}`).join('\n') + '\n' : '  []\n';
+  return y;
+}
+
+async function copyText(text, statusEl, textarea) {
+  try { await navigator.clipboard.writeText(text); statusEl.textContent = 'Copied'; }
+  catch { if (textarea) { textarea.focus(); textarea.select(); } statusEl.textContent = 'Select text to copy'; }
+}
+
+function updateAnswerState() {
+  const remaining = unansweredQuestions();
+  const btn = document.getElementById('compile-answers');
+  btn.disabled = remaining.length > 0;
+  document.getElementById('answer-status').textContent = remaining.length ? `${remaining.length} required questions remaining` : 'All required questions answered';
+}
+
+// Pair top/bottom section feedback controls
+function getPairedControl(box) {
+  const section = box.dataset.section;
+  const isBottom = box.id.endsWith('-bottom');
+  const allMatching = [...document.querySelectorAll(`.section-feedback[data-section="${section}"]`)];
+  return allMatching.find(el => el !== box);
+}
+
+function syncFeedbackPair(source, target) {
+  if (!target) return;
+  target.querySelectorAll('button[data-feedback]').forEach(b => b.classList.remove('active'));
+  if (source.dataset.feedback) {
+    const matchBtn = target.querySelector(`button[data-feedback="${source.dataset.feedback}"]`);
+    if (matchBtn) matchBtn.classList.add('active');
+    target.dataset.feedback = source.dataset.feedback;
+    target.classList.add('has-feedback');
+  } else {
+    delete target.dataset.feedback;
+    target.classList.remove('has-feedback', 'has-yaml');
+  }
+}
+
+// Section feedback buttons
+document.querySelectorAll('.section-feedback button[data-feedback]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const box = btn.closest('.section-feedback');
+    if (btn.classList.contains('active')) {
+      btn.classList.remove('active'); box.classList.remove('has-feedback', 'has-yaml'); delete box.dataset.feedback;
+    } else {
+      box.querySelectorAll('button[data-feedback]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active'); box.dataset.feedback = btn.dataset.feedback; box.classList.add('has-feedback'); box.classList.remove('has-yaml');
+    }
+    syncFeedbackPair(box, getPairedControl(box));
+  });
+});
+
+// Per-section compile local feedback
+document.querySelectorAll('.compile-local-feedback').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const box = btn.closest('.section-feedback');
+    const canonicalBox = box.id.endsWith('-bottom') ? getPairedControl(box) || box : box;
+    const notes = canonicalBox.querySelector('.feedback-notes').value.trim() || box.querySelector('.feedback-notes').value.trim();
+    const entry = { section: canonicalBox.dataset.section, feedback: canonicalBox.dataset.feedback, notes: notes, requested_agent_action: actionFor[canonicalBox.dataset.feedback] };
+    const y = feedbackYaml([entry]);
+    const area = box.querySelector('.local-yaml'); area.value = y; box.classList.add('has-yaml');
+    copyText(y, box.querySelector('.copy-status'), area);
+  });
+});
+
+// Per-section copy local feedback
+document.querySelectorAll('.copy-local-feedback').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const box = btn.closest('.section-feedback');
+    copyText(box.querySelector('.local-yaml').value, box.querySelector('.copy-status'), box.querySelector('.local-yaml'));
+  });
+});
+
+// Gate radio buttons
+document.querySelectorAll('.gate input[type="radio"]').forEach(r => {
+  r.addEventListener('change', () => { r.closest('.gate').classList.add('has-answer'); updateAnswerState(); });
+});
+
+// Bottom compile feedback
+document.getElementById('compile-feedback').addEventListener('click', () => {
+  const y = feedbackYaml(selectedFeedbackEntries());
+  const area = document.getElementById('compiled-feedback-yaml'); area.value = y;
+  copyText(y, document.getElementById('feedback-status'), area);
+});
+document.getElementById('copy-feedback').addEventListener('click', () => {
+  copyText(document.getElementById('compiled-feedback-yaml').value, document.getElementById('feedback-status'), document.getElementById('compiled-feedback-yaml'));
+});
+
+// Bottom compile answers
+document.getElementById('compile-answers').addEventListener('click', () => {
+  const remaining = unansweredQuestions();
+  if (remaining.length > 0) {
+    remaining[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    document.getElementById('answer-status').textContent = `${remaining.length} unanswered — scrolled to first`;
+    return;
+  }
+  const y = answersYaml();
+  const area = document.getElementById('compiled-yaml'); area.value = y;
+  copyText(y, document.getElementById('answer-status'), area);
+});
+document.getElementById('copy-answers').addEventListener('click', () => {
+  copyText(document.getElementById('compiled-yaml').value, document.getElementById('answer-status'), document.getElementById('compiled-yaml'));
+});
+
+updateAnswerState();
+</script>
+
+<script src="../scripts/alignment-tts-kokoro.js"></script>
+</body>
+</html>
