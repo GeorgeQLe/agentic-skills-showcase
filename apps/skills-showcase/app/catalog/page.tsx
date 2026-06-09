@@ -59,8 +59,8 @@ export default function CatalogPage() {
         </p>
         <div className="notice" data-catalog-missing="" hidden>
           Generated catalog data is missing or malformed. Run{" "}
-          <code>node scripts/generate-skills-showcase-data.mjs</code> and{" "}
-          <code>scripts/validate-skills-showcase-data.sh</code>.
+          <code>pnpm --dir apps/skills-showcase generate:data</code> and{" "}
+          <code>pnpm --dir apps/skills-showcase validate:data</code>.
         </div>
         <div className="catalog-list" data-catalog-list=""></div>
       </section>

@@ -41,8 +41,8 @@ export default function InspectPage() {
         ></aside>
         <div className="notice span-12" data-proof-missing="" hidden>
           Generated proof data is missing or malformed. Run{" "}
-          <code>node scripts/generate-skills-showcase-github-data.mjs</code>{" "}
-          and <code>scripts/validate-skills-showcase-data.sh</code>.
+          <code>pnpm --dir apps/skills-showcase generate:data</code>{" "}
+          and <code>pnpm --dir apps/skills-showcase validate:data</code>.
         </div>
         <div className="notice span-12 proof-funnel-note">
           Static telemetry proves AFPS phase artifacts: alignment docs,

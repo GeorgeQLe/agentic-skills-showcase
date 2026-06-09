@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "generate:data": "node scripts/generate-skills-showcase-data.mjs && node scripts/generate-skills-showcase-github-data.mjs",
+    "validate:data": "scripts/validate-skills-showcase-data.sh"
   },
   "dependencies": {
     "@neondatabase/serverless": "1.1.0",

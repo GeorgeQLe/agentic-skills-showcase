@@ -54,8 +54,8 @@ export default function PacksPage() {
         </div>
         <div className="notice" data-pack-missing="" hidden>
           Generated pack data is missing or malformed. Run{" "}
-          <code>node scripts/generate-skills-showcase-data.mjs</code> and{" "}
-          <code>scripts/validate-skills-showcase-data.sh</code>.
+          <code>pnpm --dir apps/skills-showcase generate:data</code> and{" "}
+          <code>pnpm --dir apps/skills-showcase validate:data</code>.
         </div>
         <div className="pack-layout">
           <div className="pack-band core" aria-label="Global core">

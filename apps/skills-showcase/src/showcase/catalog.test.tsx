@@ -90,7 +90,7 @@ const MOCK_PROOF = {
     { id: "catalog-data", title: "Catalog data", path: "public/assets/skills-data.js", tracked: true, exists: true }
   ],
   validationScripts: [
-    { id: "validate-data", title: "Validate data", command: "scripts/validate-skills-showcase-data.sh" }
+    { id: "validate-data", title: "Validate data", command: "apps/skills-showcase/scripts/validate-skills-showcase-data.sh" }
   ],
   recentHistoryEntries: ["Step 37.5: shipped static retirement"],
   boundaries: ["No live LexCorp metrics"],

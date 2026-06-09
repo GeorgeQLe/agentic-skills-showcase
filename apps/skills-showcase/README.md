@@ -30,12 +30,11 @@ Generated data lives in `public/assets/` (`skills-data.js` and `github-proof-dat
 To regenerate and validate from the repository root:
 
 ```bash
-node scripts/generate-skills-showcase-data.mjs
-node scripts/generate-skills-showcase-github-data.mjs
-scripts/validate-skills-showcase-data.sh
+pnpm --dir apps/skills-showcase generate:data
+pnpm --dir apps/skills-showcase validate:data
 ```
 
-Generator scripts dual-write to both `docs/skills-showcase/assets/` and `apps/skills-showcase/public/assets/`. The validator fingerprints all four assets.
+Generator scripts live under `apps/skills-showcase/scripts/` and dual-write to both `apps/skills-showcase/public/assets/` and the temporary static mirror at `docs/skills-showcase/assets/`. The validator fingerprints all four JS assets plus the website-owned benchmark matrix at `docs/benchmark-results-matrix.md`.
 
 ## Environment Variables
 
@@ -50,4 +49,4 @@ Newsletter subscribers are stored in Neon PostgreSQL. Migration SQL lives at `sr
 
 ## Relationship to `docs/skills-showcase/`
 
-The static site HTML/CSS/JS files were removed in Step 37.6. `docs/skills-showcase/assets/` is kept for dual-write. This Next.js app is the sole G Skillpacks surface.
+The static site HTML/CSS/JS files were removed in Step 37.6. `docs/skills-showcase/assets/` is kept as a website-owned static mirror. This Next.js app is the sole G Skillpacks surface.

@@ -149,8 +149,8 @@
     <text x="514" y="399" fill="#d29922" font-size="10" font-weight="700">collapse-fan</text>
   </g>
 <g>
-    <path d="M 884 429 C 991 405, 991 405, 1098 429" fill="none" stroke="#d29922" stroke-width="1.9" stroke-opacity="0.82" marker-end="url(#arrow-close)" />
-    <text x="997" y="399" fill="#d29922" font-size="10" font-weight="700">collapse-complete</text>
+    <path d="M 690 429 C 894 405, 894 405, 1098 429" fill="none" stroke="#d29922" stroke-width="1.9" stroke-opacity="0.82" marker-end="url(#arrow-close)" />
+    <text x="900" y="399" fill="#d29922" font-size="10" font-weight="700">collapse-complete</text>
   </g>
 <g>
     <path d="M 1098 429 C 622 429, 622 99, 146 99" fill="none" stroke="#d29922" stroke-width="1.9" stroke-opacity="0.82" marker-end="url(#arrow-close)" />
@@ -286,11 +286,6 @@
     <rect x="632" y="408" width="116" height="42" rx="8" fill="#161b22" stroke="#58a6ff" />
     <text x="640" y="425" fill="#fff" font-size="11" font-weight="700">card0X/Y</text>
     <text x="640" y="439" fill="#8b949e" font-size="9">motion</text>
-  </g>
-<g>
-    <rect x="826" y="408" width="116" height="42" rx="8" fill="#161b22" stroke="#58a6ff" />
-    <text x="834" y="425" fill="#fff" font-size="11" font-weight="700">collapse counters</text>
-    <text x="834" y="439" fill="#8b949e" font-size="9">ref</text>
   </g>
 <g>
     <rect x="1040" y="408" width="116" height="42" rx="8" fill="#161b22" stroke="#58a6ff" />
@@ -620,7 +615,7 @@
       </tr>
 <tr>
         <td><code>collapse-complete</code></td>
-        <td><code>drawer-collapseCounters</code> -> <code>drawer-collapseCompleteFired</code></td>
+        <td><code>drawer-card0</code> -> <code>drawer-collapseCompleteFired</code></td>
         <td>collapse-complete</td>
         <td>PackOpener.completeCollapse</td>
         <td></td>
@@ -1007,20 +1002,6 @@
       "y": 408
     },
     {
-      "id": "drawer-collapseCounters",
-      "label": "collapse counters",
-      "lane": "pack-opener",
-      "phase": "close",
-      "kind": "ref",
-      "trackedFields": [
-        "drawer.collapseCount",
-        "drawer.expectedCollapseCount"
-      ],
-      "description": "Count of completed card-collapse animations versus the expected handoff count.",
-      "x": 826,
-      "y": 408
-    },
-    {
       "id": "drawer-collapseCompleteFired",
       "label": "complete fired",
       "lane": "pack-opener",
@@ -1404,7 +1385,7 @@
     },
     {
       "id": "collapse-complete",
-      "from": "drawer-collapseCounters",
+      "from": "drawer-card0",
       "to": "drawer-collapseCompleteFired",
       "trigger": "collapse-complete",
       "source": "PackOpener.completeCollapse",
@@ -1892,20 +1873,6 @@
       &quot;y&quot;: 408
     },
     {
-      &quot;id&quot;: &quot;drawer-collapseCounters&quot;,
-      &quot;label&quot;: &quot;collapse counters&quot;,
-      &quot;lane&quot;: &quot;pack-opener&quot;,
-      &quot;phase&quot;: &quot;close&quot;,
-      &quot;kind&quot;: &quot;ref&quot;,
-      &quot;trackedFields&quot;: [
-        &quot;drawer.collapseCount&quot;,
-        &quot;drawer.expectedCollapseCount&quot;
-      ],
-      &quot;description&quot;: &quot;Count of completed card-collapse animations versus the expected handoff count.&quot;,
-      &quot;x&quot;: 826,
-      &quot;y&quot;: 408
-    },
-    {
       &quot;id&quot;: &quot;drawer-collapseCompleteFired&quot;,
       &quot;label&quot;: &quot;complete fired&quot;,
       &quot;lane&quot;: &quot;pack-opener&quot;,
@@ -2289,7 +2256,7 @@
     },
     {
       &quot;id&quot;: &quot;collapse-complete&quot;,
-      &quot;from&quot;: &quot;drawer-collapseCounters&quot;,
+      &quot;from&quot;: &quot;drawer-card0&quot;,
       &quot;to&quot;: &quot;drawer-collapseCompleteFired&quot;,
       &quot;trigger&quot;: &quot;collapse-complete&quot;,
       &quot;source&quot;: &quot;PackOpener.completeCollapse&quot;,
