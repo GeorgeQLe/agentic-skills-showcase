@@ -231,11 +231,11 @@ textarea { width:100%; min-height:90px; background:#0d1117; color:var(--text); b
   <textarea class="local-yaml" readonly></textarea>
 </div>
 
-<div class="table-wrap" data-tts-narrative="Eight constraints govern the refactor: promote existing card primitives rather than rewriting them, use the 157 skills across 7 sets already mapped, coexist with npm and shadcn distribution, keep the current tech stack, no GitHub Actions, fresh start on page structure, and dual branding scoped to showcase only."><table>
+<div class="table-wrap" data-tts-narrative="Eight constraints govern the refactor: promote existing card primitives rather than rewriting them, use the current generated inventory of 373 platform entries and 190 unique mirrored skills while treating the old 157-card seven-set map as historical prototype display scope, coexist with npm and shadcn distribution, keep the current tech stack, no GitHub Actions, fresh start on page structure, and dual branding scoped to showcase only."><table>
 <thead><tr><th>Constraint</th><th>Source</th><th>Rationale</th></tr></thead>
 <tbody>
 <tr><td>Existing card primitives (SealedPack, SkillCard, PackOpener, BottomSheet, debug harness) are the starting asset library &mdash; promote, don't rewrite</td><td><span class="tag tag-repo">from repo</span></td><td>678-line SealedPack + full animation state machine already built</td></tr>
-<tr><td>157 skills across 7 sets from <code>tasks/pack-card-hierarchy.md</code></td><td><span class="tag tag-repo">from repo</span></td><td>Content inventory already mapped and verified</td></tr>
+<tr><td>Current generated inventory: 373 platform entries, 190 unique mirrored skills, 179 unique pack skills, 11 unique global skills, and 41 active packs; old 157-card / 7-set map in <code>tasks/pack-card-hierarchy.md</code> is historical prototype display scope</td><td><span class="tag tag-repo">from repo</span></td><td>Content inventory exists, but deck-builder set data must be regenerated from <code>apps/skills-showcase/public/assets/skills-data.js</code> before implementation</td></tr>
 <tr><td>Must coexist with npm <code>skillpacks</code> CLI distribution</td><td><span class="tag tag-repo">from repo</span></td><td>Showcase is visual; CLI is the install mechanism</td></tr>
 <tr><td>Must coexist with shadcn-style repo distribution</td><td><span class="tag tag-prompt">from prompt</span></td><td>Both distribution paths feed from the same manifest</td></tr>
 <tr><td>Next.js 16 + React 19 + Framer Motion + Tailwind 4 stack stays</td><td><span class="tag tag-repo">from repo</span></td><td>No framework migration</td></tr>
@@ -281,10 +281,10 @@ textarea { width:100%; min-height:90px; background:#0d1117; color:var(--text); b
 </div>
 
 <h3>Assumptions</h3>
-<div class="table-wrap" data-tts-narrative="Four key assumptions: the 7 booster sets map to sealed packs, the RD and AFPS archetypes plus five canonical decks are the deck-building structure, users will understand the metaphor without onboarding, and the CLI plus config export is sufficient to bridge browsing to installation."><table>
+<div class="table-wrap" data-tts-narrative="Four key assumptions: the historical 7 booster-set prototype map can seed the sealed-pack experience after current generated data is regenerated into deck-builder set data, the RD and AFPS archetypes plus five canonical decks are the deck-building structure, users will understand the metaphor without onboarding, and the CLI plus config export is sufficient to bridge browsing to installation."><table>
 <thead><tr><th>Assumption</th><th>Source</th><th>Status</th><th>What would change it</th></tr></thead>
 <tbody>
-<tr><td>The 7 booster sets from <code>pack-card-hierarchy.md</code> map 1:1 to sealed packs in the new experience</td><td><span class="tag tag-repo">from repo</span></td><td>Provisional</td><td>User wants a different grouping or fewer/more sets</td></tr>
+<tr><td>The historical 7 booster-set prototype map from <code>pack-card-hierarchy.md</code> can seed the sealed-pack experience after current generated data is regenerated into deck-builder set data</td><td><span class="tag tag-repo">from repo</span></td><td>Provisional</td><td>User wants a different grouping, fewer/more sets, or generated-data analysis shows the old display grouping is no longer useful</td></tr>
 <tr><td>The RD and AFPS archetypes plus five canonical decks (VARD, ORD, Business AFPS, Devtool AFPS, Game AFPS) from <code>docs/decks.md</code> are the deck-building structure users select from</td><td><span class="tag tag-repo">from repo</span></td><td>Provisional</td><td>User wants custom/freeform deck building beyond the [descriptor]+[archetype] convention</td></tr>
 <tr><td>Users understand the deck-builder metaphor without onboarding</td><td><span class="tag tag-inferred">inferred</span></td><td>Assumed</td><td>User testing reveals confusion; an onboarding flow would be needed</td></tr>
 <tr><td>CLI command + project.json export is sufficient to bridge browsing to installation</td><td><span class="tag tag-inferred">inferred</span></td><td>Assumed</td><td>Users expect a one-click web install or direct GitHub integration</td></tr>
@@ -316,7 +316,7 @@ textarea { width:100%; min-height:90px; background:#0d1117; color:var(--text); b
 
 <div class="stat-grid">
 <div><strong>7</strong><span>Sealed booster packs with tear-to-open</span></div>
-<div><strong>157</strong><span>Skill cards across all sets</span></div>
+<div><strong>190</strong><span>Unique mirrored skill cards in current generated data</span></div>
 <div><strong>7</strong><span>Animation phases in state machine</span></div>
 <div><strong>6</strong><span>Component primitives</span></div>
 </div>
@@ -335,7 +335,7 @@ textarea { width:100%; min-height:90px; background:#0d1117; color:var(--text); b
 
 <h4>Key Reference Documents</h4>
 <ul>
-<li><code>tasks/pack-card-hierarchy.md</code> &mdash; 7 sets mapped to 157 skills with TypeScript data</li>
+<li><code>tasks/pack-card-hierarchy.md</code> &mdash; historical 7-set prototype display map with 157 repo-managed Claude pack roots; regenerate current deck-builder set data from <code>apps/skills-showcase/public/assets/skills-data.js</code></li>
 <li><code>docs/decks.md</code> &mdash; Five canonical decks across business, developer, and game domains</li>
 <li><code>docs/skillpacks-npm-distribution.md</code> &mdash; CLI commands, manifest schema, deck metadata</li>
 <li><code>alignment/uat-card-pack-migration.html</code> &mdash; Prior UAT alignment for card pack migration</li>
@@ -412,7 +412,7 @@ textarea { width:100%; min-height:90px; background:#0d1117; color:var(--text); b
   <h3>ICP Readiness</h3>
   <p>Is the concept ready for ICP analysis with the beneficiary hypotheses listed, or does it need more scoping first?</p>
   <div class="radio-group">
-    <label><input type="radio" name="icp-readiness" value="Ready for ICP"> <span>Ready for ICP &mdash; proceed with <code>/pack install business-discovery</code> then <code>/icp</code></span></label>
+    <label><input type="radio" name="icp-readiness" value="Ready for ICP"> <span>Ready for ICP &mdash; proceed with <code>/pack install business-discovery</code> then <code>/customer-discovery</code></span></label>
     <label><input type="radio" name="icp-readiness" value="Skip ICP, go straight to design"> <span>Skip ICP &mdash; go straight to UX/UI design</span></label>
     <label><input type="radio" name="icp-readiness" value="Needs more scoping first"> <span>Needs more scoping first (specify in notes)</span></label>
     <label><input type="radio" name="icp-readiness" value="Other / None of the above" data-special="other"> <span>Other / None of the above</span></label>
@@ -446,7 +446,7 @@ textarea { width:100%; min-height:90px; background:#0d1117; color:var(--text); b
   <p>After final approval, what should the agent do next?</p>
   <div class="radio-group">
     <label><input type="radio" name="post-approval-route" value="Confirm and stop — I will drive next steps manually"> <span>Confirm and stop &mdash; I will drive next steps manually</span></label>
-    <label><input type="radio" name="post-approval-route" value="/pack install business-discovery then /icp"> <span>Install business-discovery pack, then run <code>/icp</code></span></label>
+    <label><input type="radio" name="post-approval-route" value="/pack install business-discovery then /customer-discovery"> <span>Install business-discovery pack, then run <code>/customer-discovery</code></span></label>
     <label><input type="radio" name="post-approval-route" value="Skip to UX/UI design directly"> <span>Skip to UX/UI design directly</span></label>
     <label><input type="radio" name="post-approval-route" value="Other / None of the above" data-special="other"> <span>Other / None of the above</span></label>
     <label><input type="radio" name="post-approval-route" value="Need clarification" data-special="clarification"> <span>Need clarification</span></label>

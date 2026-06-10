@@ -100,7 +100,7 @@ Tapping an uncollected card in the fan flies it from the fan to its slot using t
 
 ### 5. Card detail (`/card/[id]`)
 
-Every card has a real URL. From the fan or a filled slot, "expand" opens the card as an intercepted-route modal: enlarged card with full back-face stats (description, platform, scope, version, tags, benchmark grade with per-agent pass rates) plus "part of deck(s): …" chips linking to builders. On direct load (shared link, search engine), the same route renders as a standalone page over the table — this replaces the old `/catalog` detail role and is the SEO surface for all 157 skills.
+Every card has a real URL. From the fan or a filled slot, "expand" opens the card as an intercepted-route modal: enlarged card with full back-face stats (description, platform, scope, version, tags, benchmark grade with per-agent pass rates) plus "part of deck(s): …" chips linking to builders. On direct load (shared link, search engine), the same route renders as a standalone page over the table — this replaces the old `/catalog` detail role and is the SEO surface for the generated inventory: 373 platform entries de-duplicated into 190 unique mirrored skill cards.
 
 ### 6. Deck completion and output
 

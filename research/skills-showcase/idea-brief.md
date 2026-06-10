@@ -41,7 +41,7 @@ Developer tool interactive catalog / configuration UI with a card-game brand wra
 | Constraint | Source | Rationale |
 |---|---|---|
 | Existing card primitives (SealedPack, SkillCard, PackOpener, BottomSheet, debug harness) are the starting asset library | from repo | 678-line SealedPack + full animation state machine already built |
-| 157 skills across 7 sets from `tasks/pack-card-hierarchy.md` | from repo | Content inventory already mapped and verified |
+| Current generated inventory is 373 platform entries, 190 unique mirrored skills, 179 unique pack skills, 11 unique global skills, and 41 active packs; the old 157-card / 7-set map in `tasks/pack-card-hierarchy.md` is historical prototype display scope | from repo | Content inventory exists, but deck-builder set data must be regenerated from `apps/skills-showcase/public/assets/skills-data.js` before implementation |
 | Must coexist with npm `skillpacks` CLI distribution | from repo | Showcase is visual; CLI is the install mechanism |
 | Must coexist with shadcn-style repo distribution | from prompt | Both distribution paths feed from the same manifest |
 | Next.js 16 + React 19 + Framer Motion + Tailwind 4 stack stays | from repo | No framework migration |
@@ -64,7 +64,7 @@ Developer tool interactive catalog / configuration UI with a card-game brand wra
 
 | Assumption | Source | Status | What would change it |
 |---|---|---|---|
-| The 7 booster sets from `pack-card-hierarchy.md` map 1:1 to sealed packs | from repo | Provisional | User wants a different grouping or fewer/more sets |
+| The historical 7 booster-set prototype map from `pack-card-hierarchy.md` can seed the sealed-pack experience after current generated data is regenerated into deck-builder set data | from repo | Provisional | User wants a different grouping, fewer/more sets, or generated-data analysis shows the old display grouping is no longer useful |
 | The 2 archetypes (RD, AFPS) and 5 canonical decks (VARD, ORD, Business AFPS, Devtool AFPS, Game AFPS) are the deck-building structure | from repo | Provisional | User wants custom/freeform deck building beyond the convention |
 | Users understand the deck-builder metaphor without onboarding | inferred | Assumed | User testing reveals confusion |
 | CLI command + project.json export is sufficient to bridge browsing to installation | inferred | Assumed | Users expect one-click web install or direct GitHub integration |
