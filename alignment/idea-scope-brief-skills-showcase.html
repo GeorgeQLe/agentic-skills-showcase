@@ -72,7 +72,8 @@ textarea { width:100%; min-height:90px; background:#0d1117; color:var(--text); b
 <header>
 <h1>Skills Showcase Deck-Builder Refactor</h1>
 <p class="lead">Rebuild <code>gskillpacks.com</code> from an informational skill catalog into an interactive deck-building experience where users tear open packs, inspect skill cards, and assemble workflow decks &mdash; with dual card-game / technical branding.</p>
-<div class="status"><strong>alignment_status:</strong>&nbsp; confirmed &nbsp; <strong>generated:</strong>&nbsp; 2026-06-09 &nbsp; <strong>artifact:</strong>&nbsp; alignment/idea-scope-brief-skills-showcase.html</div>
+<div class="status"><strong>alignment_status:</strong>&nbsp; amended confirmed &nbsp; <strong>generated:</strong>&nbsp; 2026-06-09 &nbsp; <strong>amended:</strong>&nbsp; 2026-06-10 &nbsp; <strong>artifact:</strong>&nbsp; alignment/idea-scope-brief-skills-showcase.html</div>
+<div class="callout callout-green"><strong>Amendment note:</strong> Superseded by the 2026-06-10 Game AFPS deck-model update. The showcase deck-builder should present five canonical decks: VARD, ORD, Business AFPS, Devtool AFPS, and Game AFPS.</div>
 </header>
 
 <nav class="toc" aria-label="Table of Contents"><h2>Table Of Contents</h2><ol>
@@ -103,7 +104,7 @@ textarea { width:100%; min-height:90px; background:#0d1117; color:var(--text); b
   <textarea class="local-yaml" readonly></textarea>
 </div>
 <p>Fresh-start rebuild of the skills showcase at <code>gskillpacks.com</code>. The current informational pages (Workflows, Packs, Catalog, Inspect, Benchmarks, Follow) are replaced by a deck-building card-game experience that is both the brand's visual identity and a functional tool for assembling skill libraries.</p>
-<p>Users browse sealed booster packs (categories), tear them open to reveal skill cards, inspect card stats (benchmarks, platform, tags), and add cards into deck slots that map to the four canonical workflow types. Building a deck produces actionable output: a copyable CLI command (<code>npx skillpacks install-deck ...</code>) and a downloadable <code>project.json</code> config.</p>
+<p>Users browse sealed booster packs (categories), tear them open to reveal skill cards, inspect card stats (benchmarks, platform, tags), and add cards into deck slots that map to the five canonical workflow decks. Building a deck produces actionable output: a copyable CLI command (<code>npx skillpacks install-deck ...</code>) and a downloadable <code>project.json</code> config.</p>
 <p>The site uses <strong>dual branding</strong>: card-game terminology as the primary voice (the GSkillPacks brand), with technical terms in parentheticals and tooltips so developers always know what they're actually installing.</p>
 <p>The current showcase pages and components will be archived once the deck-builder replacement is live.</p>
 </section>
@@ -121,7 +122,7 @@ textarea { width:100%; min-height:90px; background:#0d1117; color:var(--text); b
 </div>
 <p><span class="tag tag-confirmed">from prompt</span> Terminology rename scoped to showcase only. Docs and CLI keep current terminology.</p>
 
-<div class="table-wrap" data-tts-narrative="The dual branding map shows card-game terms alongside their technical equivalents. Decks map to named workflow sequences, Archetypes are the two workflow tempos RD and AFPS, Packs to Categories, and Cards to Skills."><table>
+<div class="table-wrap" data-tts-narrative="The dual branding map shows card-game terms alongside their technical equivalents. Decks map to named workflow sequences, Archetypes are the workflow tempo classes RD and AFPS, Packs to Categories, and Cards to Skills."><table>
 <thead><tr><th>Card Game (GSkillPacks)</th><th>Technical</th><th>Current Term</th><th>Scope</th></tr></thead>
 <tbody>
 <tr><td><strong>Deck</strong></td><td>Named workflow sequence</td><td>Deck</td><td>Showcase UI</td></tr>
@@ -139,13 +140,14 @@ textarea { width:100%; min-height:90px; background:#0d1117; color:var(--text); b
 <div><strong>AFPS</strong><span>Alignment First, Prototype-Second &mdash; deliberate pipeline over weeks/months</span></div>
 </div>
 
-<h4>Four Canonical Decks</h4>
-<p>Each deck combines a domain descriptor with an archetype on a 2&times;2 matrix (domain &times; tempo):</p>
+<h4>Five Canonical Decks</h4>
+<p>Each canonical deck combines a domain descriptor with a tempo archetype. Business and developer domains each have rapid and deliberate decks; the game domain currently has a deliberate Game AFPS deck and no rapid feeder deck.</p>
 <div class="stat-grid">
 <div><strong>VARD</strong><span>Viral App + RD</span><br><span class="tag tag-prompt">RD</span><span class="tag tag-prompt">Business</span></div>
 <div><strong>ORD</strong><span>OSS + RD</span><br><span class="tag tag-prompt">RD</span><span class="tag tag-prompt">Developer</span></div>
 <div><strong>Business AFPS</strong><span>Business + AFPS</span><br><span class="tag tag-prompt">AFPS</span><span class="tag tag-prompt">Business</span></div>
 <div><strong>Devtool AFPS</strong><span>Devtool + AFPS</span><br><span class="tag tag-prompt">AFPS</span><span class="tag tag-prompt">Developer</span></div>
+<div><strong>Game AFPS</strong><span>Game + AFPS</span><br><span class="tag tag-prompt">AFPS</span><span class="tag tag-prompt">Game</span></div>
 </div>
 </section>
 
@@ -279,11 +281,11 @@ textarea { width:100%; min-height:90px; background:#0d1117; color:var(--text); b
 </div>
 
 <h3>Assumptions</h3>
-<div class="table-wrap" data-tts-narrative="Four key assumptions: the 7 booster sets map to sealed packs, the 2 archetypes and 4 canonical decks are the deck-building structure, users will understand the metaphor without onboarding, and the CLI plus config export is sufficient to bridge browsing to installation."><table>
+<div class="table-wrap" data-tts-narrative="Four key assumptions: the 7 booster sets map to sealed packs, the RD and AFPS archetypes plus five canonical decks are the deck-building structure, users will understand the metaphor without onboarding, and the CLI plus config export is sufficient to bridge browsing to installation."><table>
 <thead><tr><th>Assumption</th><th>Source</th><th>Status</th><th>What would change it</th></tr></thead>
 <tbody>
 <tr><td>The 7 booster sets from <code>pack-card-hierarchy.md</code> map 1:1 to sealed packs in the new experience</td><td><span class="tag tag-repo">from repo</span></td><td>Provisional</td><td>User wants a different grouping or fewer/more sets</td></tr>
-<tr><td>The 2 archetypes (RD, AFPS) and 4 canonical decks (VARD, ORD, Business AFPS, Devtool AFPS) from <code>docs/decks.md</code> are the deck-building structure users select from</td><td><span class="tag tag-repo">from repo</span></td><td>Provisional</td><td>User wants custom/freeform deck building beyond the [descriptor]+[archetype] convention</td></tr>
+<tr><td>The RD and AFPS archetypes plus five canonical decks (VARD, ORD, Business AFPS, Devtool AFPS, Game AFPS) from <code>docs/decks.md</code> are the deck-building structure users select from</td><td><span class="tag tag-repo">from repo</span></td><td>Provisional</td><td>User wants custom/freeform deck building beyond the [descriptor]+[archetype] convention</td></tr>
 <tr><td>Users understand the deck-builder metaphor without onboarding</td><td><span class="tag tag-inferred">inferred</span></td><td>Assumed</td><td>User testing reveals confusion; an onboarding flow would be needed</td></tr>
 <tr><td>CLI command + project.json export is sufficient to bridge browsing to installation</td><td><span class="tag tag-inferred">inferred</span></td><td>Assumed</td><td>Users expect a one-click web install or direct GitHub integration</td></tr>
 </tbody>
@@ -334,7 +336,7 @@ textarea { width:100%; min-height:90px; background:#0d1117; color:var(--text); b
 <h4>Key Reference Documents</h4>
 <ul>
 <li><code>tasks/pack-card-hierarchy.md</code> &mdash; 7 sets mapped to 157 skills with TypeScript data</li>
-<li><code>docs/decks.md</code> &mdash; Four deck archetypes on domain &times; tempo matrix</li>
+<li><code>docs/decks.md</code> &mdash; Five canonical decks across business, developer, and game domains</li>
 <li><code>docs/skillpacks-npm-distribution.md</code> &mdash; CLI commands, manifest schema, deck metadata</li>
 <li><code>alignment/uat-card-pack-migration.html</code> &mdash; Prior UAT alignment for card pack migration</li>
 <li><code>apps/skills-showcase/alignment/animation-state-machine.html</code> &mdash; Animation state machine docs</li>
@@ -357,7 +359,7 @@ textarea { width:100%; min-height:90px; background:#0d1117; color:var(--text); b
 <li><strong>Primary beneficiary hypothesis:</strong> Developers evaluating GSkillPacks for project adoption</li>
 <li><strong>Secondary beneficiary:</strong> Existing users configuring new projects</li>
 <li><strong>Market structure:</strong> Single-sided (developer tool catalog, not a marketplace)</li>
-<li><strong>Assumptions to test first:</strong> Whether the deck-builder metaphor resonates with developers vs. feeling gimmicky; whether the 2 archetypes (RD/AFPS) and [descriptor]+[archetype] naming convention cover real workflow patterns</li>
+<li><strong>Assumptions to test first:</strong> Whether the deck-builder metaphor resonates with developers vs. feeling gimmicky; whether the RD/AFPS archetypes and [descriptor]+[archetype] naming convention cover real workflow patterns</li>
 <li><strong>Existing evidence:</strong> Devtool research docs in <code>research/</code> (positioning, adoption, DX journey, user map, monetization) provide market context</li>
 </ul>
 
