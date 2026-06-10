@@ -6,7 +6,7 @@
 
 ## Summary
 
-Rebuild `gskillpacks.com` from an informational skill catalog into an interactive deck-building experience. Users tear open sealed booster packs (categories), inspect skill cards (benchmarks, platform, tags), and assemble workflow decks mapped to the four canonical workflow types. Building a deck produces actionable output: a copyable CLI command (`npx skillpacks install-deck ...`) and a downloadable `project.json` config.
+Rebuild `gskillpacks.com` from an informational skill catalog into an interactive deck-building experience. Users tear open sealed booster packs (categories), inspect skill cards (benchmarks, platform, tags), and assemble workflow decks mapped to the five canonical workflow types. Building a deck produces actionable output: a copyable CLI command (`npx skillpacks install-deck ...`) and a downloadable `project.json` config.
 
 The site uses **dual branding**: card-game terminology as the primary voice (the GSkillPacks brand), with technical terms in parentheticals and tooltips so developers always know what they're installing. Dual branding is scoped to the showcase only; docs and CLI keep current terminology.
 
@@ -65,7 +65,7 @@ Developer tool interactive catalog / configuration UI with a card-game brand wra
 | Assumption | Source | Status | What would change it |
 |---|---|---|---|
 | The 7 booster sets from `pack-card-hierarchy.md` map 1:1 to sealed packs | from repo | Provisional | User wants a different grouping or fewer/more sets |
-| The 2 archetypes (RD, AFPS) and 4 canonical decks (VARD, ORD, Business AFPS, Devtool AFPS) are the deck-building structure | from repo | Provisional | User wants custom/freeform deck building beyond the convention |
+| The 2 archetypes (RD, AFPS) and 5 canonical decks (VARD, ORD, Business AFPS, Devtool AFPS, Game AFPS) are the deck-building structure | from repo | Provisional | User wants custom/freeform deck building beyond the convention |
 | Users understand the deck-builder metaphor without onboarding | inferred | Assumed | User testing reveals confusion |
 | CLI command + project.json export is sufficient to bridge browsing to installation | inferred | Assumed | Users expect one-click web install or direct GitHub integration |
 
