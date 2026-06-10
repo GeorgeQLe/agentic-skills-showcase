@@ -114,10 +114,10 @@ The concept is **ready for ICP analysis** with the following inputs:
 
 ## Next Steps
 
-**Primary:** `/pack install business-discovery` then `/icp`
+**Primary:** `/pack install business-discovery` then `/customer-discovery`
 
-This installs the research skills (ICP, competitive analysis, value prop, positioning, lean canvas) needed before any design or development work.
+This installs the research skills (customer discovery, competitive analysis, value prop, positioning, lean canvas) needed before any design or development work.
 
 **Other options:**
-- `/icp` directly if `business-discovery` is already installed
+- `/customer-discovery` directly if `business-discovery` is already installed
 - `/pack recommend` if unsure about which research skills to install

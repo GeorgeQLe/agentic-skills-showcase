@@ -11,7 +11,7 @@
 
 `/user-flow-map` was invoked to map the full deck-creation flow on gskillpacks.com — landing on the table through deck completion and CLI unlock, covering preset (canonical) decks, customization (swap/overlay), and custom decks — and to pressure-test whether phase-labeled slots mirroring the canonical card list make building feel like a chore versus user-defined phases. That second question was explicitly routed here by Amendment 2 of the animation design plan.
 
-Scope resolved to the active product path `skills-showcase`. Research evidence: `research/skills-showcase/idea-brief.md`. **Gap:** ICP and positioning have not run yet (manifest `next_skill: /icp`), so persona assumptions come from the idea brief, not validated research. The flow map carries this as a standing risk (approved at the evidence gate: "Sufficient — proceed on idea-brief personas").
+Scope resolved to the active product path `skills-showcase`. Research evidence: `research/skills-showcase/idea-brief.md`. **Gap:** customer discovery and positioning have not run yet (manifest `next_skill: /customer-discovery`), so persona assumptions come from the idea brief, not validated research. The flow map carries this as a standing risk (approved at the evidence gate: "Sufficient — proceed on idea-brief personas").
 
 ### Evidence behind load-bearing decisions
 
@@ -319,7 +319,7 @@ S7: "Add /benchmark-card to…"  ▸ VARD (2/3)  ▸ ORD  ▸ + new custom deck 
 | Swap gesture detail | How does a user swap a filled slot's card — tap-while-occupied prompt from the fan, or a slot context action? Flow defines that swap exists and converts to custom variant (B2); the interaction detail is per-screen content design. | `/ui-interview --requirements-only deck-creation` |
 | Custom phase editing depth | Proposed: add/rename/remove only; defer drag-reorder of phases out of v1. | Confirm in `/ui-interview` |
 | Next 16.2.6 intercepting routes | Client-state-first with shallow pushState is the routing decision; the spike is the top implementation risk (carried from the animation plan, not re-decided here). | First implementation task |
-| Persona validation | Evaluator/Returner personas come from the idea brief; ICP and positioning have not run. Approved as a recorded risk ("Sufficient — proceed on idea-brief personas"). | `/icp` → positioning (business-discovery pack, installed) |
+| Persona validation | Evaluator/Returner personas come from the idea brief; customer discovery and positioning have not run. Approved as a recorded risk ("Sufficient — proceed on idea-brief personas"). | `/customer-discovery` -> positioning (business-discovery pack, installed) |
 | Deck data pipeline | `skills-data.js` has zero deck definitions; deck shapes must be added to `generate-skills-showcase-data.mjs` output and shared with the CLI manifest (H5 drift risk). | Implementation planning |
 
 ### Explicit non-goals
