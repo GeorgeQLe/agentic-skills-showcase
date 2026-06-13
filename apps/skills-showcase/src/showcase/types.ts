@@ -42,6 +42,8 @@ export interface Skill {
   title?: string;
   description?: string;
   type?: string;
+  contextIntake?: string;
+  visualTier?: string;
   platform: string;
   command?: string;
   scope?: string;

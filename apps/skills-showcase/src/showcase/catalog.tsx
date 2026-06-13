@@ -240,6 +240,8 @@ export default function CatalogClient() {
           skill.title,
           skill.description,
           skill.type,
+          skill.contextIntake,
+          skill.visualTier,
           skill.platform,
           skill.command,
           skill.scope,
@@ -286,7 +288,7 @@ export default function CatalogClient() {
 
         const chips = document.createElement("div");
         chips.className = "chip-row";
-        [skill.platform, skill.type, skill.scope, skill.pack || "global", skill.command]
+        [skill.platform, skill.type, skill.contextIntake, skill.visualTier, skill.scope, skill.pack || "global", skill.command]
           .filter(Boolean)
           .forEach((label) => chips.appendChild(makeTag(label as string)));
         const mirrorKey = text(skill.mirrorKey, skill.name);
@@ -380,7 +382,7 @@ export default function CatalogClient() {
       const packAnnotations: Record<string, string[]> = {
         "alignment-loop": ["domain", "business", "planning"],
         "business-app": ["domain", "business", "alias"],
-        "business-discovery": ["domain", "business"],
+        "business-research": ["domain", "business"],
         "business-growth": ["domain", "business"],
         "business-ops": ["domain", "business"],
         "code-quality": ["overlay", "quality"],
@@ -396,8 +398,8 @@ export default function CatalogClient() {
 
       const packPurpose: Record<string, string> = {
         "alignment-loop": "Keeps decision loops explicit when strategy, research, and implementation need repeated alignment.",
-        "business-app": "Compatibility alias that expands to the narrower business discovery, lifecycle, growth, and ops packs.",
-        "business-discovery": "Researches market, user, ICP, and product direction before build work.",
+        "business-app": "Compatibility alias that expands to the narrower business research, lifecycle, growth, and ops packs.",
+        "business-research": "Researches market, user, ICP, and product direction before build work.",
         "business-growth": "Supports acquisition, monetization, launch, and growth-system work.",
         "business-ops": "Covers operating workflows for internal business systems and repeatable delivery.",
         "code-quality": "Adds adversarial review and quality gates around risky source changes.",

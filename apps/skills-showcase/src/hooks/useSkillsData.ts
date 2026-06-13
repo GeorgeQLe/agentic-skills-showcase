@@ -27,6 +27,8 @@ export interface Skill {
   title: string;
   description: string;
   type: string;
+  contextIntake?: string | null;
+  visualTier?: string | null;
   version: string;
   platform: string;
   command: string;
