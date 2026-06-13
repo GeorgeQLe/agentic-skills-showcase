@@ -24,7 +24,7 @@
 | Prompt / checkpoint | Options or recommendation | User response / decision | Carried into spec |
 |---|---|---|---|
 | Flow Assumptions Checkpoint | Confirm assumptions as-is or correct them. | Confirmed as-is in the prior conversation context. | Yes: assumptions table in spec section 2. |
-| Persona wording | Clarify who the flow covers and their shared goal. | Corrected wording: "Personas covered: a new evaluator choosing a GSkillPacks deck for adoption, and an existing user configuring another repo. Their shared goal is to leave the site with a clear command or config they can run locally." | Yes: status summary, persona table, assumptions. |
+| Persona wording | Clarify who the flow covers and their shared goal. | Corrected wording: "Personas covered: a new evaluator choosing a gSkillPacks deck for adoption, and an existing user configuring another repo. Their shared goal is to leave the site with a clear command or config they can run locally." | Yes: status summary, persona table, assumptions. |
 | Coverage checkpoint | Review branch/state/handoff coverage before durable writes. | Coverage reviewed in the prior conversation context. | Yes: flow coverage checkpoint in spec section 14 and branch/state/handoff gate. |
 | Approval workflow correction | Build review page first; defer canonical markdown writes until compiled YAML approval. | User-provided handoff plan required alignment-first review. | Yes: review page was built before these canonical files were written. |
 

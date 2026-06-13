@@ -14,7 +14,7 @@ The flow starts after a user has selected a deck or workflow and needs to leave 
 
 Corrected persona wording carried into this spec:
 
-> Personas covered: a new evaluator choosing a GSkillPacks deck for adoption, and an existing user configuring another repo. Their shared goal is to leave the site with a clear command or config they can run locally.
+> Personas covered: a new evaluator choosing a gSkillPacks deck for adoption, and an existing user configuring another repo. Their shared goal is to leave the site with a clear command or config they can run locally.
 
 | Evidence | Observed fact | Decision impact | Confidence |
 |---|---|---|---|
@@ -35,7 +35,7 @@ Checkpoint status from prior conversation context: assumptions confirmed as-is. 
 
 | # | Assumption | Source |
 |---|---|---|
-| 1 | The primary persona is a new evaluator choosing a GSkillPacks deck for adoption. | [from corrected conversation checkpoint] |
+| 1 | The primary persona is a new evaluator choosing a gSkillPacks deck for adoption. | [from corrected conversation checkpoint] |
 | 2 | The secondary persona is an existing user configuring another repo. | [from corrected conversation checkpoint] |
 | 3 | Both personas share one success condition: leave the site with a clear command or config they can run locally. | [from corrected conversation checkpoint] |
 | 4 | Entry can come from a completed deck output panel, the `/workflows` Production walkthrough, a shared deck URL, or docs/npm links that land on a deck/workflow surface. | [from spec + codebase] |
@@ -52,7 +52,7 @@ Checkpoint status from prior conversation context: assumptions confirmed as-is. 
 
 | Persona | Goal | Success condition | Tempo |
 |---|---|---|---|
-| New evaluator choosing a GSkillPacks deck for adoption | Understand enough about the deck/workflow to trust running it in a project. | Leaves with a clear local command, config download, or agent handoff route. | Exploratory: may inspect deck contents, prerequisites, and execution mode before copying. |
+| New evaluator choosing a gSkillPacks deck for adoption | Understand enough about the deck/workflow to trust running it in a project. | Leaves with a clear local command, config download, or agent handoff route. | Exploratory: may inspect deck contents, prerequisites, and execution mode before copying. |
 | Existing user configuring another repo | Move quickly from known deck/workflow to runnable setup. | Copies a command or downloads `project.json` with minimal friction. | Direct: wants fast copy/download plus recovery if local state is stale. |
 
 ## 4. Entry Points And Preconditions

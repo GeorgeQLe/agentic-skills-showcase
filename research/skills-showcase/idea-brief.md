@@ -8,7 +8,7 @@
 
 Rebuild `gskillpacks.com` from an informational skill catalog into an interactive deck-building experience. Users tear open sealed booster packs (categories), inspect skill cards (benchmarks, platform, tags), and assemble workflow decks mapped to the five canonical workflow types. Building a deck produces actionable output: a copyable CLI command (`npx skillpacks install-deck ...`) and a downloadable `project.json` config.
 
-The site uses **dual branding**: card-game terminology as the primary voice (the GSkillPacks brand), with technical terms in parentheticals and tooltips so developers always know what they're installing. Dual branding is scoped to the showcase only; docs and CLI keep current terminology.
+The site uses **dual branding**: card-game terminology as the primary voice (the gSkillPacks brand), with technical terms in parentheticals and tooltips so developers always know what they're installing. Dual branding is scoped to the showcase only; docs and CLI keep current terminology.
 
 The current showcase pages will be archived once the deck-builder replacement is live. This is a fresh start on page structure, not a retrofit of existing pages.
 
@@ -22,7 +22,7 @@ Additionally, the existing card-game primitives (SealedPack, SkillCard, PackOpen
 
 ## Beneficiary Hypothesis
 
-- **Primary:** Developers evaluating GSkillPacks who want to understand what skills exist and how to assemble them into workflows (decks). The deck-builder is both a discovery tool and a configuration wizard.
+- **Primary:** Developers evaluating gSkillPacks who want to understand what skills exist and how to assemble them into workflows (decks). The deck-builder is both a discovery tool and a configuration wizard.
 - **Secondary:** Existing users configuring new projects who already know the system but want a faster way to pick packs for a new repo.
 
 ## Product Category Guess
@@ -79,7 +79,7 @@ Developer tool interactive catalog / configuration UI with a card-game brand wra
 
 ### Dual Branding Map
 
-| Card Game (GSkillPacks) | Technical | Current Term | Scope |
+| Card Game (gSkillPacks) | Technical | Current Term | Scope |
 |---|---|---|---|
 | Deck | Named workflow sequence | Deck | Showcase UI |
 | Archetype | Workflow tempo class | RD / AFPS | Showcase UI |
@@ -104,7 +104,7 @@ Developer tool interactive catalog / configuration UI with a card-game brand wra
 
 The concept is **ready for ICP analysis** with the following inputs:
 
-- **Primary beneficiary hypothesis:** Developers evaluating GSkillPacks for project adoption
+- **Primary beneficiary hypothesis:** Developers evaluating gSkillPacks for project adoption
 - **Secondary beneficiary:** Existing users configuring new projects
 - **Market structure:** Single-sided (developer tool catalog, not a marketplace)
 - **Assumptions to test first:** Whether the deck-builder metaphor resonates with developers vs. feeling gimmicky; whether the 2 archetypes (RD/AFPS) and [descriptor]+[archetype] naming convention cover real workflow patterns

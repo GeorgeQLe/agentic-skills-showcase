@@ -32,7 +32,7 @@ Confirmed in the terminal interview on 2026-06-10 ("Confirmed as-is"). The slot-
 
 | # | Assumption | Source |
 |---|---|---|
-| 1 | Primary persona: developer evaluating GSkillPacks who wants to assemble a workflow deck | [from research] |
+| 1 | Primary persona: developer evaluating gSkillPacks who wants to assemble a workflow deck | [from research] |
 | 2 | Secondary persona: existing user configuring a new repo fast | [from research] |
 | 3 | First success = copyable `npx skillpacks install-deck …` or `project.json` download | [from artifact] |
 | 4 | Primary entry: `/` table — 5 preset blueprints + pack shelf, deck-first | [from artifact — locked] |
@@ -87,7 +87,7 @@ Interaction cost comparison:
 
 | Persona | Goal | Success condition | Tempo |
 |---|---|---|---|
-| **Evaluator** — developer assessing GSkillPacks for adoption [provisional — ICP not yet run] | Understand what decks/packs/cards are and assemble a deck matching their workflow | Copies `npx skillpacks install-deck …` or downloads `project.json` for a deck they understand | Exploratory — inspects cards, reads phases, may browse shelf first |
+| **Evaluator** — developer assessing gSkillPacks for adoption [provisional — ICP not yet run] | Understand what decks/packs/cards are and assemble a deck matching their workflow | Copies `npx skillpacks install-deck …` or downloads `project.json` for a deck they understand | Exploratory — inspects cards, reads phases, may browse shelf first |
 | **Returner** — existing user configuring a new repo | Fastest path to the right pack list | Same artifact, minimal interactions (Collect-all or unmodified preset) | Direct — knows the deck they want; speed valves exist for them |
 
 ## 5. Entry Points & Preconditions

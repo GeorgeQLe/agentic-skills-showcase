@@ -1,4 +1,4 @@
-# Final UI Specification: G Skillpacks — Playful Blueprint Theme
+# Final UI Specification: gSkillPacks — Playful Blueprint Theme
 
 ## Consolidation Summary
 

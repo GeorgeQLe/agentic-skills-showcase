@@ -29,7 +29,7 @@
 
 | Area | Assumption | Source tag |
 |---|---|---|
-| Product and user context | Users are developers evaluating or reusing GSkillPacks, and the handoff must help them run setup locally with confidence. | [from spec] |
+| Product and user context | Users are developers evaluating or reusing gSkillPacks, and the handoff must help them run setup locally with confidence. | [from spec] |
 | Pages/routes/entry points | Entry points are completed deck output, `/deck/[slug]`, `/workflows` Production step, direct docs/npm links, shared deck URL, and prior copied/downloaded config context. | [from spec + codebase] |
 | Prototype-first boundary | First clickable proof should let a user start from fake/generated deck/workflow data, choose a handoff path, copy/download/share, and see recovery guidance. Production local execution, packet mutation, git inspection, auth, analytics, and admin are visually represented only. | [from spec + inferred] |
 | Primary tasks | Users review the generated artifact, choose execution mode, copy/download/share, understand prerequisites, recover from browser/local-state problems, and return to edit if output is incomplete. | [from spec] |
