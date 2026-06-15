@@ -1,11 +1,11 @@
 # Preliminary UI Requirements - Skill Execution Handoff
 
-- **Status:** review draft, not canonical
+- **Status:** canonical
 - **Skill:** `$ui-interview --requirements-only skill-execution-handoff`
 - **Product path:** `skills-showcase`
-- **Working packet:** `research/skills-showcase/_working/preliminary-ui-interview-research.md`
-- **Review page:** `alignment/ui-interview-skill-execution-handoff.html`
-- **Proposed canonical files after future final UI approval only:**
+- **Working packet (archived):** `docs/history/archive/2026-06-15/101414/research/skills-showcase/_working/preliminary-ui-interview-research.md`
+- **Review page:** `alignment/ui-interview-skill-execution-handoff.html` (confirmed)
+- **Canonical files written from this approved packet:**
   - `specs/skills-showcase/ui-requirements-skill-execution-handoff.md`
   - `specs/skills-showcase/ui-requirements-skill-execution-handoff-interview.md`
 - **Mode boundary:** requirements-only. This packet defines content, entities, actions, states, constraints, hierarchy, and relationships. It does not lock layout, visual treatment, component library, spacing, responsive composition, or implementation tasks.
@@ -29,7 +29,7 @@
 
 | Area | Assumption | Source tag |
 |---|---|---|
-| Product and user context | Users are developers evaluating or reusing gSkillPacks, and the handoff must help them run setup locally with confidence. | [from spec] |
+| Product and user context | Users are developers evaluating or reusing GSkillPacks, and the handoff must help them run setup locally with confidence. | [from spec] |
 | Pages/routes/entry points | Entry points are completed deck output, `/deck/[slug]`, `/workflows` Production step, direct docs/npm links, shared deck URL, and prior copied/downloaded config context. | [from spec + codebase] |
 | Prototype-first boundary | First clickable proof should let a user start from fake/generated deck/workflow data, choose a handoff path, copy/download/share, and see recovery guidance. Production local execution, packet mutation, git inspection, auth, analytics, and admin are visually represented only. | [from spec + inferred] |
 | Primary tasks | Users review the generated artifact, choose execution mode, copy/download/share, understand prerequisites, recover from browser/local-state problems, and return to edit if output is incomplete. | [from spec] |
@@ -249,17 +249,16 @@
 
 ## 10. Proposed File Changes
 
-These changes are proposed for the UI alignment lifecycle:
+These changes were performed for the UI alignment lifecycle:
 
 | File | Change timing | Notes |
 |---|---|---|
-| `research/skills-showcase/_working/preliminary-ui-interview-research.md` | Written now for review | Non-canonical working packet. |
-| `alignment/ui-interview-skill-execution-handoff.html` | Written now in review state | Renders this full packet inline with approval gates. |
-| `alignment/index.html` | Updated now | Adds the review page entry. |
-| `specs/skills-showcase/ui-requirements-skill-execution-handoff.md` | Future only after final compiled YAML approval | Canonical UI requirements. Not written now. |
-| `specs/skills-showcase/ui-requirements-skill-execution-handoff-interview.md` | Future only after final compiled YAML approval | Canonical interview log. Not written now. |
-| `docs/history/archive/YYYY-MM-DD/HHMMSS/research/skills-showcase/_working/preliminary-ui-interview-research.md` | Future confirmation | Working packet archive after approval. |
-| `alignment/ui-interview-skill-execution-handoff.html` | Future confirmation | Convert review to confirmed after canonical writes. |
+| `research/skills-showcase/_working/preliminary-ui-interview-research.md` | Written for review, now archived | Non-canonical working packet; archived and removed after canonical writes. |
+| `alignment/ui-interview-skill-execution-handoff.html` | Written in review state, now confirmed | Renders this full packet inline with approval gates; converted to confirmed after canonical writes. |
+| `alignment/index.html` | Updated | Carries the confirmed page entry. |
+| `specs/skills-showcase/ui-requirements-skill-execution-handoff.md` | Written now (canonical) | Canonical UI requirements. |
+| `specs/skills-showcase/ui-requirements-skill-execution-handoff-interview.md` | Written now (canonical) | Canonical interview log. |
+| `docs/history/archive/2026-06-15/101414/research/skills-showcase/_working/preliminary-ui-interview-research.md` | Written now (archive) | Working packet archive after approval. |
 
 ## 11. Interview Record
 
@@ -271,4 +270,4 @@ These changes are proposed for the UI alignment lifecycle:
 | Product path | `skills-showcase`, resolved from `research/.progress.yaml`. |
 | Assumptions | Drafted from confirmed user-flow spec, idea brief, operating-mode docs, deck-creation spec, and current app code. |
 | Content requirements | Drafted page-by-page from approved flow screens P0-P6. |
-| Open review question | Does the review page approve these requirements as the content contract for later layout exploration? |
+| Open review question | Does the review page approve these requirements as the content contract for later layout exploration? Resolved: approved via final compiled YAML with `approval_status: ready-for-agent-review`. |
