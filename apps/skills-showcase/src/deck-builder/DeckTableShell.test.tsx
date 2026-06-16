@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 
 // Two skills in one pack so the "market-intel" deck
 // (packs: business-discovery + customer-lifecycle) resolves to a non-empty
@@ -44,7 +44,35 @@ function phase(): string | null {
   return screen.getByTestId("deck-phase").textContent;
 }
 
-describe("DeckTableShell skeleton", () => {
+// jsdom never fires framer's onLayoutAnimationComplete, so the morph boundaries
+// are driven through the window test bridge the shell exposes.
+function fireOpenMorphComplete() {
+  act(() => window.__deckMorphComplete?.open());
+}
+function fireCloseMorphComplete() {
+  act(() => window.__deckMorphComplete?.close());
+}
+
+// Force prefers-reduced-motion for the crossfade-path test. Default tests leave
+// matchMedia undefined (optional-chained to `false` = full-motion path).
+function mockReducedMotion(matches: boolean) {
+  Object.defineProperty(window, "matchMedia", {
+    configurable: true,
+    writable: true,
+    value: (query: string) => ({
+      matches,
+      media: query,
+      onchange: null,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false,
+    }),
+  });
+}
+
+describe("DeckTableShell blueprint-morph", () => {
   beforeEach(() => {
     installLocalStorage();
     window.history.pushState({}, "", "/prototype/deck-routing-spike");
@@ -52,9 +80,10 @@ describe("DeckTableShell skeleton", () => {
 
   afterEach(() => {
     cleanup();
+    delete (window as { matchMedia?: unknown }).matchMedia;
   });
 
-  it("opens table -> builder-open and closes back to table", () => {
+  it("open phase order: table -> blueprint-morphing -> builder-open (advances only on morph complete)", () => {
     render(<DeckTableShell />);
 
     expect(phase()).toBe("table");
@@ -62,13 +91,63 @@ describe("DeckTableShell skeleton", () => {
 
     fireEvent.click(screen.getByTestId(`deck-blueprint-${SLUG}`));
 
+    // Parks on blueprint-morphing — the panel mounts (it owns the layoutId) but
+    // the phase does not advance until the morph lands.
+    expect(phase()).toBe("blueprint-morphing");
+    expect(screen.getByTestId("deck-builder-panel")).toBeInTheDocument();
+
+    fireOpenMorphComplete();
+
+    expect(phase()).toBe("builder-open");
+  });
+
+  it("ignores blueprint taps while blueprint-morphing", () => {
+    render(<DeckTableShell />);
+
+    fireEvent.click(screen.getByTestId(`deck-blueprint-${SLUG}`));
+    expect(phase()).toBe("blueprint-morphing");
+
+    // A second tap mid-morph is a no-op (contract A interruption rule).
+    fireEvent.click(screen.getByTestId(`deck-blueprint-${SLUG}`));
+    expect(phase()).toBe("blueprint-morphing");
+  });
+
+  it("close phase order: builder-open -> builder-dismissing -> table; completion fires once", () => {
+    render(<DeckTableShell />);
+
+    fireEvent.click(screen.getByTestId(`deck-blueprint-${SLUG}`));
+    fireOpenMorphComplete();
+    expect(phase()).toBe("builder-open");
+
+    fireEvent.click(screen.getByTestId("deck-back"));
+
+    // Parks on builder-dismissing until the morph-back lands.
+    expect(phase()).toBe("builder-dismissing");
+
+    fireCloseMorphComplete();
+    expect(phase()).toBe("table");
+
+    // One-shot: a duplicate completion callback is ignored, phase stays table.
+    fireCloseMorphComplete();
+    expect(phase()).toBe("table");
+    // (The panel's DOM unmount is driven by AnimatePresence exit, asserted in
+    // the Playwright spec where framer actually animates.)
+  });
+
+  it("reduced motion runs the identical phase chain (open + close) without a layout callback", () => {
+    mockReducedMotion(true);
+    render(<DeckTableShell />);
+
+    expect(phase()).toBe("table");
+
+    // Crossfade path: openDeck fires the completion synchronously, so the phase
+    // lands on builder-open within the same event — no morph callback needed.
+    fireEvent.click(screen.getByTestId(`deck-blueprint-${SLUG}`));
     expect(phase()).toBe("builder-open");
     expect(screen.getByTestId("deck-builder-panel")).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId("deck-back"));
-
     expect(phase()).toBe("table");
-    expect(screen.queryByTestId("deck-builder-panel")).not.toBeInTheDocument();
   });
 
   it("hard-loads /deck/[slug] straight into builder-open with no morph phase", () => {

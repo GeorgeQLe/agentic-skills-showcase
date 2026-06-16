@@ -1575,6 +1575,15 @@ a.tag-link:hover {
   opacity: 0.55;
 }
 
+/* Morph source: the active blueprint stays mounted at opacity 0 while the
+   builder owns the layoutId. opacity (not display:none/visibility) keeps it in
+   flow so the grid reserves its slot and the morph-back has a real box to
+   target. Stable transform-origin so the layout projection morphs from a fixed
+   corner rather than the box center. */
+.deck-blueprint {
+  transform-origin: top left;
+}
+
 .deck-blueprint-name {
   font-size: 1.05rem;
   font-weight: 600;
@@ -1590,6 +1599,9 @@ a.tag-link:hover {
   border: 1px solid rgba(148, 163, 184, 0.28);
   border-radius: 12px;
   background: linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(17, 24, 39, 0.92));
+  /* Morph target: match the source blueprint's transform-origin so the chrome
+     rectangle morphs continuously from the same corner. */
+  transform-origin: top left;
 }
 
 .deck-builder-head {
