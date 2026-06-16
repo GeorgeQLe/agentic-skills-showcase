@@ -1506,21 +1506,24 @@ a.tag-link:hover {
   }
 }
 
-.deck-spike-page {
+/* === Deck builder (motion-free skeleton) === */
+
+.deck-table-shell {
   width: min(100% - 40px, 1180px);
   margin: 0 auto;
   padding: 36px 0 72px;
 }
 
-.deck-spike-panel {
-  border: 1px solid rgba(148, 163, 184, 0.28);
-  background: linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(17, 24, 39, 0.92));
-  border-radius: 8px;
-  padding: 24px;
+.deck-loading {
+  color: var(--muted);
 }
 
-.deck-spike-eyebrow {
-  margin: 0 0 8px;
+.deck-debug {
+  display: none;
+}
+
+.deck-eyebrow {
+  margin: 0 0 6px;
   color: #5eead4;
   font-size: 0.78rem;
   font-weight: 700;
@@ -1528,130 +1531,184 @@ a.tag-link:hover {
   text-transform: uppercase;
 }
 
-.deck-spike-copy {
-  max-width: 780px;
+.deck-table-head {
+  margin-bottom: 24px;
+}
+
+.deck-table-copy {
+  max-width: 720px;
   color: var(--muted);
 }
 
-.deck-spike-actions {
+.deck-blueprint-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.deck-blueprint {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  min-height: 120px;
+  padding: 18px;
+  text-align: left;
+  border: 1px solid rgba(94, 234, 212, 0.5);
+  border-radius: 10px;
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(17, 24, 39, 0.92));
+  color: #f8fafc;
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.deck-blueprint:hover:not(:disabled) {
+  border-color: rgba(94, 234, 212, 0.95);
+  transform: translateY(-2px);
+}
+
+.deck-blueprint:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.deck-blueprint-name {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.deck-blueprint-meta {
+  color: var(--muted);
+}
+
+.deck-builder {
+  margin-top: 28px;
+  padding: 22px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 12px;
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(17, 24, 39, 0.92));
+}
+
+.deck-builder-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+
+.deck-builder-head h2 {
+  margin: 0 0 6px;
+  color: #f8fafc;
+}
+
+.deck-builder-head small {
+  color: var(--muted);
+}
+
+.deck-back {
+  padding: 10px 14px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  border-radius: 8px;
+  background: rgba(2, 6, 23, 0.5);
+  color: #e2e8f0;
+  cursor: pointer;
+}
+
+.deck-back:hover {
+  border-color: rgba(148, 163, 184, 0.7);
+}
+
+.deck-slot-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.deck-slot-column {
+  min-height: 120px;
+  padding: 12px;
+  border: 1px dashed rgba(148, 163, 184, 0.32);
+  border-radius: 8px;
+  background: rgba(2, 6, 23, 0.4);
+}
+
+.deck-slot-label {
+  margin: 0 0 10px;
+  color: #5eead4;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.82rem;
+}
+
+.deck-slot-empty {
+  margin: 0;
+  color: rgba(148, 163, 184, 0.55);
+  font-size: 0.82rem;
+}
+
+.deck-slot-cards {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.deck-slot-card {
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: rgba(94, 234, 212, 0.12);
+  color: #f8fafc;
+  font-size: 0.82rem;
+}
+
+.deck-shelf {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin: 22px 0;
 }
 
-.deck-spike-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  gap: 10px;
-  margin: 22px 0;
-}
-
-.deck-spike-cell {
-  min-height: 82px;
-  border: 1px solid rgba(148, 163, 184, 0.24);
+.deck-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid rgba(148, 163, 184, 0.32);
   border-radius: 8px;
   background: rgba(2, 6, 23, 0.5);
-  padding: 12px;
+  color: #e2e8f0;
+  cursor: pointer;
+  transition: border-color 0.15s ease, opacity 0.15s ease;
 }
 
-.deck-spike-cell span {
-  display: block;
-  margin-bottom: 8px;
-  color: var(--muted);
-  font-size: 0.78rem;
+.deck-card:hover {
+  border-color: rgba(94, 234, 212, 0.7);
+}
+
+.deck-card[data-collected="true"] {
+  opacity: 0.55;
+  border-color: rgba(94, 234, 212, 0.6);
+}
+
+.deck-card-badge {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(94, 234, 212, 0.2);
+  color: #5eead4;
+  font-size: 0.7rem;
+  font-weight: 700;
   text-transform: uppercase;
-}
-
-.deck-spike-cell strong {
-  display: block;
-  overflow-wrap: anywhere;
-  color: #f8fafc;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 0.92rem;
-}
-
-.deck-spike-stage {
-  position: relative;
-  min-height: 260px;
-  overflow: hidden;
-  border: 1px solid rgba(148, 163, 184, 0.24);
-  border-radius: 8px;
-  background:
-    linear-gradient(90deg, rgba(2, 6, 23, 0.8), rgba(15, 23, 42, 0.6)),
-    repeating-linear-gradient(45deg, rgba(148, 163, 184, 0.08) 0 1px, transparent 1px 18px);
-}
-
-.deck-spike-blueprint,
-.deck-spike-builder {
-  position: absolute;
-  border: 1px solid rgba(94, 234, 212, 0.78);
-  border-radius: 8px;
-  background: rgba(15, 23, 42, 0.92);
-  box-shadow: 0 14px 40px rgba(2, 6, 23, 0.3);
-}
-
-.deck-spike-blueprint {
-  left: 20px;
-  top: 24px;
-  width: 168px;
-  height: 104px;
-  padding: 14px;
-}
-
-.deck-spike-blueprint span,
-.deck-spike-builder strong {
-  display: block;
-  color: #f8fafc;
-}
-
-.deck-spike-blueprint small,
-.deck-spike-builder span {
-  display: block;
-  margin-top: 8px;
-  color: var(--muted);
-}
-
-.deck-spike-stage[data-phase="builder-open"] .deck-spike-blueprint {
-  opacity: 0.38;
-}
-
-.deck-spike-builder {
-  inset: 24px 24px 24px 220px;
-  min-width: 220px;
-  padding: 18px;
-}
-
-.deck-spike-events {
-  margin: 18px 0 0;
-  padding: 14px 16px 14px 32px;
-  border: 1px solid rgba(148, 163, 184, 0.24);
-  border-radius: 8px;
-  background: rgba(2, 6, 23, 0.5);
-  color: var(--muted);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 0.86rem;
+  letter-spacing: 0.04em;
 }
 
 @media (max-width: 700px) {
-  .deck-spike-page {
+  .deck-table-shell {
     width: min(100% - 24px, 1180px);
-  }
-
-  .deck-spike-panel {
-    padding: 16px;
-  }
-
-  .deck-spike-stage {
-    min-height: 360px;
-  }
-
-  .deck-spike-blueprint {
-    left: 14px;
-    top: 14px;
-  }
-
-  .deck-spike-builder {
-    inset: 138px 14px 14px;
   }
 }

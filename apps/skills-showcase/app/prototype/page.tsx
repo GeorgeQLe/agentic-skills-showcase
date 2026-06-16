@@ -7,82 +7,13 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { LayoutGroup } from "framer-motion";
-import { useSkillsData, getPackSkills, getGlobalSkills, type Skill } from "@/hooks/useSkillsData";
+import { useSkillsData } from "@/hooks/useSkillsData";
+import { SETS, getSetSkills } from "@/deck-builder/decks";
 import SealedPack, { type SealedPackHandle } from "@/components/SealedPack";
 import PackOpener from "@/components/PackOpener";
 import BottomSheet from "@/components/BottomSheet";
 import { DebugProvider, useDebug } from "@/components/debug/DebugController";
 import DebugPanel from "@/components/debug/DebugPanel";
-
-interface SetDef {
-  name: string;
-  slug: string;
-  packs: string[];
-  phases: string[];
-}
-
-const SETS: SetDef[] = [
-  {
-    name: "Market Intel",
-    slug: "market-intel",
-    packs: ["business-discovery", "customer-lifecycle"],
-    phases: ["LAB-01", "LAB-02"],
-  },
-  {
-    name: "Growth Engine",
-    slug: "growth-engine",
-    packs: ["business-growth", "business-ops"],
-    phases: ["LAB-02", "LAB-03", "LAB-07"],
-  },
-  {
-    name: "Creator Studio",
-    slug: "creator-studio",
-    packs: ["creator-foundation", "youtube-ops", "remotion"],
-    phases: ["LAB-01", "LAB-02", "LAB-07"],
-  },
-  {
-    name: "Design Lab",
-    slug: "design-lab",
-    packs: ["product-design", "product-testing", "guided-walkthrough", "alignment-loop", "research-admin"],
-    phases: ["LAB-02", "LAB-04", "LAB-05", "LAB-06"],
-  },
-  {
-    name: "Domain Decks",
-    slug: "domain-decks",
-    packs: ["devtool", "game"],
-    phases: ["LAB-01", "LAB-02", "LAB-03", "LAB-04", "LAB-05", "LAB-07"],
-  },
-  {
-    name: "Forge",
-    slug: "forge",
-    packs: ["exec-loop", "agent-work-admin", "monorepo", "code-review", "code-debug", "code-quality", "code-maintenance", "gitops", "release-ops", "docs-health"],
-    phases: ["LAB-06", "LAB-07"],
-  },
-  {
-    name: "Foundation",
-    slug: "foundation",
-    packs: ["global", "skill-dev", "agentic-skills-bench", "session-analytics", "project-fleet", "alignment-page-admin", "teardown", "knowledge-check", "agent-bridge", "context-transfer", "exec-profile", "repo-maintenance", "report-gen", "website-polish"],
-    phases: ["LAB-01", "LAB-07"],
-  },
-];
-
-function getSetSkills(allSkills: Skill[], set: SetDef): Skill[] {
-  const seen = new Set<string>();
-  const result: Skill[] = [];
-  for (const packName of set.packs) {
-    const packSkills = packName === "global"
-      ? getGlobalSkills(allSkills)
-      : getPackSkills(allSkills, packName);
-    for (const s of packSkills) {
-      const key = s.pack + "/" + s.name;
-      if (!seen.has(key)) {
-        seen.add(key);
-        result.push(s);
-      }
-    }
-  }
-  return result;
-}
 
 interface OpenPackState {
   packName: string;
