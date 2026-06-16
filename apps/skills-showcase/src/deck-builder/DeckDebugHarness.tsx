@@ -11,11 +11,13 @@
  * the shell's rendered debug testids and drives its real DOM affordances. That
  * keeps DeckTableShell free of any debug-only branching.
  *
- * Scope (this slice): the bridge MARKS the §F step boundaries from observed
- * phase transitions and reports the deck-shell/builder runtime slice for the
- * graph. Awaiting `gate()` inside the morph to freeze it frame-by-frame in
- * stepped mode is deferred to the card-flight slice, alongside FLIGHT_STEPS and
- * the FlightLayer.
+ * Scope: the bridge MARKS the §F blueprint-morph step boundaries from observed
+ * phase transitions, reports the deck-shell/builder runtime slice, and registers
+ * the imperative drivers (openDeck/dismissDeck/flyCard/flyAll/reset). The morph
+ * boundaries now also `gate()` in stepped mode (wired inside DeckTableShell), and
+ * the card-flight slice marks FLIGHT_STEPS + reports the flight-layer slice from
+ * BuilderPanel directly (it owns the clones and already has the debug context),
+ * so the flight drivers here only need to tap the shell's real DOM affordances.
  */
 
 import { useEffect, useRef, type ReactNode } from "react";
@@ -77,6 +79,21 @@ function DeckDebugBridge({ children }: { children: ReactNode }) {
           ?.click();
       },
       dismissDeck: clickBack,
+      // flyCard taps the first uncollected shelf card (the same surface a user
+      // taps), so the real flyCard → optimistic-commit → clone path runs.
+      flyCard: () => {
+        root()
+          ?.querySelector<HTMLButtonElement>(
+            '[data-testid^="deck-card-"][data-collected="false"]',
+          )
+          ?.click();
+      },
+      // flyAll taps the "Collect all" button, launching the staggered batch.
+      flyAll: () => {
+        root()
+          ?.querySelector<HTMLButtonElement>('[data-testid="deck-collect-all"]:not([disabled])')
+          ?.click();
+      },
       // DebugProvider.reset() already cleared the machine runtime; returning the
       // DOM to the table keeps the shell and the graph in agreement.
       reset: clickBack,

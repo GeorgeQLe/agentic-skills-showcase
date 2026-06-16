@@ -43,6 +43,9 @@ export interface DebugDrivers {
   /** Deck-builder blueprint-morph drivers (animation-plan-deck-builder.md §F). */
   openDeck?: () => void;
   dismissDeck?: () => void;
+  /** Card-flight drivers (animation-plan-deck-builder.md §B / §F). */
+  flyCard?: () => void;
+  flyAll?: () => void;
   reset?: () => void;
 }
 

@@ -21,7 +21,7 @@ export const STATE_MACHINE_GRAPH_MODEL = ANIMATION_MACHINE_MODEL;
 const NODE_W = 116;
 const NODE_H = 42;
 const VIEWBOX_W = 2400;
-const VIEWBOX_H = 800;
+const VIEWBOX_H = 920;
 
 const COLORS = {
   bg: "#0d1117",

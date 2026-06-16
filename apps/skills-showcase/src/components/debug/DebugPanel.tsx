@@ -231,6 +231,27 @@ export default function DebugPanel() {
           </div>
         </Section>
 
+        {/* Flight drivers — no-ops on /prototype (no flight drivers registered);
+            wired by the deck route's DeckDebugHarness bridge. */}
+        <Section title="Drive flight (card-flight)">
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            <button
+              onClick={() => dbg.drive("flyCard")}
+              data-testid="drive-flyCard"
+              style={{ ...chip, flex: 1 }}
+            >
+              Fly card
+            </button>
+            <button
+              onClick={() => dbg.drive("flyAll")}
+              data-testid="drive-flyAll"
+              style={{ ...chip, flex: 1 }}
+            >
+              Fly all
+            </button>
+          </div>
+        </Section>
+
         {/* Live readout */}
         <Section title="Live state">
           <Readout label="step" value={dbg.pausedAtStep ?? "(running)"} highlight={parked} />

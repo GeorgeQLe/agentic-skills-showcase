@@ -3,6 +3,7 @@ import {
   ALL_STEPS,
   DECK_CLOSE_STEPS,
   DECK_OPEN_STEPS,
+  FLIGHT_STEPS,
   stepDef,
   stepIndex,
 } from "./steps";
@@ -32,6 +33,7 @@ describe("deck-builder blueprint-morph harness (§F)", () => {
     ]);
     expect(DECK_CLOSE_STEPS.map((s) => s.id)).toEqual([
       "dismiss-trigger",
+      "flights-flushed",
       "builder-exit",
       "blueprint-morph-out",
       "table-restored",
@@ -147,5 +149,80 @@ describe("deck-builder blueprint-morph harness (§F)", () => {
   it("exposes the deck step arrays on the canonical model", () => {
     expect(ANIMATION_MACHINE_MODEL.deckOpenSteps).toBe(DECK_OPEN_STEPS);
     expect(ANIMATION_MACHINE_MODEL.deckCloseSteps).toBe(DECK_CLOSE_STEPS);
+  });
+});
+
+describe("card-flight harness (§B / §F)", () => {
+  it("registers the flight step boundaries in order and folds them into ALL_STEPS", () => {
+    expect(FLIGHT_STEPS.map((s) => s.id)).toEqual([
+      "flight-tap",
+      "flight-measure",
+      "flight-launch",
+      "flight-land",
+      "flight-batch-complete",
+    ]);
+    for (const step of FLIGHT_STEPS) {
+      expect(stepDef(step.id)).toBe(step);
+      expect(stepIndex(step.id)).toBeGreaterThanOrEqual(0);
+    }
+    expect(ANIMATION_MACHINE_MODEL.flightSteps).toBe(FLIGHT_STEPS);
+  });
+
+  it("adds the flight-layer lane with its runtime nodes", () => {
+    const laneIds = ANIMATION_MACHINE_MODEL.lanes.map((lane) => lane.id);
+    expect(laneIds).toContain("flight-layer");
+
+    const flightNodes = ANIMATION_MACHINE_MODEL.nodes.filter(
+      (n) => n.lane === "flight-layer",
+    );
+    expect(flightNodes.map((n) => n.id)).toEqual(
+      expect.arrayContaining(["flight-clones", "flight-settled", "flight-batch"]),
+    );
+  });
+
+  it("seeds an idle flight-layer runtime slice", () => {
+    expect(DEFAULT_ANIMATION_MACHINE_RUNTIME.flightLayer).toEqual({
+      inFlightCount: 0,
+      settledCount: 0,
+      batchRemaining: 0,
+    });
+  });
+
+  it("merges and activates the flight-layer slice without touching others", () => {
+    const next = mergeAnimationMachineRuntime(DEFAULT_ANIMATION_MACHINE_RUNTIME, {
+      flightLayer: { inFlightCount: 2, settledCount: 1, batchRemaining: 3 },
+    });
+    expect(next.flightLayer).toEqual({
+      inFlightCount: 2,
+      settledCount: 1,
+      batchRemaining: 3,
+    });
+    expect(next.deckShell).toBe(DEFAULT_ANIMATION_MACHINE_RUNTIME.deckShell);
+
+    const snapshot = buildAnimationMachineSnapshot(next, DEBUG_OFF);
+    expect(snapshot.activeNodeIds).toEqual(
+      expect.arrayContaining(["flight-clones", "flight-settled", "flight-batch"]),
+    );
+    // In-flight clones must not read as a fully reset machine.
+    expect(snapshot.resetNodeIds).not.toContain("debug-reset");
+  });
+
+  it("lights the flight + flush transitions when their steps are reached", () => {
+    const flightPath = [...FLIGHT_STEPS.map((s) => s.id), "flights-flushed"];
+    const snapshot = buildAnimationMachineSnapshot(DEFAULT_ANIMATION_MACHINE_RUNTIME, {
+      ...DEBUG_OFF,
+      enabled: true,
+      mode: "stepped",
+      reachedSteps: flightPath,
+    });
+    expect(snapshot.activeTransitionIds).toEqual(
+      expect.arrayContaining([
+        "flight-tap",
+        "flight-measure",
+        "flight-land",
+        "flight-batch-complete",
+        "deck-flights-flushed",
+      ]),
+    );
   });
 });

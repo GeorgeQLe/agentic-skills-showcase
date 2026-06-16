@@ -9,7 +9,7 @@
  * stepping freezes the apex frame by frame.
  */
 
-export type Phase = "open" | "close" | "deck-open" | "deck-close";
+export type Phase = "open" | "close" | "deck-open" | "deck-close" | "flight";
 
 export interface StepDef {
   id: string;
@@ -49,8 +49,10 @@ export const CLOSE_STEPS: StepDef[] = [
  * uses blueprint-morph-in/out) so ALL_STEPS stays a flat, collision-free index.
  *
  * The card-flight contract's FLIGHT_STEPS plus the close-path `flights-flushed`
- * / `drawer-fast-teardown` conditionals are deferred to the later card-flight
- * slice, matching the implementation handoff for this §F harness step.
+ * conditional land in the card-flight slice (below). `drawer-fast-teardown` from
+ * §F has no boundary in this skeleton — there is no BottomSheet drawer; the fast
+ * teardown maps onto the existing `builder-exit` content fast-fade — so it is
+ * intentionally not a separate step.
  */
 export const DECK_OPEN_STEPS: StepDef[] = [
   { id: "blueprint-tap", label: "Blueprint tap", phase: "deck-open", boundary: "DeckTableShell.openDeck -> phase=blueprint-morphing" },
@@ -62,9 +64,25 @@ export const DECK_OPEN_STEPS: StepDef[] = [
 
 export const DECK_CLOSE_STEPS: StepDef[] = [
   { id: "dismiss-trigger", label: "Dismiss trigger", phase: "deck-close", boundary: "DeckTableShell.closeDeck -> phase=builder-dismissing" },
+  { id: "flights-flushed", label: "Flights flushed (conditional)", phase: "deck-close", boundary: "finishAllFlightsImmediately() before dismiss (only if flights in-flight)" },
   { id: "builder-exit", label: "Builder exit", phase: "deck-close", boundary: "BuilderPanel AnimatePresence exit (fast content fade)" },
   { id: "blueprint-morph-out", label: "Blueprint morph back (APEX)", phase: "deck-close", boundary: "source blueprint onLayoutAnimationComplete (flash apex)", apex: true },
   { id: "table-restored", label: "Table restored", phase: "deck-close", boundary: "DeckTableShell.onCloseMorphComplete -> table, focus restored" },
+];
+
+/**
+ * Card-flight boundaries (animation-plan-deck-builder.md §B / §D card-flight /
+ * §F flight portion). `flight-launch` and `flight-land` are the stepped-mode
+ * gate points awaited inside FlightClone; `flight-batch-complete` fires once the
+ * add-all batch decrement ref reaches zero. Distinct ids from the pack/deck
+ * flows keep ALL_STEPS a flat, collision-free index.
+ */
+export const FLIGHT_STEPS: StepDef[] = [
+  { id: "flight-tap", label: "Card tap (optimistic commit)", phase: "flight", boundary: "BuilderPanel.flyCard -> onCollect + fan-card dim" },
+  { id: "flight-measure", label: "Measure source + slot rect", phase: "flight", boundary: "getBoundingClientRect (scrollIntoView re-measure if off-screen)" },
+  { id: "flight-launch", label: "Clone launch (gate)", phase: "flight", boundary: "FlightClone imperative animate() start" },
+  { id: "flight-land", label: "Clone land (gate): slot pulse + counter tick", phase: "flight", boundary: "FlightClone animate .then -> settle slot, displayedCount++" },
+  { id: "flight-batch-complete", label: "Add-all batch complete", phase: "flight", boundary: "last flight settles (batch decrement ref reaches 0)" },
 ];
 
 export const ALL_STEPS: StepDef[] = [
@@ -72,6 +90,7 @@ export const ALL_STEPS: StepDef[] = [
   ...CLOSE_STEPS,
   ...DECK_OPEN_STEPS,
   ...DECK_CLOSE_STEPS,
+  ...FLIGHT_STEPS,
 ];
 
 export function stepIndex(id: string): number {

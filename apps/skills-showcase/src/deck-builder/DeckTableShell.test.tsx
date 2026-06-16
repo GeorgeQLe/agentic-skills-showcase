@@ -53,6 +53,16 @@ function fireCloseMorphComplete() {
   act(() => window.__deckMorphComplete?.close());
 }
 
+// framer's imperative animate() never settles deterministically under jsdom, so
+// flight landings are driven through the window bridge BuilderPanel exposes
+// (mirrors the morph bridge above).
+function landAllFlights() {
+  act(() => window.__deckFlight?.landAll());
+}
+function inFlightIds(): string[] {
+  return window.__deckFlight?.inFlight() ?? [];
+}
+
 // Force prefers-reduced-motion for the crossfade-path test. Default tests leave
 // matchMedia undefined (optional-chained to `false` = full-motion path).
 function mockReducedMotion(matches: boolean) {
@@ -158,7 +168,7 @@ describe("DeckTableShell blueprint-morph", () => {
     expect(screen.getByTestId("deck-builder-panel")).toBeInTheDocument();
   });
 
-  it("collect toggles collectedCardIds and persists to localStorage", () => {
+  it("card-flight: optimistic commit on tap, slot/counter tick only on land", () => {
     render(<DeckTableShell hardLoad initialDeckSlug={SLUG} />);
 
     const card = screen.getByTestId("deck-card-skill-a");
@@ -167,20 +177,93 @@ describe("DeckTableShell blueprint-morph", () => {
 
     fireEvent.click(card);
 
+    // Commit is optimistic: the fan card dims with its "in deck" badge and
+    // localStorage persists from the tap frame...
     expect(screen.getByTestId("deck-card-skill-a")).toHaveAttribute("data-collected", "true");
     expect(screen.getByTestId("deck-card-badge-skill-a")).toBeInTheDocument();
-    expect(screen.getByTestId("deck-collected-count").textContent).toBe("1 / 2 collected");
     expect(window.localStorage.getItem(STORAGE_KEY)).toBe(JSON.stringify(["skill-a"]));
+    // ...but the slot stays empty and the counter does not tick until the clone
+    // lands (§B "never: slot filling before the clone lands").
+    expect(screen.getByTestId("deck-collected-count").textContent).toBe("0 / 2 collected");
+    expect(screen.queryByTestId("deck-slot-card-skill-a")).not.toBeInTheDocument();
+    expect(inFlightIds()).toEqual(["skill-a"]);
+
+    landAllFlights();
+
+    expect(screen.getByTestId("deck-collected-count").textContent).toBe("1 / 2 collected");
+    expect(screen.getByTestId("deck-slot-card-skill-a")).toBeInTheDocument();
+    expect(inFlightIds()).toEqual([]);
   });
 
-  it("re-tap of a collected card is a no-op", () => {
+  it("card-flight: interrupt (close) reconciles the counter — finishAllFlightsImmediately", () => {
+    render(<DeckTableShell hardLoad initialDeckSlug={SLUG} />);
+
+    fireEvent.click(screen.getByTestId("deck-card-skill-a"));
+    fireEvent.click(screen.getByTestId("deck-card-skill-b"));
+    // Both committed and in-flight; counter still lagging at the settled count.
+    expect(inFlightIds().sort()).toEqual(["skill-a", "skill-b"]);
+    expect(screen.getByTestId("deck-collected-count").textContent).toBe("0 / 2 collected");
+
+    // Close mid-flight: closeDeck runs finishAllFlightsImmediately() before the
+    // dismiss, snapping every flight to end and reconciling the counter — no
+    // desync (§B "never: counter desync after interruptions").
+    fireEvent.click(screen.getByTestId("deck-back"));
+
+    expect(inFlightIds()).toEqual([]);
+    expect(screen.getByTestId("deck-collected-count").textContent).toBe("2 / 2 collected");
+  });
+
+  it("re-tap of a collected or in-flight card is a no-op", () => {
     render(<DeckTableShell hardLoad initialDeckSlug={SLUG} />);
 
     const card = () => screen.getByTestId("deck-card-skill-a");
-    fireEvent.click(card());
-    fireEvent.click(card());
+    fireEvent.click(card()); // commits + launches one flight
+    fireEvent.click(card()); // in-flight re-tap: ignored
+    expect(inFlightIds()).toEqual(["skill-a"]);
+
+    landAllFlights();
+    fireEvent.click(card()); // collected re-tap: ignored
 
     expect(window.localStorage.getItem(STORAGE_KEY)).toBe(JSON.stringify(["skill-a"]));
+    expect(screen.getByTestId("deck-collected-count").textContent).toBe("1 / 2 collected");
+    expect(inFlightIds()).toEqual([]);
+  });
+
+  it("add-all: collect-all commits every card up front and lands the staggered batch", () => {
+    vi.useFakeTimers();
+    try {
+      render(<DeckTableShell hardLoad initialDeckSlug={SLUG} />);
+
+      fireEvent.click(screen.getByTestId("deck-collect-all"));
+
+      // Every uncollected card commits in the same frame (all fan cards dim)...
+      expect(screen.getByTestId("deck-card-skill-a")).toHaveAttribute("data-collected", "true");
+      expect(screen.getByTestId("deck-card-skill-b")).toHaveAttribute("data-collected", "true");
+      expect(screen.getByTestId("deck-collected-count").textContent).toBe("0 / 2 collected");
+
+      // ...but the clones launch on a 70 ms-per-flight stagger.
+      act(() => vi.advanceTimersByTime(70 * 2 + 10));
+      expect(inFlightIds().sort()).toEqual(["skill-a", "skill-b"]);
+    } finally {
+      vi.useRealTimers();
+    }
+
+    landAllFlights();
+
+    expect(screen.getByTestId("deck-collected-count").textContent).toBe("2 / 2 collected");
+    expect(screen.getByTestId("deck-collect-all")).toBeDisabled();
+  });
+
+  it("reduced motion fills slots with no clone and ticks the counter immediately", () => {
+    mockReducedMotion(true);
+    render(<DeckTableShell hardLoad initialDeckSlug={SLUG} />);
+
+    fireEvent.click(screen.getByTestId("deck-card-skill-a"));
+
+    // No clone is ever in flight; the slot fills and the counter ticks in the
+    // same frame (§E reduced-motion fill).
+    expect(inFlightIds()).toEqual([]);
+    expect(screen.getByTestId("deck-slot-card-skill-a")).toBeInTheDocument();
     expect(screen.getByTestId("deck-collected-count").textContent).toBe("1 / 2 collected");
   });
 

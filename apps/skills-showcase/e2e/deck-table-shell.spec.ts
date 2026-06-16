@@ -176,6 +176,210 @@ test("debug harness drives the deck open/close morph via registered drivers (§F
   await expect(page.getByTestId("deck-builder-panel")).toHaveCount(0);
 });
 
+// Per-frame sampler for the card-flight contract (§B "never" items). Records,
+// over every rAF: whether a clone is painted, whether the FlightLayer keeps its
+// fixed / pointer-events-none / z-70 / portaled-to-body invariant, whether any
+// clone leaves the viewport (clip risk), and whether the target slot ever fills
+// while a clone is still flying (slot must fill only on land).
+async function installFlightSampler(
+  page: import("@playwright/test").Page,
+  slotTestId: string,
+) {
+  await page.evaluate((slotId) => {
+    const w = window as unknown as {
+      __flight?: {
+        cloneFrames: number;
+        clipped: number;
+        slotBeforeLand: number;
+        layerSeen: number;
+        layerOk: number;
+      };
+      __flightSampling?: boolean;
+    };
+    w.__flight = { cloneFrames: 0, clipped: 0, slotBeforeLand: 0, layerSeen: 0, layerOk: 0 };
+    w.__flightSampling = true;
+    const sample = () => {
+      if (!w.__flightSampling) return;
+      const f = w.__flight!;
+      const layer = document.querySelector('[data-testid="deck-flight-layer"]');
+      const clone = document.querySelector(".deck-flight-clone");
+      const slot = document.querySelector(`[data-testid="${slotId}"]`);
+      if (layer) {
+        f.layerSeen++;
+        const cs = getComputedStyle(layer);
+        if (
+          cs.position === "fixed" &&
+          cs.pointerEvents === "none" &&
+          cs.zIndex === "70" &&
+          layer.parentElement === document.body
+        ) {
+          f.layerOk++;
+        }
+      }
+      if (clone) {
+        f.cloneFrames++;
+        const r = clone.getBoundingClientRect();
+        if (r.left < -2 || r.top < -2 || r.right > innerWidth + 2 || r.bottom > innerHeight + 2) {
+          f.clipped++;
+        }
+        if (slot) f.slotBeforeLand++;
+      }
+      requestAnimationFrame(sample);
+    };
+    requestAnimationFrame(sample);
+  }, slotTestId);
+}
+
+test("card-flight: clone overlays above the sheet without clipping and fills the slot only on land", async ({
+  page,
+}) => {
+  await page.goto(`/deck/${SLUG}`);
+  await expect(page.getByTestId("deck-phase")).toHaveText("builder-open");
+
+  const firstCard = page.locator('.deck-card[data-collected="false"]').first();
+  const id = await firstCard.getAttribute("data-card-id");
+  expect(id).toBeTruthy();
+
+  await installFlightSampler(page, `deck-slot-card-${id}`);
+
+  await firstCard.click();
+
+  // Commit is optimistic from the tap frame...
+  await expect(page.locator(`[data-card-id="${id}"]`)).toHaveAttribute("data-collected", "true");
+  // ...the slot fills and the counter ticks only once the clone lands.
+  await expect(page.getByTestId(`deck-slot-card-${id}`)).toBeVisible();
+  await expect(page.getByTestId("deck-collected-count")).toHaveText(/^1 \//);
+
+  const result = await page.evaluate(() => {
+    const w = window as unknown as {
+      __flight: { cloneFrames: number; clipped: number; slotBeforeLand: number; layerSeen: number; layerOk: number };
+      __flightSampling: boolean;
+    };
+    w.__flightSampling = false;
+    return w.__flight;
+  });
+  expect(result.cloneFrames).toBeGreaterThan(0);
+  expect(result.clipped).toBe(0);
+  expect(result.slotBeforeLand).toBe(0);
+  expect(result.layerSeen).toBeGreaterThan(0);
+  expect(result.layerOk).toBe(result.layerSeen);
+});
+
+test("card-flight: re-tap of a collected/in-flight card is a no-op", async ({ page }) => {
+  await page.goto(`/deck/${SLUG}`);
+  await expect(page.getByTestId("deck-phase")).toHaveText("builder-open");
+
+  const firstCard = page.locator('.deck-card[data-collected="false"]').first();
+  const id = await firstCard.getAttribute("data-card-id");
+  const sameCard = page.locator(`[data-card-id="${id}"]`);
+
+  await sameCard.click(); // commit + launch
+  await sameCard.click(); // re-tap (collected/in-flight): ignored
+
+  await expect(page.getByTestId(`deck-slot-card-${id}`)).toBeVisible();
+  await expect(page.getByTestId("deck-collected-count")).toHaveText(/^1 \//);
+  // The card appears in exactly one slot.
+  await expect(page.getByTestId(`deck-slot-card-${id}`)).toHaveCount(1);
+});
+
+test("card-flight: close mid-flight flushes clones and persists the optimistic commit", async ({
+  page,
+}) => {
+  await page.goto(`/deck/${SLUG}`);
+  await expect(page.getByTestId("deck-phase")).toHaveText("builder-open");
+
+  const firstCard = page.locator('.deck-card[data-collected="false"]').first();
+  const id = await firstCard.getAttribute("data-card-id");
+
+  await firstCard.click(); // commit + launch
+  await page.getByTestId("deck-back").click(); // finishAllFlightsImmediately() then dismiss
+
+  await expect(page.getByTestId("deck-phase")).toHaveText("table");
+  // No orphaned clones survive the flush.
+  await expect(page.locator(".deck-flight-clone")).toHaveCount(0);
+
+  // The optimistic commit persisted (localStorage) — reopening shows it collected.
+  await page.goto(`/deck/${SLUG}`);
+  await expect(page.locator(`[data-card-id="${id}"]`)).toHaveAttribute("data-collected", "true");
+  await expect(page.getByTestId(`deck-slot-card-${id}`)).toBeVisible();
+});
+
+test("card-flight: add-all commits every card and lands the whole batch", async ({ page }) => {
+  await page.goto(`/deck/${SLUG}`);
+  await expect(page.getByTestId("deck-phase")).toHaveText("builder-open");
+
+  const total = await page.locator("[data-card-id]").count();
+  expect(total).toBeGreaterThan(1);
+
+  await page.getByTestId("deck-collect-all").click();
+
+  // Every card commits up front, so the batch button disables immediately.
+  await expect(page.getByTestId("deck-collect-all")).toBeDisabled();
+  // The staggered batch lands every clone; the counter reconciles to N / N.
+  await expect(page.getByTestId("deck-collected-count")).toHaveText(
+    new RegExp(`^${total} / ${total} `),
+  );
+  await expect(page.locator(".deck-flight-clone")).toHaveCount(0);
+});
+
+test("card-flight reduced motion: fills the slot with no clone, counter ticks at once", async ({
+  page,
+}) => {
+  // page.emulateMedia drives the CDP override reliably (matchMedia reflects it);
+  // the shell reads prefers-reduced-motion via matchMedia on mount.
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto(`/deck/${SLUG}`);
+  await expect(page.getByTestId("deck-phase")).toHaveText("builder-open");
+
+  const firstCard = page.locator('.deck-card[data-collected="false"]').first();
+  const id = await firstCard.getAttribute("data-card-id");
+
+  // Sampler: prove no clone is ever painted (§E "card-flight mounts no clone").
+  await page.evaluate(() => {
+    const w = window as unknown as { __noClone?: number; __sampling?: boolean };
+    w.__noClone = 0;
+    w.__sampling = true;
+    const sample = () => {
+      if (!w.__sampling) return;
+      if (document.querySelector(".deck-flight-clone")) w.__noClone!++;
+      requestAnimationFrame(sample);
+    };
+    requestAnimationFrame(sample);
+  });
+
+  await firstCard.click();
+
+  // Slot fills and the counter ticks in the same frame — no flight to wait on.
+  await expect(page.getByTestId(`deck-slot-card-${id}`)).toBeVisible();
+  await expect(page.getByTestId("deck-collected-count")).toHaveText(/^1 \//);
+
+  const cloneFrames = await page.evaluate(() => {
+    const w = window as unknown as { __noClone: number; __sampling: boolean };
+    w.__sampling = false;
+    return w.__noClone;
+  });
+  expect(cloneFrames).toBe(0);
+});
+
+test("debug harness drives card-flight via flyCard/flyAll drivers (§F)", async ({ page }) => {
+  await page.goto(`/deck/${SLUG}`);
+  await expect(page.getByTestId("deck-phase")).toHaveText("builder-open");
+
+  const total = await page.locator("[data-card-id]").count();
+  await page.getByTestId("debug-open").click();
+
+  // flyCard taps the first uncollected shelf card through its real handler.
+  await page.getByTestId("drive-flyCard").click();
+  await expect(page.getByTestId("deck-collected-count")).toHaveText(/^1 \//);
+
+  // flyAll launches the staggered batch for the rest.
+  await page.getByTestId("drive-flyAll").click();
+  await expect(page.getByTestId("deck-collected-count")).toHaveText(
+    new RegExp(`^${total} / ${total} `),
+  );
+  await expect(page.locator(".deck-flight-clone")).toHaveCount(0);
+});
+
 test("Back during/after open returns to the table", async ({ page }) => {
   await page.goto(TABLE_PATH);
   await expect(page.getByTestId("deck-phase")).toHaveText("table");

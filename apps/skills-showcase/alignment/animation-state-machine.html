@@ -56,7 +56,7 @@
   <header>
     <p class="muted">Static reference generated from <code>src/components/debug/animationMachine.ts</code>.</p>
     <h1>Animation State Machine - Pack Drawer Prototype</h1>
-    <p>The live <code>/prototype</code> debug panel and this static page share the same canonical model export. The model maps page state, SealedPack refs and motion values, BottomSheet state, PackOpener collapse internals, the deck-builder <code>blueprint-morph</code> lifecycle (DeckTableShell + BuilderPanel), and every debug gate from <code>OPEN_STEPS</code> / <code>CLOSE_STEPS</code> / <code>DECK_OPEN_STEPS</code> / <code>DECK_CLOSE_STEPS</code>.</p>
+    <p>The live <code>/prototype</code> debug panel and this static page share the same canonical model export. The model maps page state, SealedPack refs and motion values, BottomSheet state, PackOpener collapse internals, the deck-builder <code>blueprint-morph</code> lifecycle (DeckTableShell + BuilderPanel), the <code>card-flight</code> clone overlay (FlightLayer), and every debug gate from <code>OPEN_STEPS</code> / <code>CLOSE_STEPS</code> / <code>DECK_OPEN_STEPS</code> / <code>DECK_CLOSE_STEPS</code> / <code>FLIGHT_STEPS</code>.</p>
   </header>
 
   <section class="toc" id="toc">
@@ -72,14 +72,14 @@
 
   <section id="graph">
     <h2>State Machine Graph</h2>
-    <p class="muted">Lanes match runtime owners: Page, SealedPack, BottomSheet, PackOpener, DeckTableShell, BuilderPanel, and Debug Gates. Purple nodes are apex gates; orange transition labels identify close-path boundaries that can be paused in stepped mode.</p>
+    <p class="muted">Lanes match runtime owners: Page, SealedPack, BottomSheet, PackOpener, DeckTableShell, BuilderPanel, FlightLayer, and Debug Gates. Purple nodes are apex gates; orange transition labels identify close-path boundaries that can be paused in stepped mode.</p>
     <div class="graph-shell">
-      <svg viewBox="0 0 2400 800" width="2400" height="800" role="img" aria-label="Pack drawer animation state machine">
+      <svg viewBox="0 0 2400 920" width="2400" height="920" role="img" aria-label="Pack drawer animation state machine">
   <defs>
     <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#8b949e" /></marker>
     <marker id="arrow-close" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#d29922" /></marker>
   </defs>
-  <rect width="2400" height="800" fill="#0d1117" />
+  <rect width="2400" height="920" fill="#0d1117" />
   <g>
         <rect x="12" y="32" width="2376" height="92" rx="8" fill="#111827" stroke="#30363d" />
         <text x="24" y="52" fill="#8b949e" font-size="13" font-weight="700">Page</text>
@@ -106,7 +106,11 @@
       </g>
 <g>
         <rect x="12" y="692" width="2376" height="92" rx="8" fill="#111827" stroke="#30363d" />
-        <text x="24" y="712" fill="#8b949e" font-size="13" font-weight="700">Debug Gates</text>
+        <text x="24" y="712" fill="#8b949e" font-size="13" font-weight="700">FlightLayer</text>
+      </g>
+<g>
+        <rect x="12" y="802" width="2376" height="92" rx="8" fill="#111827" stroke="#30363d" />
+        <text x="24" y="822" fill="#8b949e" font-size="13" font-weight="700">Debug Gates</text>
       </g>
   <g>
     <path d="M 146 209 C 224 185, 224 185, 302 209" fill="none" stroke="#8b949e" stroke-width="1.1" stroke-opacity="0.44" marker-end="url(#arrow)" />
@@ -213,7 +217,27 @@
     
   </g>
 <g>
-    <path d="M 1522 759 C 914 759, 914 99, 306 99" fill="none" stroke="#8b949e" stroke-width="1.1" stroke-opacity="0.44" marker-end="url(#arrow)" />
+    <path d="M 146 539 C 252 539, 252 759, 358 759" fill="none" stroke="#8b949e" stroke-width="1.1" stroke-opacity="0.44" marker-end="url(#arrow)" />
+    
+  </g>
+<g>
+    <path d="M 514 649 C 608 625, 608 625, 702 649" fill="none" stroke="#8b949e" stroke-width="1.1" stroke-opacity="0.44" marker-end="url(#arrow)" />
+    
+  </g>
+<g>
+    <path d="M 702 649 C 424 649, 424 759, 146 759" fill="none" stroke="#8b949e" stroke-width="1.1" stroke-opacity="0.44" marker-end="url(#arrow)" />
+    
+  </g>
+<g>
+    <path d="M 146 759 C 252 735, 252 735, 358 759" fill="none" stroke="#8b949e" stroke-width="1.1" stroke-opacity="0.44" marker-end="url(#arrow)" />
+    
+  </g>
+<g>
+    <path d="M 358 759 C 478 735, 478 735, 598 759" fill="none" stroke="#8b949e" stroke-width="1.1" stroke-opacity="0.44" marker-end="url(#arrow)" />
+    
+  </g>
+<g>
+    <path d="M 1522 869 C 914 869, 914 99, 306 99" fill="none" stroke="#8b949e" stroke-width="1.1" stroke-opacity="0.44" marker-end="url(#arrow)" />
     
   </g>
   <g>
@@ -337,9 +361,9 @@
     <text x="1048" y="439" fill="#8b949e" font-size="9">ref</text>
   </g>
 <g>
-    <rect x="1464" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#8b949e" />
-    <text x="1472" y="755" fill="#fff" font-size="11" font-weight="700">reset</text>
-    <text x="1472" y="769" fill="#8b949e" font-size="9">gate</text>
+    <rect x="1464" y="848" width="116" height="42" rx="8" fill="#102818" stroke="#8b949e" />
+    <text x="1472" y="865" fill="#fff" font-size="11" font-weight="700">reset</text>
+    <text x="1472" y="879" fill="#8b949e" font-size="9">gate</text>
   </g>
 <g>
     <rect x="88" y="518" width="116" height="42" rx="8" fill="#161b22" stroke="#58a6ff" />
@@ -382,129 +406,174 @@
     <text x="652" y="659" fill="#8b949e" font-size="9">state</text>
   </g>
 <g>
-    <rect x="88" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
-    <text x="96" y="755" fill="#fff" font-size="11" font-weight="700">Tear edge</text>
-    <text x="96" y="769" fill="#8b949e" font-size="9">gate</text>
+    <rect x="88" y="738" width="116" height="42" rx="8" fill="#161b22" stroke="#58a6ff" />
+    <text x="96" y="755" fill="#fff" font-size="11" font-weight="700">clones in-flight</text>
+    <text x="96" y="769" fill="#8b949e" font-size="9">motion</text>
   </g>
 <g>
-    <rect x="174" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
-    <text x="182" y="755" fill="#fff" font-size="11" font-weight="700">Card lift (drag-up)</text>
-    <text x="182" y="769" fill="#8b949e" font-size="9">gate</text>
+    <rect x="300" y="738" width="116" height="42" rx="8" fill="#161b22" stroke="#58a6ff" />
+    <text x="308" y="755" fill="#fff" font-size="11" font-weight="700">settled (displayedCount)</text>
+    <text x="308" y="769" fill="#8b949e" font-size="9">state</text>
   </g>
 <g>
-    <rect x="260" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
-    <text x="268" y="755" fill="#fff" font-size="11" font-weight="700">Card rise (click)</text>
-    <text x="268" y="769" fill="#8b949e" font-size="9">gate</text>
+    <rect x="540" y="738" width="116" height="42" rx="8" fill="#161b22" stroke="#58a6ff" />
+    <text x="548" y="755" fill="#fff" font-size="11" font-weight="700">batchRemaining</text>
+    <text x="548" y="769" fill="#8b949e" font-size="9">ref</text>
   </g>
 <g>
-    <rect x="346" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
-    <text x="354" y="755" fill="#fff" font-size="11" font-weight="700">Elevate card</text>
-    <text x="354" y="769" fill="#8b949e" font-size="9">gate</text>
+    <rect x="88" y="848" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="96" y="865" fill="#fff" font-size="11" font-weight="700">Tear edge</text>
+    <text x="96" y="879" fill="#8b949e" font-size="9">gate</text>
   </g>
 <g>
-    <rect x="432" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
-    <text x="440" y="755" fill="#fff" font-size="11" font-weight="700">Request drawer open</text>
-    <text x="440" y="769" fill="#8b949e" font-size="9">gate</text>
+    <rect x="174" y="848" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="182" y="865" fill="#fff" font-size="11" font-weight="700">Card lift (drag-up)</text>
+    <text x="182" y="879" fill="#8b949e" font-size="9">gate</text>
   </g>
 <g>
-    <rect x="518" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
-    <text x="526" y="755" fill="#fff" font-size="11" font-weight="700">Sheet slide-up</text>
-    <text x="526" y="769" fill="#8b949e" font-size="9">gate</text>
+    <rect x="260" y="848" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="268" y="865" fill="#fff" font-size="11" font-weight="700">Card rise (click)</text>
+    <text x="268" y="879" fill="#8b949e" font-size="9">gate</text>
   </g>
 <g>
-    <rect x="604" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
-    <text x="612" y="755" fill="#fff" font-size="11" font-weight="700">layoutId morph in</text>
-    <text x="612" y="769" fill="#8b949e" font-size="9">gate</text>
+    <rect x="346" y="848" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="354" y="865" fill="#fff" font-size="11" font-weight="700">Elevate card</text>
+    <text x="354" y="879" fill="#8b949e" font-size="9">gate</text>
   </g>
 <g>
-    <rect x="690" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
-    <text x="698" y="755" fill="#fff" font-size="11" font-weight="700">Fan-out springs</text>
-    <text x="698" y="769" fill="#8b949e" font-size="9">gate</text>
+    <rect x="432" y="848" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="440" y="865" fill="#fff" font-size="11" font-weight="700">Request drawer open</text>
+    <text x="440" y="879" fill="#8b949e" font-size="9">gate</text>
   </g>
 <g>
-    <rect x="776" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
-    <text x="784" y="755" fill="#fff" font-size="11" font-weight="700">Close trigger</text>
-    <text x="784" y="769" fill="#8b949e" font-size="9">gate</text>
+    <rect x="518" y="848" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="526" y="865" fill="#fff" font-size="11" font-weight="700">Sheet slide-up</text>
+    <text x="526" y="879" fill="#8b949e" font-size="9">gate</text>
   </g>
 <g>
-    <rect x="862" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
-    <text x="870" y="755" fill="#fff" font-size="11" font-weight="700">Collapse measure</text>
-    <text x="870" y="769" fill="#8b949e" font-size="9">gate</text>
+    <rect x="604" y="848" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="612" y="865" fill="#fff" font-size="11" font-weight="700">layoutId morph in</text>
+    <text x="612" y="879" fill="#8b949e" font-size="9">gate</text>
   </g>
 <g>
-    <rect x="948" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
-    <text x="956" y="755" fill="#fff" font-size="11" font-weight="700">Collapse fan-in</text>
-    <text x="956" y="769" fill="#8b949e" font-size="9">gate</text>
+    <rect x="690" y="848" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="698" y="865" fill="#fff" font-size="11" font-weight="700">Fan-out springs</text>
+    <text x="698" y="879" fill="#8b949e" font-size="9">gate</text>
   </g>
 <g>
-    <rect x="1034" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
-    <text x="1042" y="755" fill="#fff" font-size="11" font-weight="700">Collapse complete</text>
-    <text x="1042" y="769" fill="#8b949e" font-size="9">gate</text>
+    <rect x="776" y="848" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="784" y="865" fill="#fff" font-size="11" font-weight="700">Close trigger</text>
+    <text x="784" y="879" fill="#8b949e" font-size="9">gate</text>
   </g>
 <g>
-    <rect x="1120" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
-    <text x="1128" y="755" fill="#fff" font-size="11" font-weight="700">Drawer teardown</text>
-    <text x="1128" y="769" fill="#8b949e" font-size="9">gate</text>
+    <rect x="862" y="848" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="870" y="865" fill="#fff" font-size="11" font-weight="700">Collapse measure</text>
+    <text x="870" y="879" fill="#8b949e" font-size="9">gate</text>
   </g>
 <g>
-    <rect x="1206" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
-    <text x="1214" y="755" fill="#fff" font-size="11" font-weight="700">Sheet exit</text>
-    <text x="1214" y="769" fill="#8b949e" font-size="9">gate</text>
+    <rect x="948" y="848" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="956" y="865" fill="#fff" font-size="11" font-weight="700">Collapse fan-in</text>
+    <text x="956" y="879" fill="#8b949e" font-size="9">gate</text>
   </g>
 <g>
-    <rect x="1292" y="738" width="116" height="42" rx="8" fill="#241c33" stroke="#bc8cff" />
-    <text x="1300" y="755" fill="#fff" font-size="11" font-weight="700">layoutId morph back (APEX)</text>
-    <text x="1300" y="769" fill="#8b949e" font-size="9">gate - apex</text>
+    <rect x="1034" y="848" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="1042" y="865" fill="#fff" font-size="11" font-weight="700">Collapse complete</text>
+    <text x="1042" y="879" fill="#8b949e" font-size="9">gate</text>
   </g>
 <g>
-    <rect x="1378" y="738" width="116" height="42" rx="8" fill="#241c33" stroke="#bc8cff" />
-    <text x="1386" y="755" fill="#fff" font-size="11" font-weight="700">Drop elevation / z-index (APEX)</text>
-    <text x="1386" y="769" fill="#8b949e" font-size="9">gate - apex</text>
+    <rect x="1120" y="848" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="1128" y="865" fill="#fff" font-size="11" font-weight="700">Drawer teardown</text>
+    <text x="1128" y="879" fill="#8b949e" font-size="9">gate</text>
   </g>
 <g>
-    <rect x="1464" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
-    <text x="1472" y="755" fill="#fff" font-size="11" font-weight="700">Blueprint tap</text>
-    <text x="1472" y="769" fill="#8b949e" font-size="9">gate</text>
+    <rect x="1206" y="848" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="1214" y="865" fill="#fff" font-size="11" font-weight="700">Sheet exit</text>
+    <text x="1214" y="879" fill="#8b949e" font-size="9">gate</text>
   </g>
 <g>
-    <rect x="1550" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
-    <text x="1558" y="755" fill="#fff" font-size="11" font-weight="700">URL pushState</text>
-    <text x="1558" y="769" fill="#8b949e" font-size="9">gate</text>
+    <rect x="1292" y="848" width="116" height="42" rx="8" fill="#241c33" stroke="#bc8cff" />
+    <text x="1300" y="865" fill="#fff" font-size="11" font-weight="700">layoutId morph back (APEX)</text>
+    <text x="1300" y="879" fill="#8b949e" font-size="9">gate - apex</text>
   </g>
 <g>
-    <rect x="1636" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
-    <text x="1644" y="755" fill="#fff" font-size="11" font-weight="700">Builder mount</text>
-    <text x="1644" y="769" fill="#8b949e" font-size="9">gate</text>
+    <rect x="1378" y="848" width="116" height="42" rx="8" fill="#241c33" stroke="#bc8cff" />
+    <text x="1386" y="865" fill="#fff" font-size="11" font-weight="700">Drop elevation / z-index (APEX)</text>
+    <text x="1386" y="879" fill="#8b949e" font-size="9">gate - apex</text>
   </g>
 <g>
-    <rect x="1722" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
-    <text x="1730" y="755" fill="#fff" font-size="11" font-weight="700">Blueprint morph in</text>
-    <text x="1730" y="769" fill="#8b949e" font-size="9">gate</text>
+    <rect x="1464" y="848" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="1472" y="865" fill="#fff" font-size="11" font-weight="700">Blueprint tap</text>
+    <text x="1472" y="879" fill="#8b949e" font-size="9">gate</text>
   </g>
 <g>
-    <rect x="1808" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
-    <text x="1816" y="755" fill="#fff" font-size="11" font-weight="700">Builder content stagger</text>
-    <text x="1816" y="769" fill="#8b949e" font-size="9">gate</text>
+    <rect x="1550" y="848" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="1558" y="865" fill="#fff" font-size="11" font-weight="700">URL pushState</text>
+    <text x="1558" y="879" fill="#8b949e" font-size="9">gate</text>
   </g>
 <g>
-    <rect x="1894" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
-    <text x="1902" y="755" fill="#fff" font-size="11" font-weight="700">Dismiss trigger</text>
-    <text x="1902" y="769" fill="#8b949e" font-size="9">gate</text>
+    <rect x="1636" y="848" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="1644" y="865" fill="#fff" font-size="11" font-weight="700">Builder mount</text>
+    <text x="1644" y="879" fill="#8b949e" font-size="9">gate</text>
   </g>
 <g>
-    <rect x="1980" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
-    <text x="1988" y="755" fill="#fff" font-size="11" font-weight="700">Builder exit</text>
-    <text x="1988" y="769" fill="#8b949e" font-size="9">gate</text>
+    <rect x="1722" y="848" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="1730" y="865" fill="#fff" font-size="11" font-weight="700">Blueprint morph in</text>
+    <text x="1730" y="879" fill="#8b949e" font-size="9">gate</text>
   </g>
 <g>
-    <rect x="2066" y="738" width="116" height="42" rx="8" fill="#241c33" stroke="#bc8cff" />
-    <text x="2074" y="755" fill="#fff" font-size="11" font-weight="700">Blueprint morph back (APEX)</text>
-    <text x="2074" y="769" fill="#8b949e" font-size="9">gate - apex</text>
+    <rect x="1808" y="848" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="1816" y="865" fill="#fff" font-size="11" font-weight="700">Builder content stagger</text>
+    <text x="1816" y="879" fill="#8b949e" font-size="9">gate</text>
   </g>
 <g>
-    <rect x="2152" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
-    <text x="2160" y="755" fill="#fff" font-size="11" font-weight="700">Table restored</text>
-    <text x="2160" y="769" fill="#8b949e" font-size="9">gate</text>
+    <rect x="1894" y="848" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="1902" y="865" fill="#fff" font-size="11" font-weight="700">Dismiss trigger</text>
+    <text x="1902" y="879" fill="#8b949e" font-size="9">gate</text>
+  </g>
+<g>
+    <rect x="1980" y="848" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="1988" y="865" fill="#fff" font-size="11" font-weight="700">Flights flushed (conditional)</text>
+    <text x="1988" y="879" fill="#8b949e" font-size="9">gate</text>
+  </g>
+<g>
+    <rect x="2066" y="848" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="2074" y="865" fill="#fff" font-size="11" font-weight="700">Builder exit</text>
+    <text x="2074" y="879" fill="#8b949e" font-size="9">gate</text>
+  </g>
+<g>
+    <rect x="2152" y="848" width="116" height="42" rx="8" fill="#241c33" stroke="#bc8cff" />
+    <text x="2160" y="865" fill="#fff" font-size="11" font-weight="700">Blueprint morph back (APEX)</text>
+    <text x="2160" y="879" fill="#8b949e" font-size="9">gate - apex</text>
+  </g>
+<g>
+    <rect x="2238" y="848" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="2246" y="865" fill="#fff" font-size="11" font-weight="700">Table restored</text>
+    <text x="2246" y="879" fill="#8b949e" font-size="9">gate</text>
+  </g>
+<g>
+    <rect x="2324" y="848" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="2332" y="865" fill="#fff" font-size="11" font-weight="700">Card tap (optimistic commit)</text>
+    <text x="2332" y="879" fill="#8b949e" font-size="9">gate</text>
+  </g>
+<g>
+    <rect x="2410" y="848" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="2418" y="865" fill="#fff" font-size="11" font-weight="700">Measure source + slot rect</text>
+    <text x="2418" y="879" fill="#8b949e" font-size="9">gate</text>
+  </g>
+<g>
+    <rect x="2496" y="848" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="2504" y="865" fill="#fff" font-size="11" font-weight="700">Clone launch (gate)</text>
+    <text x="2504" y="879" fill="#8b949e" font-size="9">gate</text>
+  </g>
+<g>
+    <rect x="2582" y="848" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="2590" y="865" fill="#fff" font-size="11" font-weight="700">Clone land (gate): slot pulse + counter tick</text>
+    <text x="2590" y="879" fill="#8b949e" font-size="9">gate</text>
+  </g>
+<g>
+    <rect x="2668" y="848" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="2676" y="865" fill="#fff" font-size="11" font-weight="700">Add-all batch complete</text>
+    <text x="2676" y="879" fill="#8b949e" font-size="9">gate</text>
   </g>
 </svg>
     </div>
@@ -678,6 +747,13 @@
         <td>DeckTableShell.closeDeck -&gt; phase=builder-dismissing</td>
       </tr>
 <tr>
+        <td><code>flights-flushed</code></td>
+        <td>Flights flushed (conditional)</td>
+        <td>deck-close</td>
+        <td></td>
+        <td>finishAllFlightsImmediately() before dismiss (only if flights in-flight)</td>
+      </tr>
+<tr>
         <td><code>builder-exit</code></td>
         <td>Builder exit</td>
         <td>deck-close</td>
@@ -697,6 +773,41 @@
         <td>deck-close</td>
         <td></td>
         <td>DeckTableShell.onCloseMorphComplete -&gt; table, focus restored</td>
+      </tr>
+<tr>
+        <td><code>flight-tap</code></td>
+        <td>Card tap (optimistic commit)</td>
+        <td>flight</td>
+        <td></td>
+        <td>BuilderPanel.flyCard -&gt; onCollect + fan-card dim</td>
+      </tr>
+<tr>
+        <td><code>flight-measure</code></td>
+        <td>Measure source + slot rect</td>
+        <td>flight</td>
+        <td></td>
+        <td>getBoundingClientRect (scrollIntoView re-measure if off-screen)</td>
+      </tr>
+<tr>
+        <td><code>flight-launch</code></td>
+        <td>Clone launch (gate)</td>
+        <td>flight</td>
+        <td></td>
+        <td>FlightClone imperative animate() start</td>
+      </tr>
+<tr>
+        <td><code>flight-land</code></td>
+        <td>Clone land (gate): slot pulse + counter tick</td>
+        <td>flight</td>
+        <td></td>
+        <td>FlightClone animate .then -&gt; settle slot, displayedCount++</td>
+      </tr>
+<tr>
+        <td><code>flight-batch-complete</code></td>
+        <td>Add-all batch complete</td>
+        <td>flight</td>
+        <td></td>
+        <td>last flight settles (batch decrement ref reaches 0)</td>
       </tr>
         </tbody>
       </table>
@@ -918,6 +1029,46 @@
         <td>Clear closingSlug, set phase=table, restore focus to the origin blueprint</td>
       </tr>
 <tr>
+        <td><code>deck-flights-flushed</code></td>
+        <td><code>deck-phase</code> -> <code>flight-settled</code></td>
+        <td>flights-flushed</td>
+        <td>DeckTableShell.closeDeck</td>
+        <td>flights in-flight at dismiss</td>
+        <td>finishAllFlightsImmediately(): stop clones, force slots filled, reconcile counter</td>
+      </tr>
+<tr>
+        <td><code>flight-tap</code></td>
+        <td><code>builder-content</code> -> <code>builder-collectedCount</code></td>
+        <td>flight-tap</td>
+        <td>BuilderPanel.flyCard</td>
+        <td>card not collected and not in-flight (re-tap is a no-op)</td>
+        <td>Optimistic commit: onCollect + localStorage; fan card dims with 'in deck' badge from this frame</td>
+      </tr>
+<tr>
+        <td><code>flight-measure</code></td>
+        <td><code>builder-collectedCount</code> -> <code>flight-clones</code></td>
+        <td>flight-measure</td>
+        <td>BuilderPanel.flyCard</td>
+        <td></td>
+        <td>Measure source + slot rect (scrollIntoView instant + re-measure if the slot is off-screen), mount clone</td>
+      </tr>
+<tr>
+        <td><code>flight-land</code></td>
+        <td><code>flight-clones</code> -> <code>flight-settled</code></td>
+        <td>flight-land</td>
+        <td>FlightClone animate .then</td>
+        <td></td>
+        <td>Remove clone, fill + pulse slot, tick displayedCount</td>
+      </tr>
+<tr>
+        <td><code>flight-batch-complete</code></td>
+        <td><code>flight-settled</code> -> <code>flight-batch</code></td>
+        <td>flight-batch-complete</td>
+        <td>BuilderPanel add-all batch</td>
+        <td></td>
+        <td>Last flight in the staggered batch settled (decrement ref reaches 0)</td>
+      </tr>
+<tr>
         <td><code>reset-state</code></td>
         <td><code>debug-reset</code> -> <code>page-activePack</code></td>
         <td>reset</td>
@@ -966,9 +1117,14 @@
       "y": 582
     },
     {
+      "id": "flight-layer",
+      "label": "FlightLayer",
+      "y": 692
+    },
+    {
       "id": "debug-gates",
       "label": "Debug Gates",
-      "y": 692
+      "y": 802
     }
   ],
   "nodes": [
@@ -1301,7 +1457,7 @@
       ],
       "description": "Reset clears reached/paused graph state, page state, and target pack motion values.",
       "x": 1464,
-      "y": 738
+      "y": 848
     },
     {
       "id": "deck-phase",
@@ -1411,6 +1567,48 @@
       "y": 628
     },
     {
+      "id": "flight-clones",
+      "label": "clones in-flight",
+      "lane": "flight-layer",
+      "phase": "flight",
+      "kind": "motion",
+      "stepId": "flight-launch",
+      "trackedFields": [
+        "flightLayer.inFlightCount"
+      ],
+      "description": "Portal clones imperatively animating from the tapped fan card to its phase slot, fixed inset-0 / pointer-events-none / z-[70] so the sheet never clips them.",
+      "x": 88,
+      "y": 738
+    },
+    {
+      "id": "flight-settled",
+      "label": "settled (displayedCount)",
+      "lane": "flight-layer",
+      "phase": "flight",
+      "kind": "state",
+      "stepId": "flight-land",
+      "trackedFields": [
+        "flightLayer.settledCount"
+      ],
+      "description": "Cards whose flight has landed — the presentation displayedCount; slots fill only here, never before the clone lands (except reduced motion).",
+      "x": 300,
+      "y": 738
+    },
+    {
+      "id": "flight-batch",
+      "label": "batchRemaining",
+      "lane": "flight-layer",
+      "phase": "flight",
+      "kind": "ref",
+      "stepId": "flight-batch-complete",
+      "trackedFields": [
+        "flightLayer.batchRemaining"
+      ],
+      "description": "Add-all decrement ref; the staggered batch completes when it reaches zero.",
+      "x": 540,
+      "y": 738
+    },
+    {
       "id": "step-tear",
       "label": "Tear edge",
       "lane": "debug-gates",
@@ -1423,7 +1621,7 @@
       ],
       "description": "SealedPack.completeTear",
       "x": 88,
-      "y": 738
+      "y": 848
     },
     {
       "id": "step-card-lift",
@@ -1438,7 +1636,7 @@
       ],
       "description": "SealedPack.handleCardPointerUp",
       "x": 174,
-      "y": 738
+      "y": 848
     },
     {
       "id": "step-card-click-rise",
@@ -1453,7 +1651,7 @@
       ],
       "description": "SealedPack.handlePackClick",
       "x": 260,
-      "y": 738
+      "y": 848
     },
     {
       "id": "step-elevate-card",
@@ -1468,7 +1666,7 @@
       ],
       "description": "setCardElevated(true)",
       "x": 346,
-      "y": 738
+      "y": 848
     },
     {
       "id": "step-request-open",
@@ -1483,7 +1681,7 @@
       ],
       "description": "onOpen(getOrigin())",
       "x": 432,
-      "y": 738
+      "y": 848
     },
     {
       "id": "step-sheet-open",
@@ -1498,7 +1696,7 @@
       ],
       "description": "BottomSheet sheet onAnimationComplete",
       "x": 518,
-      "y": 738
+      "y": 848
     },
     {
       "id": "step-layout-morph-in",
@@ -1513,7 +1711,7 @@
       ],
       "description": "PackOpener card0 onLayoutAnimationComplete",
       "x": 604,
-      "y": 738
+      "y": 848
     },
     {
       "id": "step-fan-out",
@@ -1528,7 +1726,7 @@
       ],
       "description": "PackOpener last card onAnimationComplete",
       "x": 690,
-      "y": 738
+      "y": 848
     },
     {
       "id": "step-close-trigger",
@@ -1543,7 +1741,7 @@
       ],
       "description": "page.handleClose -> phase=closing-collapse",
       "x": 776,
-      "y": 738
+      "y": 848
     },
     {
       "id": "step-collapse-measure",
@@ -1558,7 +1756,7 @@
       ],
       "description": "PackOpener collapse useLayoutEffect",
       "x": 862,
-      "y": 738
+      "y": 848
     },
     {
       "id": "step-collapse-fan",
@@ -1573,7 +1771,7 @@
       ],
       "description": "PackOpener collapse springs",
       "x": 948,
-      "y": 738
+      "y": 848
     },
     {
       "id": "step-collapse-complete",
@@ -1588,7 +1786,7 @@
       ],
       "description": "PackOpener onCollapseComplete",
       "x": 1034,
-      "y": 738
+      "y": 848
     },
     {
       "id": "step-drawer-teardown",
@@ -1603,7 +1801,7 @@
       ],
       "description": "page.handleCollapseComplete -> phase=sheet-exiting",
       "x": 1120,
-      "y": 738
+      "y": 848
     },
     {
       "id": "step-sheet-exit",
@@ -1618,7 +1816,7 @@
       ],
       "description": "BottomSheet AnimatePresence onExitComplete",
       "x": 1206,
-      "y": 738
+      "y": 848
     },
     {
       "id": "step-layout-morph-out",
@@ -1634,7 +1832,7 @@
       ],
       "description": "SealedPack onLayoutAnimationComplete (pre-body)",
       "x": 1292,
-      "y": 738
+      "y": 848
     },
     {
       "id": "step-drop-elevation",
@@ -1650,7 +1848,7 @@
       ],
       "description": "SealedPack setCardElevated(false)",
       "x": 1378,
-      "y": 738
+      "y": 848
     },
     {
       "id": "step-blueprint-tap",
@@ -1665,7 +1863,7 @@
       ],
       "description": "DeckTableShell.openDeck -> phase=blueprint-morphing",
       "x": 1464,
-      "y": 738
+      "y": 848
     },
     {
       "id": "step-url-push",
@@ -1680,7 +1878,7 @@
       ],
       "description": "DeckTableShell.pushDeckPath (window.history.pushState)",
       "x": 1550,
-      "y": 738
+      "y": 848
     },
     {
       "id": "step-builder-mount",
@@ -1695,7 +1893,7 @@
       ],
       "description": "AnimatePresence mounts BuilderPanel (owns layoutId)",
       "x": 1636,
-      "y": 738
+      "y": 848
     },
     {
       "id": "step-blueprint-morph-in",
@@ -1710,7 +1908,7 @@
       ],
       "description": "BuilderPanel onLayoutAnimationComplete -> builder-open",
       "x": 1722,
-      "y": 738
+      "y": 848
     },
     {
       "id": "step-builder-content-in",
@@ -1725,7 +1923,7 @@
       ],
       "description": "content variants animate to visible",
       "x": 1808,
-      "y": 738
+      "y": 848
     },
     {
       "id": "step-dismiss-trigger",
@@ -1740,7 +1938,22 @@
       ],
       "description": "DeckTableShell.closeDeck -> phase=builder-dismissing",
       "x": 1894,
-      "y": 738
+      "y": 848
+    },
+    {
+      "id": "step-flights-flushed",
+      "label": "Flights flushed (conditional)",
+      "lane": "debug-gates",
+      "phase": "deck-close",
+      "kind": "gate",
+      "stepId": "flights-flushed",
+      "trackedFields": [
+        "debug.pausedAtStep",
+        "debug.reachedSteps"
+      ],
+      "description": "finishAllFlightsImmediately() before dismiss (only if flights in-flight)",
+      "x": 1980,
+      "y": 848
     },
     {
       "id": "step-builder-exit",
@@ -1754,8 +1967,8 @@
         "debug.reachedSteps"
       ],
       "description": "BuilderPanel AnimatePresence exit (fast content fade)",
-      "x": 1980,
-      "y": 738
+      "x": 2066,
+      "y": 848
     },
     {
       "id": "step-blueprint-morph-out",
@@ -1770,8 +1983,8 @@
         "debug.reachedSteps"
       ],
       "description": "source blueprint onLayoutAnimationComplete (flash apex)",
-      "x": 2066,
-      "y": 738
+      "x": 2152,
+      "y": 848
     },
     {
       "id": "step-table-restored",
@@ -1785,8 +1998,83 @@
         "debug.reachedSteps"
       ],
       "description": "DeckTableShell.onCloseMorphComplete -> table, focus restored",
-      "x": 2152,
-      "y": 738
+      "x": 2238,
+      "y": 848
+    },
+    {
+      "id": "step-flight-tap",
+      "label": "Card tap (optimistic commit)",
+      "lane": "debug-gates",
+      "phase": "flight",
+      "kind": "gate",
+      "stepId": "flight-tap",
+      "trackedFields": [
+        "debug.pausedAtStep",
+        "debug.reachedSteps"
+      ],
+      "description": "BuilderPanel.flyCard -> onCollect + fan-card dim",
+      "x": 2324,
+      "y": 848
+    },
+    {
+      "id": "step-flight-measure",
+      "label": "Measure source + slot rect",
+      "lane": "debug-gates",
+      "phase": "flight",
+      "kind": "gate",
+      "stepId": "flight-measure",
+      "trackedFields": [
+        "debug.pausedAtStep",
+        "debug.reachedSteps"
+      ],
+      "description": "getBoundingClientRect (scrollIntoView re-measure if off-screen)",
+      "x": 2410,
+      "y": 848
+    },
+    {
+      "id": "step-flight-launch",
+      "label": "Clone launch (gate)",
+      "lane": "debug-gates",
+      "phase": "flight",
+      "kind": "gate",
+      "stepId": "flight-launch",
+      "trackedFields": [
+        "debug.pausedAtStep",
+        "debug.reachedSteps"
+      ],
+      "description": "FlightClone imperative animate() start",
+      "x": 2496,
+      "y": 848
+    },
+    {
+      "id": "step-flight-land",
+      "label": "Clone land (gate): slot pulse + counter tick",
+      "lane": "debug-gates",
+      "phase": "flight",
+      "kind": "gate",
+      "stepId": "flight-land",
+      "trackedFields": [
+        "debug.pausedAtStep",
+        "debug.reachedSteps"
+      ],
+      "description": "FlightClone animate .then -> settle slot, displayedCount++",
+      "x": 2582,
+      "y": 848
+    },
+    {
+      "id": "step-flight-batch-complete",
+      "label": "Add-all batch complete",
+      "lane": "debug-gates",
+      "phase": "flight",
+      "kind": "gate",
+      "stepId": "flight-batch-complete",
+      "trackedFields": [
+        "debug.pausedAtStep",
+        "debug.reachedSteps"
+      ],
+      "description": "last flight settles (batch decrement ref reaches 0)",
+      "x": 2668,
+      "y": 848
     }
   ],
   "transitions": [
@@ -2031,6 +2319,53 @@
       "stepId": "table-restored"
     },
     {
+      "id": "deck-flights-flushed",
+      "from": "deck-phase",
+      "to": "flight-settled",
+      "trigger": "flights-flushed",
+      "source": "DeckTableShell.closeDeck",
+      "guard": "flights in-flight at dismiss",
+      "effect": "finishAllFlightsImmediately(): stop clones, force slots filled, reconcile counter",
+      "stepId": "flights-flushed"
+    },
+    {
+      "id": "flight-tap",
+      "from": "builder-content",
+      "to": "builder-collectedCount",
+      "trigger": "flight-tap",
+      "source": "BuilderPanel.flyCard",
+      "guard": "card not collected and not in-flight (re-tap is a no-op)",
+      "effect": "Optimistic commit: onCollect + localStorage; fan card dims with 'in deck' badge from this frame",
+      "stepId": "flight-tap"
+    },
+    {
+      "id": "flight-measure",
+      "from": "builder-collectedCount",
+      "to": "flight-clones",
+      "trigger": "flight-measure",
+      "source": "BuilderPanel.flyCard",
+      "effect": "Measure source + slot rect (scrollIntoView instant + re-measure if the slot is off-screen), mount clone",
+      "stepId": "flight-measure"
+    },
+    {
+      "id": "flight-land",
+      "from": "flight-clones",
+      "to": "flight-settled",
+      "trigger": "flight-land",
+      "source": "FlightClone animate .then",
+      "effect": "Remove clone, fill + pulse slot, tick displayedCount",
+      "stepId": "flight-land"
+    },
+    {
+      "id": "flight-batch-complete",
+      "from": "flight-settled",
+      "to": "flight-batch",
+      "trigger": "flight-batch-complete",
+      "source": "BuilderPanel add-all batch",
+      "effect": "Last flight in the staggered batch settled (decrement ref reaches 0)",
+      "stepId": "flight-batch-complete"
+    },
+    {
       "id": "reset-state",
       "from": "debug-reset",
       "to": "page-activePack",
@@ -2181,6 +2516,12 @@
       "boundary": "DeckTableShell.closeDeck -> phase=builder-dismissing"
     },
     {
+      "id": "flights-flushed",
+      "label": "Flights flushed (conditional)",
+      "phase": "deck-close",
+      "boundary": "finishAllFlightsImmediately() before dismiss (only if flights in-flight)"
+    },
+    {
       "id": "builder-exit",
       "label": "Builder exit",
       "phase": "deck-close",
@@ -2198,6 +2539,38 @@
       "label": "Table restored",
       "phase": "deck-close",
       "boundary": "DeckTableShell.onCloseMorphComplete -> table, focus restored"
+    }
+  ],
+  "flightSteps": [
+    {
+      "id": "flight-tap",
+      "label": "Card tap (optimistic commit)",
+      "phase": "flight",
+      "boundary": "BuilderPanel.flyCard -> onCollect + fan-card dim"
+    },
+    {
+      "id": "flight-measure",
+      "label": "Measure source + slot rect",
+      "phase": "flight",
+      "boundary": "getBoundingClientRect (scrollIntoView re-measure if off-screen)"
+    },
+    {
+      "id": "flight-launch",
+      "label": "Clone launch (gate)",
+      "phase": "flight",
+      "boundary": "FlightClone imperative animate() start"
+    },
+    {
+      "id": "flight-land",
+      "label": "Clone land (gate): slot pulse + counter tick",
+      "phase": "flight",
+      "boundary": "FlightClone animate .then -> settle slot, displayedCount++"
+    },
+    {
+      "id": "flight-batch-complete",
+      "label": "Add-all batch complete",
+      "phase": "flight",
+      "boundary": "last flight settles (batch decrement ref reaches 0)"
     }
   ]
 }</script>
@@ -2234,9 +2607,14 @@
       &quot;y&quot;: 582
     },
     {
+      &quot;id&quot;: &quot;flight-layer&quot;,
+      &quot;label&quot;: &quot;FlightLayer&quot;,
+      &quot;y&quot;: 692
+    },
+    {
       &quot;id&quot;: &quot;debug-gates&quot;,
       &quot;label&quot;: &quot;Debug Gates&quot;,
-      &quot;y&quot;: 692
+      &quot;y&quot;: 802
     }
   ],
   &quot;nodes&quot;: [
@@ -2569,7 +2947,7 @@
       ],
       &quot;description&quot;: &quot;Reset clears reached/paused graph state, page state, and target pack motion values.&quot;,
       &quot;x&quot;: 1464,
-      &quot;y&quot;: 738
+      &quot;y&quot;: 848
     },
     {
       &quot;id&quot;: &quot;deck-phase&quot;,
@@ -2679,6 +3057,48 @@
       &quot;y&quot;: 628
     },
     {
+      &quot;id&quot;: &quot;flight-clones&quot;,
+      &quot;label&quot;: &quot;clones in-flight&quot;,
+      &quot;lane&quot;: &quot;flight-layer&quot;,
+      &quot;phase&quot;: &quot;flight&quot;,
+      &quot;kind&quot;: &quot;motion&quot;,
+      &quot;stepId&quot;: &quot;flight-launch&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;flightLayer.inFlightCount&quot;
+      ],
+      &quot;description&quot;: &quot;Portal clones imperatively animating from the tapped fan card to its phase slot, fixed inset-0 / pointer-events-none / z-[70] so the sheet never clips them.&quot;,
+      &quot;x&quot;: 88,
+      &quot;y&quot;: 738
+    },
+    {
+      &quot;id&quot;: &quot;flight-settled&quot;,
+      &quot;label&quot;: &quot;settled (displayedCount)&quot;,
+      &quot;lane&quot;: &quot;flight-layer&quot;,
+      &quot;phase&quot;: &quot;flight&quot;,
+      &quot;kind&quot;: &quot;state&quot;,
+      &quot;stepId&quot;: &quot;flight-land&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;flightLayer.settledCount&quot;
+      ],
+      &quot;description&quot;: &quot;Cards whose flight has landed — the presentation displayedCount; slots fill only here, never before the clone lands (except reduced motion).&quot;,
+      &quot;x&quot;: 300,
+      &quot;y&quot;: 738
+    },
+    {
+      &quot;id&quot;: &quot;flight-batch&quot;,
+      &quot;label&quot;: &quot;batchRemaining&quot;,
+      &quot;lane&quot;: &quot;flight-layer&quot;,
+      &quot;phase&quot;: &quot;flight&quot;,
+      &quot;kind&quot;: &quot;ref&quot;,
+      &quot;stepId&quot;: &quot;flight-batch-complete&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;flightLayer.batchRemaining&quot;
+      ],
+      &quot;description&quot;: &quot;Add-all decrement ref; the staggered batch completes when it reaches zero.&quot;,
+      &quot;x&quot;: 540,
+      &quot;y&quot;: 738
+    },
+    {
       &quot;id&quot;: &quot;step-tear&quot;,
       &quot;label&quot;: &quot;Tear edge&quot;,
       &quot;lane&quot;: &quot;debug-gates&quot;,
@@ -2691,7 +3111,7 @@
       ],
       &quot;description&quot;: &quot;SealedPack.completeTear&quot;,
       &quot;x&quot;: 88,
-      &quot;y&quot;: 738
+      &quot;y&quot;: 848
     },
     {
       &quot;id&quot;: &quot;step-card-lift&quot;,
@@ -2706,7 +3126,7 @@
       ],
       &quot;description&quot;: &quot;SealedPack.handleCardPointerUp&quot;,
       &quot;x&quot;: 174,
-      &quot;y&quot;: 738
+      &quot;y&quot;: 848
     },
     {
       &quot;id&quot;: &quot;step-card-click-rise&quot;,
@@ -2721,7 +3141,7 @@
       ],
       &quot;description&quot;: &quot;SealedPack.handlePackClick&quot;,
       &quot;x&quot;: 260,
-      &quot;y&quot;: 738
+      &quot;y&quot;: 848
     },
     {
       &quot;id&quot;: &quot;step-elevate-card&quot;,
@@ -2736,7 +3156,7 @@
       ],
       &quot;description&quot;: &quot;setCardElevated(true)&quot;,
       &quot;x&quot;: 346,
-      &quot;y&quot;: 738
+      &quot;y&quot;: 848
     },
     {
       &quot;id&quot;: &quot;step-request-open&quot;,
@@ -2751,7 +3171,7 @@
       ],
       &quot;description&quot;: &quot;onOpen(getOrigin())&quot;,
       &quot;x&quot;: 432,
-      &quot;y&quot;: 738
+      &quot;y&quot;: 848
     },
     {
       &quot;id&quot;: &quot;step-sheet-open&quot;,
@@ -2766,7 +3186,7 @@
       ],
       &quot;description&quot;: &quot;BottomSheet sheet onAnimationComplete&quot;,
       &quot;x&quot;: 518,
-      &quot;y&quot;: 738
+      &quot;y&quot;: 848
     },
     {
       &quot;id&quot;: &quot;step-layout-morph-in&quot;,
@@ -2781,7 +3201,7 @@
       ],
       &quot;description&quot;: &quot;PackOpener card0 onLayoutAnimationComplete&quot;,
       &quot;x&quot;: 604,
-      &quot;y&quot;: 738
+      &quot;y&quot;: 848
     },
     {
       &quot;id&quot;: &quot;step-fan-out&quot;,
@@ -2796,7 +3216,7 @@
       ],
       &quot;description&quot;: &quot;PackOpener last card onAnimationComplete&quot;,
       &quot;x&quot;: 690,
-      &quot;y&quot;: 738
+      &quot;y&quot;: 848
     },
     {
       &quot;id&quot;: &quot;step-close-trigger&quot;,
@@ -2811,7 +3231,7 @@
       ],
       &quot;description&quot;: &quot;page.handleClose -&gt; phase=closing-collapse&quot;,
       &quot;x&quot;: 776,
-      &quot;y&quot;: 738
+      &quot;y&quot;: 848
     },
     {
       &quot;id&quot;: &quot;step-collapse-measure&quot;,
@@ -2826,7 +3246,7 @@
       ],
       &quot;description&quot;: &quot;PackOpener collapse useLayoutEffect&quot;,
       &quot;x&quot;: 862,
-      &quot;y&quot;: 738
+      &quot;y&quot;: 848
     },
     {
       &quot;id&quot;: &quot;step-collapse-fan&quot;,
@@ -2841,7 +3261,7 @@
       ],
       &quot;description&quot;: &quot;PackOpener collapse springs&quot;,
       &quot;x&quot;: 948,
-      &quot;y&quot;: 738
+      &quot;y&quot;: 848
     },
     {
       &quot;id&quot;: &quot;step-collapse-complete&quot;,
@@ -2856,7 +3276,7 @@
       ],
       &quot;description&quot;: &quot;PackOpener onCollapseComplete&quot;,
       &quot;x&quot;: 1034,
-      &quot;y&quot;: 738
+      &quot;y&quot;: 848
     },
     {
       &quot;id&quot;: &quot;step-drawer-teardown&quot;,
@@ -2871,7 +3291,7 @@
       ],
       &quot;description&quot;: &quot;page.handleCollapseComplete -&gt; phase=sheet-exiting&quot;,
       &quot;x&quot;: 1120,
-      &quot;y&quot;: 738
+      &quot;y&quot;: 848
     },
     {
       &quot;id&quot;: &quot;step-sheet-exit&quot;,
@@ -2886,7 +3306,7 @@
       ],
       &quot;description&quot;: &quot;BottomSheet AnimatePresence onExitComplete&quot;,
       &quot;x&quot;: 1206,
-      &quot;y&quot;: 738
+      &quot;y&quot;: 848
     },
     {
       &quot;id&quot;: &quot;step-layout-morph-out&quot;,
@@ -2902,7 +3322,7 @@
       ],
       &quot;description&quot;: &quot;SealedPack onLayoutAnimationComplete (pre-body)&quot;,
       &quot;x&quot;: 1292,
-      &quot;y&quot;: 738
+      &quot;y&quot;: 848
     },
     {
       &quot;id&quot;: &quot;step-drop-elevation&quot;,
@@ -2918,7 +3338,7 @@
       ],
       &quot;description&quot;: &quot;SealedPack setCardElevated(false)&quot;,
       &quot;x&quot;: 1378,
-      &quot;y&quot;: 738
+      &quot;y&quot;: 848
     },
     {
       &quot;id&quot;: &quot;step-blueprint-tap&quot;,
@@ -2933,7 +3353,7 @@
       ],
       &quot;description&quot;: &quot;DeckTableShell.openDeck -&gt; phase=blueprint-morphing&quot;,
       &quot;x&quot;: 1464,
-      &quot;y&quot;: 738
+      &quot;y&quot;: 848
     },
     {
       &quot;id&quot;: &quot;step-url-push&quot;,
@@ -2948,7 +3368,7 @@
       ],
       &quot;description&quot;: &quot;DeckTableShell.pushDeckPath (window.history.pushState)&quot;,
       &quot;x&quot;: 1550,
-      &quot;y&quot;: 738
+      &quot;y&quot;: 848
     },
     {
       &quot;id&quot;: &quot;step-builder-mount&quot;,
@@ -2963,7 +3383,7 @@
       ],
       &quot;description&quot;: &quot;AnimatePresence mounts BuilderPanel (owns layoutId)&quot;,
       &quot;x&quot;: 1636,
-      &quot;y&quot;: 738
+      &quot;y&quot;: 848
     },
     {
       &quot;id&quot;: &quot;step-blueprint-morph-in&quot;,
@@ -2978,7 +3398,7 @@
       ],
       &quot;description&quot;: &quot;BuilderPanel onLayoutAnimationComplete -&gt; builder-open&quot;,
       &quot;x&quot;: 1722,
-      &quot;y&quot;: 738
+      &quot;y&quot;: 848
     },
     {
       &quot;id&quot;: &quot;step-builder-content-in&quot;,
@@ -2993,7 +3413,7 @@
       ],
       &quot;description&quot;: &quot;content variants animate to visible&quot;,
       &quot;x&quot;: 1808,
-      &quot;y&quot;: 738
+      &quot;y&quot;: 848
     },
     {
       &quot;id&quot;: &quot;step-dismiss-trigger&quot;,
@@ -3008,7 +3428,22 @@
       ],
       &quot;description&quot;: &quot;DeckTableShell.closeDeck -&gt; phase=builder-dismissing&quot;,
       &quot;x&quot;: 1894,
-      &quot;y&quot;: 738
+      &quot;y&quot;: 848
+    },
+    {
+      &quot;id&quot;: &quot;step-flights-flushed&quot;,
+      &quot;label&quot;: &quot;Flights flushed (conditional)&quot;,
+      &quot;lane&quot;: &quot;debug-gates&quot;,
+      &quot;phase&quot;: &quot;deck-close&quot;,
+      &quot;kind&quot;: &quot;gate&quot;,
+      &quot;stepId&quot;: &quot;flights-flushed&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;debug.pausedAtStep&quot;,
+        &quot;debug.reachedSteps&quot;
+      ],
+      &quot;description&quot;: &quot;finishAllFlightsImmediately() before dismiss (only if flights in-flight)&quot;,
+      &quot;x&quot;: 1980,
+      &quot;y&quot;: 848
     },
     {
       &quot;id&quot;: &quot;step-builder-exit&quot;,
@@ -3022,8 +3457,8 @@
         &quot;debug.reachedSteps&quot;
       ],
       &quot;description&quot;: &quot;BuilderPanel AnimatePresence exit (fast content fade)&quot;,
-      &quot;x&quot;: 1980,
-      &quot;y&quot;: 738
+      &quot;x&quot;: 2066,
+      &quot;y&quot;: 848
     },
     {
       &quot;id&quot;: &quot;step-blueprint-morph-out&quot;,
@@ -3038,8 +3473,8 @@
         &quot;debug.reachedSteps&quot;
       ],
       &quot;description&quot;: &quot;source blueprint onLayoutAnimationComplete (flash apex)&quot;,
-      &quot;x&quot;: 2066,
-      &quot;y&quot;: 738
+      &quot;x&quot;: 2152,
+      &quot;y&quot;: 848
     },
     {
       &quot;id&quot;: &quot;step-table-restored&quot;,
@@ -3053,8 +3488,83 @@
         &quot;debug.reachedSteps&quot;
       ],
       &quot;description&quot;: &quot;DeckTableShell.onCloseMorphComplete -&gt; table, focus restored&quot;,
-      &quot;x&quot;: 2152,
-      &quot;y&quot;: 738
+      &quot;x&quot;: 2238,
+      &quot;y&quot;: 848
+    },
+    {
+      &quot;id&quot;: &quot;step-flight-tap&quot;,
+      &quot;label&quot;: &quot;Card tap (optimistic commit)&quot;,
+      &quot;lane&quot;: &quot;debug-gates&quot;,
+      &quot;phase&quot;: &quot;flight&quot;,
+      &quot;kind&quot;: &quot;gate&quot;,
+      &quot;stepId&quot;: &quot;flight-tap&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;debug.pausedAtStep&quot;,
+        &quot;debug.reachedSteps&quot;
+      ],
+      &quot;description&quot;: &quot;BuilderPanel.flyCard -&gt; onCollect + fan-card dim&quot;,
+      &quot;x&quot;: 2324,
+      &quot;y&quot;: 848
+    },
+    {
+      &quot;id&quot;: &quot;step-flight-measure&quot;,
+      &quot;label&quot;: &quot;Measure source + slot rect&quot;,
+      &quot;lane&quot;: &quot;debug-gates&quot;,
+      &quot;phase&quot;: &quot;flight&quot;,
+      &quot;kind&quot;: &quot;gate&quot;,
+      &quot;stepId&quot;: &quot;flight-measure&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;debug.pausedAtStep&quot;,
+        &quot;debug.reachedSteps&quot;
+      ],
+      &quot;description&quot;: &quot;getBoundingClientRect (scrollIntoView re-measure if off-screen)&quot;,
+      &quot;x&quot;: 2410,
+      &quot;y&quot;: 848
+    },
+    {
+      &quot;id&quot;: &quot;step-flight-launch&quot;,
+      &quot;label&quot;: &quot;Clone launch (gate)&quot;,
+      &quot;lane&quot;: &quot;debug-gates&quot;,
+      &quot;phase&quot;: &quot;flight&quot;,
+      &quot;kind&quot;: &quot;gate&quot;,
+      &quot;stepId&quot;: &quot;flight-launch&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;debug.pausedAtStep&quot;,
+        &quot;debug.reachedSteps&quot;
+      ],
+      &quot;description&quot;: &quot;FlightClone imperative animate() start&quot;,
+      &quot;x&quot;: 2496,
+      &quot;y&quot;: 848
+    },
+    {
+      &quot;id&quot;: &quot;step-flight-land&quot;,
+      &quot;label&quot;: &quot;Clone land (gate): slot pulse + counter tick&quot;,
+      &quot;lane&quot;: &quot;debug-gates&quot;,
+      &quot;phase&quot;: &quot;flight&quot;,
+      &quot;kind&quot;: &quot;gate&quot;,
+      &quot;stepId&quot;: &quot;flight-land&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;debug.pausedAtStep&quot;,
+        &quot;debug.reachedSteps&quot;
+      ],
+      &quot;description&quot;: &quot;FlightClone animate .then -&gt; settle slot, displayedCount++&quot;,
+      &quot;x&quot;: 2582,
+      &quot;y&quot;: 848
+    },
+    {
+      &quot;id&quot;: &quot;step-flight-batch-complete&quot;,
+      &quot;label&quot;: &quot;Add-all batch complete&quot;,
+      &quot;lane&quot;: &quot;debug-gates&quot;,
+      &quot;phase&quot;: &quot;flight&quot;,
+      &quot;kind&quot;: &quot;gate&quot;,
+      &quot;stepId&quot;: &quot;flight-batch-complete&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;debug.pausedAtStep&quot;,
+        &quot;debug.reachedSteps&quot;
+      ],
+      &quot;description&quot;: &quot;last flight settles (batch decrement ref reaches 0)&quot;,
+      &quot;x&quot;: 2668,
+      &quot;y&quot;: 848
     }
   ],
   &quot;transitions&quot;: [
@@ -3299,6 +3809,53 @@
       &quot;stepId&quot;: &quot;table-restored&quot;
     },
     {
+      &quot;id&quot;: &quot;deck-flights-flushed&quot;,
+      &quot;from&quot;: &quot;deck-phase&quot;,
+      &quot;to&quot;: &quot;flight-settled&quot;,
+      &quot;trigger&quot;: &quot;flights-flushed&quot;,
+      &quot;source&quot;: &quot;DeckTableShell.closeDeck&quot;,
+      &quot;guard&quot;: &quot;flights in-flight at dismiss&quot;,
+      &quot;effect&quot;: &quot;finishAllFlightsImmediately(): stop clones, force slots filled, reconcile counter&quot;,
+      &quot;stepId&quot;: &quot;flights-flushed&quot;
+    },
+    {
+      &quot;id&quot;: &quot;flight-tap&quot;,
+      &quot;from&quot;: &quot;builder-content&quot;,
+      &quot;to&quot;: &quot;builder-collectedCount&quot;,
+      &quot;trigger&quot;: &quot;flight-tap&quot;,
+      &quot;source&quot;: &quot;BuilderPanel.flyCard&quot;,
+      &quot;guard&quot;: &quot;card not collected and not in-flight (re-tap is a no-op)&quot;,
+      &quot;effect&quot;: &quot;Optimistic commit: onCollect + localStorage; fan card dims with 'in deck' badge from this frame&quot;,
+      &quot;stepId&quot;: &quot;flight-tap&quot;
+    },
+    {
+      &quot;id&quot;: &quot;flight-measure&quot;,
+      &quot;from&quot;: &quot;builder-collectedCount&quot;,
+      &quot;to&quot;: &quot;flight-clones&quot;,
+      &quot;trigger&quot;: &quot;flight-measure&quot;,
+      &quot;source&quot;: &quot;BuilderPanel.flyCard&quot;,
+      &quot;effect&quot;: &quot;Measure source + slot rect (scrollIntoView instant + re-measure if the slot is off-screen), mount clone&quot;,
+      &quot;stepId&quot;: &quot;flight-measure&quot;
+    },
+    {
+      &quot;id&quot;: &quot;flight-land&quot;,
+      &quot;from&quot;: &quot;flight-clones&quot;,
+      &quot;to&quot;: &quot;flight-settled&quot;,
+      &quot;trigger&quot;: &quot;flight-land&quot;,
+      &quot;source&quot;: &quot;FlightClone animate .then&quot;,
+      &quot;effect&quot;: &quot;Remove clone, fill + pulse slot, tick displayedCount&quot;,
+      &quot;stepId&quot;: &quot;flight-land&quot;
+    },
+    {
+      &quot;id&quot;: &quot;flight-batch-complete&quot;,
+      &quot;from&quot;: &quot;flight-settled&quot;,
+      &quot;to&quot;: &quot;flight-batch&quot;,
+      &quot;trigger&quot;: &quot;flight-batch-complete&quot;,
+      &quot;source&quot;: &quot;BuilderPanel add-all batch&quot;,
+      &quot;effect&quot;: &quot;Last flight in the staggered batch settled (decrement ref reaches 0)&quot;,
+      &quot;stepId&quot;: &quot;flight-batch-complete&quot;
+    },
+    {
       &quot;id&quot;: &quot;reset-state&quot;,
       &quot;from&quot;: &quot;debug-reset&quot;,
       &quot;to&quot;: &quot;page-activePack&quot;,
@@ -3449,6 +4006,12 @@
       &quot;boundary&quot;: &quot;DeckTableShell.closeDeck -&gt; phase=builder-dismissing&quot;
     },
     {
+      &quot;id&quot;: &quot;flights-flushed&quot;,
+      &quot;label&quot;: &quot;Flights flushed (conditional)&quot;,
+      &quot;phase&quot;: &quot;deck-close&quot;,
+      &quot;boundary&quot;: &quot;finishAllFlightsImmediately() before dismiss (only if flights in-flight)&quot;
+    },
+    {
       &quot;id&quot;: &quot;builder-exit&quot;,
       &quot;label&quot;: &quot;Builder exit&quot;,
       &quot;phase&quot;: &quot;deck-close&quot;,
@@ -3466,6 +4029,38 @@
       &quot;label&quot;: &quot;Table restored&quot;,
       &quot;phase&quot;: &quot;deck-close&quot;,
       &quot;boundary&quot;: &quot;DeckTableShell.onCloseMorphComplete -&gt; table, focus restored&quot;
+    }
+  ],
+  &quot;flightSteps&quot;: [
+    {
+      &quot;id&quot;: &quot;flight-tap&quot;,
+      &quot;label&quot;: &quot;Card tap (optimistic commit)&quot;,
+      &quot;phase&quot;: &quot;flight&quot;,
+      &quot;boundary&quot;: &quot;BuilderPanel.flyCard -&gt; onCollect + fan-card dim&quot;
+    },
+    {
+      &quot;id&quot;: &quot;flight-measure&quot;,
+      &quot;label&quot;: &quot;Measure source + slot rect&quot;,
+      &quot;phase&quot;: &quot;flight&quot;,
+      &quot;boundary&quot;: &quot;getBoundingClientRect (scrollIntoView re-measure if off-screen)&quot;
+    },
+    {
+      &quot;id&quot;: &quot;flight-launch&quot;,
+      &quot;label&quot;: &quot;Clone launch (gate)&quot;,
+      &quot;phase&quot;: &quot;flight&quot;,
+      &quot;boundary&quot;: &quot;FlightClone imperative animate() start&quot;
+    },
+    {
+      &quot;id&quot;: &quot;flight-land&quot;,
+      &quot;label&quot;: &quot;Clone land (gate): slot pulse + counter tick&quot;,
+      &quot;phase&quot;: &quot;flight&quot;,
+      &quot;boundary&quot;: &quot;FlightClone animate .then -&gt; settle slot, displayedCount++&quot;
+    },
+    {
+      &quot;id&quot;: &quot;flight-batch-complete&quot;,
+      &quot;label&quot;: &quot;Add-all batch complete&quot;,
+      &quot;phase&quot;: &quot;flight&quot;,
+      &quot;boundary&quot;: &quot;last flight settles (batch decrement ref reaches 0)&quot;
     }
   ]
 }</code></pre>

@@ -11,6 +11,7 @@ import {
   CLOSE_STEPS,
   DECK_CLOSE_STEPS,
   DECK_OPEN_STEPS,
+  FLIGHT_STEPS,
   OPEN_STEPS,
   type StepDef,
 } from "./steps";
@@ -22,6 +23,7 @@ export type AnimationMachineLane =
   | "pack-opener"
   | "deck-shell"
   | "builder"
+  | "flight-layer"
   | "debug-gates";
 
 export type AnimationMachinePhase =
@@ -30,7 +32,8 @@ export type AnimationMachinePhase =
   | "close"
   | "reset"
   | "deck-open"
-  | "deck-close";
+  | "deck-close"
+  | "flight";
 
 /**
  * DeckFlowPhase mirrors DeckTableShell's lifecycle union. It is duplicated here
@@ -153,6 +156,19 @@ export interface AnimationMachineBuilderRuntime {
   collectedCount: number;
 }
 
+/**
+ * Card-flight runtime slice (animation-plan-deck-builder.md §B / §F). The
+ * FlightLayer is the fixed, pointer-events-none clone overlay; `inFlightCount`
+ * is the number of live clones, `settledCount` the cards whose flights have
+ * landed (= the presentation `displayedCount`), and `batchRemaining` the add-all
+ * decrement ref.
+ */
+export interface AnimationMachineFlightLayerRuntime {
+  inFlightCount: number;
+  settledCount: number;
+  batchRemaining: number;
+}
+
 export interface AnimationMachineRuntimeState {
   page: AnimationMachinePageRuntime;
   pack: AnimationMachinePackRuntime;
@@ -160,6 +176,7 @@ export interface AnimationMachineRuntimeState {
   sheet: AnimationMachineSheetRuntime;
   deckShell: AnimationMachineDeckShellRuntime;
   builder: AnimationMachineBuilderRuntime;
+  flightLayer: AnimationMachineFlightLayerRuntime;
 }
 
 export interface AnimationMachineRuntimePatch {
@@ -169,6 +186,7 @@ export interface AnimationMachineRuntimePatch {
   sheet?: Partial<AnimationMachineSheetRuntime>;
   deckShell?: Partial<AnimationMachineDeckShellRuntime>;
   builder?: Partial<AnimationMachineBuilderRuntime>;
+  flightLayer?: Partial<AnimationMachineFlightLayerRuntime>;
 }
 
 export interface AnimationMachineDebugRuntime {
@@ -195,6 +213,7 @@ export interface AnimationMachineModel {
   closeSteps: StepDef[];
   deckOpenSteps: StepDef[];
   deckCloseSteps: StepDef[];
+  flightSteps: StepDef[];
 }
 
 // Hand-positioned constants - visual spacing for the SVG graph lanes.
@@ -206,7 +225,8 @@ const LANE_Y: Record<AnimationMachineLane, number> = {
   "pack-opener": 362,
   "deck-shell": 472,
   builder: 582,
-  "debug-gates": 692,
+  "flight-layer": 692,
+  "debug-gates": 802,
 };
 
 export const ANIMATION_MACHINE_LANES: AnimationMachineLaneDef[] = [
@@ -216,6 +236,7 @@ export const ANIMATION_MACHINE_LANES: AnimationMachineLaneDef[] = [
   { id: "pack-opener", label: "PackOpener", y: LANE_Y["pack-opener"] },
   { id: "deck-shell", label: "DeckTableShell", y: LANE_Y["deck-shell"] },
   { id: "builder", label: "BuilderPanel", y: LANE_Y.builder },
+  { id: "flight-layer", label: "FlightLayer", y: LANE_Y["flight-layer"] },
   { id: "debug-gates", label: "Debug Gates", y: LANE_Y["debug-gates"] },
 ];
 
@@ -614,6 +635,42 @@ export const ANIMATION_MACHINE_NODES: AnimationMachineNode[] = [
     x: 644,
     y: nodeY("builder"),
   },
+  {
+    id: "flight-clones",
+    label: "clones in-flight",
+    lane: "flight-layer",
+    phase: "flight",
+    kind: "motion",
+    stepId: "flight-launch",
+    trackedFields: ["flightLayer.inFlightCount"],
+    description: "Portal clones imperatively animating from the tapped fan card to its phase slot, fixed inset-0 / pointer-events-none / z-[70] so the sheet never clips them.",
+    x: 88,
+    y: nodeY("flight-layer"),
+  },
+  {
+    id: "flight-settled",
+    label: "settled (displayedCount)",
+    lane: "flight-layer",
+    phase: "flight",
+    kind: "state",
+    stepId: "flight-land",
+    trackedFields: ["flightLayer.settledCount"],
+    description: "Cards whose flight has landed — the presentation displayedCount; slots fill only here, never before the clone lands (except reduced motion).",
+    x: 300,
+    y: nodeY("flight-layer"),
+  },
+  {
+    id: "flight-batch",
+    label: "batchRemaining",
+    lane: "flight-layer",
+    phase: "flight",
+    kind: "ref",
+    stepId: "flight-batch-complete",
+    trackedFields: ["flightLayer.batchRemaining"],
+    description: "Add-all decrement ref; the staggered batch completes when it reaches zero.",
+    x: 540,
+    y: nodeY("flight-layer"),
+  },
   ...ALL_STEPS.map(stepNode),
 ];
 
@@ -859,6 +916,53 @@ export const ANIMATION_MACHINE_TRANSITIONS: AnimationMachineTransition[] = [
     stepId: "table-restored",
   },
   {
+    id: "deck-flights-flushed",
+    from: "deck-phase",
+    to: "flight-settled",
+    trigger: "flights-flushed",
+    source: "DeckTableShell.closeDeck",
+    guard: "flights in-flight at dismiss",
+    effect: "finishAllFlightsImmediately(): stop clones, force slots filled, reconcile counter",
+    stepId: "flights-flushed",
+  },
+  {
+    id: "flight-tap",
+    from: "builder-content",
+    to: "builder-collectedCount",
+    trigger: "flight-tap",
+    source: "BuilderPanel.flyCard",
+    guard: "card not collected and not in-flight (re-tap is a no-op)",
+    effect: "Optimistic commit: onCollect + localStorage; fan card dims with 'in deck' badge from this frame",
+    stepId: "flight-tap",
+  },
+  {
+    id: "flight-measure",
+    from: "builder-collectedCount",
+    to: "flight-clones",
+    trigger: "flight-measure",
+    source: "BuilderPanel.flyCard",
+    effect: "Measure source + slot rect (scrollIntoView instant + re-measure if the slot is off-screen), mount clone",
+    stepId: "flight-measure",
+  },
+  {
+    id: "flight-land",
+    from: "flight-clones",
+    to: "flight-settled",
+    trigger: "flight-land",
+    source: "FlightClone animate .then",
+    effect: "Remove clone, fill + pulse slot, tick displayedCount",
+    stepId: "flight-land",
+  },
+  {
+    id: "flight-batch-complete",
+    from: "flight-settled",
+    to: "flight-batch",
+    trigger: "flight-batch-complete",
+    source: "BuilderPanel add-all batch",
+    effect: "Last flight in the staggered batch settled (decrement ref reaches 0)",
+    stepId: "flight-batch-complete",
+  },
+  {
     id: "reset-state",
     from: "debug-reset",
     to: "page-activePack",
@@ -876,6 +980,7 @@ export const ANIMATION_MACHINE_MODEL: AnimationMachineModel = {
   closeSteps: CLOSE_STEPS,
   deckOpenSteps: DECK_OPEN_STEPS,
   deckCloseSteps: DECK_CLOSE_STEPS,
+  flightSteps: FLIGHT_STEPS,
 };
 
 export const DEFAULT_ANIMATION_MACHINE_RUNTIME: AnimationMachineRuntimeState = {
@@ -929,6 +1034,11 @@ export const DEFAULT_ANIMATION_MACHINE_RUNTIME: AnimationMachineRuntimeState = {
     contentState: "hidden",
     collectedCount: 0,
   },
+  flightLayer: {
+    inFlightCount: 0,
+    settledCount: 0,
+    batchRemaining: 0,
+  },
 };
 
 const DEFAULT_DEBUG_RUNTIME: AnimationMachineDebugRuntime = {
@@ -961,6 +1071,9 @@ export function mergeAnimationMachineRuntime(
     builder: patch.builder
       ? { ...previous.builder, ...patch.builder }
       : previous.builder,
+    flightLayer: patch.flightLayer
+      ? { ...previous.flightLayer, ...patch.flightLayer }
+      : previous.flightLayer,
   };
 }
 
@@ -1016,6 +1129,10 @@ export function buildAnimationMachineSnapshot(
   if (runtime.builder.contentState === "visible") activeNodeIds.add("builder-content");
   if (runtime.builder.collectedCount > 0) activeNodeIds.add("builder-collectedCount");
 
+  if (runtime.flightLayer.inFlightCount > 0) activeNodeIds.add("flight-clones");
+  if (runtime.flightLayer.settledCount > 0) activeNodeIds.add("flight-settled");
+  if (runtime.flightLayer.batchRemaining > 0) activeNodeIds.add("flight-batch");
+
   if (debug.pausedAtStep) {
     activeNodeIds.add(getAnimationMachineStepNodeId(debug.pausedAtStep));
   }
@@ -1029,6 +1146,8 @@ export function buildAnimationMachineSnapshot(
     runtime.deckShell.phase === "table" &&
     !runtime.deckShell.activeDeckSlug &&
     !runtime.builder.mounted &&
+    runtime.flightLayer.inFlightCount === 0 &&
+    runtime.flightLayer.settledCount === 0 &&
     debug.reachedSteps.length === 0 &&
     debug.pausedAtStep === null;
 
