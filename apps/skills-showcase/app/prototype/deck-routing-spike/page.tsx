@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import DeckTableShell from "@/deck-builder/DeckTableShell";
+import DeckDebugHarness from "@/deck-builder/DeckDebugHarness";
 
 export const metadata: Metadata = {
   title: "Deck Builder Table",
@@ -11,5 +11,5 @@ export const metadata: Metadata = {
 };
 
 export default function DeckTablePage() {
-  return <DeckTableShell />;
+  return <DeckDebugHarness />;
 }

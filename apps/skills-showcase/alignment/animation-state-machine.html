@@ -56,7 +56,7 @@
   <header>
     <p class="muted">Static reference generated from <code>src/components/debug/animationMachine.ts</code>.</p>
     <h1>Animation State Machine - Pack Drawer Prototype</h1>
-    <p>The live <code>/prototype</code> debug panel and this static page share the same canonical model export. The model maps page state, SealedPack refs and motion values, BottomSheet state, PackOpener collapse internals, and every existing debug gate from <code>OPEN_STEPS</code> / <code>CLOSE_STEPS</code>.</p>
+    <p>The live <code>/prototype</code> debug panel and this static page share the same canonical model export. The model maps page state, SealedPack refs and motion values, BottomSheet state, PackOpener collapse internals, the deck-builder <code>blueprint-morph</code> lifecycle (DeckTableShell + BuilderPanel), and every debug gate from <code>OPEN_STEPS</code> / <code>CLOSE_STEPS</code> / <code>DECK_OPEN_STEPS</code> / <code>DECK_CLOSE_STEPS</code>.</p>
   </header>
 
   <section class="toc" id="toc">
@@ -72,33 +72,41 @@
 
   <section id="graph">
     <h2>State Machine Graph</h2>
-    <p class="muted">Lanes match runtime owners: Page, SealedPack, BottomSheet, PackOpener, and Debug Gates. Purple nodes are apex gates; orange transition labels identify close-path boundaries that can be paused in stepped mode.</p>
+    <p class="muted">Lanes match runtime owners: Page, SealedPack, BottomSheet, PackOpener, DeckTableShell, BuilderPanel, and Debug Gates. Purple nodes are apex gates; orange transition labels identify close-path boundaries that can be paused in stepped mode.</p>
     <div class="graph-shell">
-      <svg viewBox="0 0 1600 620" width="1600" height="620" role="img" aria-label="Pack drawer animation state machine">
+      <svg viewBox="0 0 2400 800" width="2400" height="800" role="img" aria-label="Pack drawer animation state machine">
   <defs>
     <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#8b949e" /></marker>
     <marker id="arrow-close" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#d29922" /></marker>
   </defs>
-  <rect width="1600" height="620" fill="#0d1117" />
+  <rect width="2400" height="800" fill="#0d1117" />
   <g>
-        <rect x="12" y="32" width="1576" height="92" rx="8" fill="#111827" stroke="#30363d" />
+        <rect x="12" y="32" width="2376" height="92" rx="8" fill="#111827" stroke="#30363d" />
         <text x="24" y="52" fill="#8b949e" font-size="13" font-weight="700">Page</text>
       </g>
 <g>
-        <rect x="12" y="142" width="1576" height="92" rx="8" fill="#111827" stroke="#30363d" />
+        <rect x="12" y="142" width="2376" height="92" rx="8" fill="#111827" stroke="#30363d" />
         <text x="24" y="162" fill="#8b949e" font-size="13" font-weight="700">SealedPack</text>
       </g>
 <g>
-        <rect x="12" y="252" width="1576" height="92" rx="8" fill="#111827" stroke="#30363d" />
+        <rect x="12" y="252" width="2376" height="92" rx="8" fill="#111827" stroke="#30363d" />
         <text x="24" y="272" fill="#8b949e" font-size="13" font-weight="700">BottomSheet</text>
       </g>
 <g>
-        <rect x="12" y="362" width="1576" height="92" rx="8" fill="#111827" stroke="#30363d" />
+        <rect x="12" y="362" width="2376" height="92" rx="8" fill="#111827" stroke="#30363d" />
         <text x="24" y="382" fill="#8b949e" font-size="13" font-weight="700">PackOpener</text>
       </g>
 <g>
-        <rect x="12" y="482" width="1576" height="92" rx="8" fill="#111827" stroke="#30363d" />
-        <text x="24" y="502" fill="#8b949e" font-size="13" font-weight="700">Debug Gates</text>
+        <rect x="12" y="472" width="2376" height="92" rx="8" fill="#111827" stroke="#30363d" />
+        <text x="24" y="492" fill="#8b949e" font-size="13" font-weight="700">DeckTableShell</text>
+      </g>
+<g>
+        <rect x="12" y="582" width="2376" height="92" rx="8" fill="#111827" stroke="#30363d" />
+        <text x="24" y="602" fill="#8b949e" font-size="13" font-weight="700">BuilderPanel</text>
+      </g>
+<g>
+        <rect x="12" y="692" width="2376" height="92" rx="8" fill="#111827" stroke="#30363d" />
+        <text x="24" y="712" fill="#8b949e" font-size="13" font-weight="700">Debug Gates</text>
       </g>
   <g>
     <path d="M 146 209 C 224 185, 224 185, 302 209" fill="none" stroke="#8b949e" stroke-width="1.1" stroke-opacity="0.44" marker-end="url(#arrow)" />
@@ -169,7 +177,43 @@
     <text x="1071" y="179" fill="#d29922" font-size="10" font-weight="700">drop-elevation</text>
   </g>
 <g>
-    <path d="M 1522 549 C 914 549, 914 99, 306 99" fill="none" stroke="#8b949e" stroke-width="1.1" stroke-opacity="0.44" marker-end="url(#arrow)" />
+    <path d="M 146 539 C 236 515, 236 515, 326 539" fill="none" stroke="#8b949e" stroke-width="1.1" stroke-opacity="0.44" marker-end="url(#arrow)" />
+    
+  </g>
+<g>
+    <path d="M 326 539 C 236 539, 236 649, 146 649" fill="none" stroke="#8b949e" stroke-width="1.1" stroke-opacity="0.44" marker-end="url(#arrow)" />
+    
+  </g>
+<g>
+    <path d="M 146 649 C 236 625, 236 625, 326 649" fill="none" stroke="#8b949e" stroke-width="1.1" stroke-opacity="0.44" marker-end="url(#arrow)" />
+    
+  </g>
+<g>
+    <path d="M 326 649 C 236 649, 236 539, 146 539" fill="none" stroke="#8b949e" stroke-width="1.1" stroke-opacity="0.44" marker-end="url(#arrow)" />
+    
+  </g>
+<g>
+    <path d="M 146 539 C 330 539, 330 649, 514 649" fill="none" stroke="#8b949e" stroke-width="1.1" stroke-opacity="0.44" marker-end="url(#arrow)" />
+    
+  </g>
+<g>
+    <path d="M 514 649 C 330 649, 330 539, 146 539" fill="none" stroke="#8b949e" stroke-width="1.1" stroke-opacity="0.44" marker-end="url(#arrow)" />
+    
+  </g>
+<g>
+    <path d="M 146 539 C 330 515, 330 515, 514 539" fill="none" stroke="#8b949e" stroke-width="1.1" stroke-opacity="0.44" marker-end="url(#arrow)" />
+    
+  </g>
+<g>
+    <path d="M 514 539 C 420 515, 420 515, 326 539" fill="none" stroke="#8b949e" stroke-width="1.1" stroke-opacity="0.44" marker-end="url(#arrow)" />
+    
+  </g>
+<g>
+    <path d="M 326 539 C 236 515, 236 515, 146 539" fill="none" stroke="#8b949e" stroke-width="1.1" stroke-opacity="0.44" marker-end="url(#arrow)" />
+    
+  </g>
+<g>
+    <path d="M 1522 759 C 914 759, 914 99, 306 99" fill="none" stroke="#8b949e" stroke-width="1.1" stroke-opacity="0.44" marker-end="url(#arrow)" />
     
   </g>
   <g>
@@ -293,89 +337,174 @@
     <text x="1048" y="439" fill="#8b949e" font-size="9">ref</text>
   </g>
 <g>
-    <rect x="1464" y="528" width="116" height="42" rx="8" fill="#102818" stroke="#8b949e" />
-    <text x="1472" y="545" fill="#fff" font-size="11" font-weight="700">reset</text>
-    <text x="1472" y="559" fill="#8b949e" font-size="9">gate</text>
+    <rect x="1464" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#8b949e" />
+    <text x="1472" y="755" fill="#fff" font-size="11" font-weight="700">reset</text>
+    <text x="1472" y="769" fill="#8b949e" font-size="9">gate</text>
   </g>
 <g>
-    <rect x="88" y="528" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
-    <text x="96" y="545" fill="#fff" font-size="11" font-weight="700">Tear edge</text>
-    <text x="96" y="559" fill="#8b949e" font-size="9">gate</text>
+    <rect x="88" y="518" width="116" height="42" rx="8" fill="#161b22" stroke="#58a6ff" />
+    <text x="96" y="535" fill="#fff" font-size="11" font-weight="700">phase</text>
+    <text x="96" y="549" fill="#8b949e" font-size="9">state</text>
   </g>
 <g>
-    <rect x="174" y="528" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
-    <text x="182" y="545" fill="#fff" font-size="11" font-weight="700">Card lift (drag-up)</text>
-    <text x="182" y="559" fill="#8b949e" font-size="9">gate</text>
+    <rect x="268" y="518" width="116" height="42" rx="8" fill="#161b22" stroke="#58a6ff" />
+    <text x="276" y="535" fill="#fff" font-size="11" font-weight="700">activeDeckSlug</text>
+    <text x="276" y="549" fill="#8b949e" font-size="9">state</text>
   </g>
 <g>
-    <rect x="260" y="528" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
-    <text x="268" y="545" fill="#fff" font-size="11" font-weight="700">Card rise (click)</text>
-    <text x="268" y="559" fill="#8b949e" font-size="9">gate</text>
+    <rect x="456" y="518" width="116" height="42" rx="8" fill="#161b22" stroke="#58a6ff" />
+    <text x="464" y="535" fill="#fff" font-size="11" font-weight="700">closingSlug</text>
+    <text x="464" y="549" fill="#8b949e" font-size="9">ref</text>
   </g>
 <g>
-    <rect x="346" y="528" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
-    <text x="354" y="545" fill="#fff" font-size="11" font-weight="700">Elevate card</text>
-    <text x="354" y="559" fill="#8b949e" font-size="9">gate</text>
+    <rect x="644" y="518" width="116" height="42" rx="8" fill="#161b22" stroke="#58a6ff" />
+    <text x="652" y="535" fill="#fff" font-size="11" font-weight="700">reducedMotion</text>
+    <text x="652" y="549" fill="#8b949e" font-size="9">state</text>
   </g>
 <g>
-    <rect x="432" y="528" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
-    <text x="440" y="545" fill="#fff" font-size="11" font-weight="700">Request drawer open</text>
-    <text x="440" y="559" fill="#8b949e" font-size="9">gate</text>
+    <rect x="88" y="628" width="116" height="42" rx="8" fill="#161b22" stroke="#58a6ff" />
+    <text x="96" y="645" fill="#fff" font-size="11" font-weight="700">mounted</text>
+    <text x="96" y="659" fill="#8b949e" font-size="9">state</text>
   </g>
 <g>
-    <rect x="518" y="528" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
-    <text x="526" y="545" fill="#fff" font-size="11" font-weight="700">Sheet slide-up</text>
-    <text x="526" y="559" fill="#8b949e" font-size="9">gate</text>
+    <rect x="268" y="628" width="116" height="42" rx="8" fill="#161b22" stroke="#58a6ff" />
+    <text x="276" y="645" fill="#fff" font-size="11" font-weight="700">chrome morph</text>
+    <text x="276" y="659" fill="#8b949e" font-size="9">motion</text>
   </g>
 <g>
-    <rect x="604" y="528" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
-    <text x="612" y="545" fill="#fff" font-size="11" font-weight="700">layoutId morph in</text>
-    <text x="612" y="559" fill="#8b949e" font-size="9">gate</text>
+    <rect x="456" y="628" width="116" height="42" rx="8" fill="#161b22" stroke="#58a6ff" />
+    <text x="464" y="645" fill="#fff" font-size="11" font-weight="700">contentState</text>
+    <text x="464" y="659" fill="#8b949e" font-size="9">motion</text>
   </g>
 <g>
-    <rect x="690" y="528" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
-    <text x="698" y="545" fill="#fff" font-size="11" font-weight="700">Fan-out springs</text>
-    <text x="698" y="559" fill="#8b949e" font-size="9">gate</text>
+    <rect x="644" y="628" width="116" height="42" rx="8" fill="#161b22" stroke="#58a6ff" />
+    <text x="652" y="645" fill="#fff" font-size="11" font-weight="700">collectedCount</text>
+    <text x="652" y="659" fill="#8b949e" font-size="9">state</text>
   </g>
 <g>
-    <rect x="776" y="528" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
-    <text x="784" y="545" fill="#fff" font-size="11" font-weight="700">Close trigger</text>
-    <text x="784" y="559" fill="#8b949e" font-size="9">gate</text>
+    <rect x="88" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="96" y="755" fill="#fff" font-size="11" font-weight="700">Tear edge</text>
+    <text x="96" y="769" fill="#8b949e" font-size="9">gate</text>
   </g>
 <g>
-    <rect x="862" y="528" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
-    <text x="870" y="545" fill="#fff" font-size="11" font-weight="700">Collapse measure</text>
-    <text x="870" y="559" fill="#8b949e" font-size="9">gate</text>
+    <rect x="174" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="182" y="755" fill="#fff" font-size="11" font-weight="700">Card lift (drag-up)</text>
+    <text x="182" y="769" fill="#8b949e" font-size="9">gate</text>
   </g>
 <g>
-    <rect x="948" y="528" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
-    <text x="956" y="545" fill="#fff" font-size="11" font-weight="700">Collapse fan-in</text>
-    <text x="956" y="559" fill="#8b949e" font-size="9">gate</text>
+    <rect x="260" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="268" y="755" fill="#fff" font-size="11" font-weight="700">Card rise (click)</text>
+    <text x="268" y="769" fill="#8b949e" font-size="9">gate</text>
   </g>
 <g>
-    <rect x="1034" y="528" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
-    <text x="1042" y="545" fill="#fff" font-size="11" font-weight="700">Collapse complete</text>
-    <text x="1042" y="559" fill="#8b949e" font-size="9">gate</text>
+    <rect x="346" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="354" y="755" fill="#fff" font-size="11" font-weight="700">Elevate card</text>
+    <text x="354" y="769" fill="#8b949e" font-size="9">gate</text>
   </g>
 <g>
-    <rect x="1120" y="528" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
-    <text x="1128" y="545" fill="#fff" font-size="11" font-weight="700">Drawer teardown</text>
-    <text x="1128" y="559" fill="#8b949e" font-size="9">gate</text>
+    <rect x="432" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="440" y="755" fill="#fff" font-size="11" font-weight="700">Request drawer open</text>
+    <text x="440" y="769" fill="#8b949e" font-size="9">gate</text>
   </g>
 <g>
-    <rect x="1206" y="528" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
-    <text x="1214" y="545" fill="#fff" font-size="11" font-weight="700">Sheet exit</text>
-    <text x="1214" y="559" fill="#8b949e" font-size="9">gate</text>
+    <rect x="518" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="526" y="755" fill="#fff" font-size="11" font-weight="700">Sheet slide-up</text>
+    <text x="526" y="769" fill="#8b949e" font-size="9">gate</text>
   </g>
 <g>
-    <rect x="1292" y="528" width="116" height="42" rx="8" fill="#241c33" stroke="#bc8cff" />
-    <text x="1300" y="545" fill="#fff" font-size="11" font-weight="700">layoutId morph back (APEX)</text>
-    <text x="1300" y="559" fill="#8b949e" font-size="9">gate - apex</text>
+    <rect x="604" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="612" y="755" fill="#fff" font-size="11" font-weight="700">layoutId morph in</text>
+    <text x="612" y="769" fill="#8b949e" font-size="9">gate</text>
   </g>
 <g>
-    <rect x="1378" y="528" width="116" height="42" rx="8" fill="#241c33" stroke="#bc8cff" />
-    <text x="1386" y="545" fill="#fff" font-size="11" font-weight="700">Drop elevation / z-index (APEX)</text>
-    <text x="1386" y="559" fill="#8b949e" font-size="9">gate - apex</text>
+    <rect x="690" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="698" y="755" fill="#fff" font-size="11" font-weight="700">Fan-out springs</text>
+    <text x="698" y="769" fill="#8b949e" font-size="9">gate</text>
+  </g>
+<g>
+    <rect x="776" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="784" y="755" fill="#fff" font-size="11" font-weight="700">Close trigger</text>
+    <text x="784" y="769" fill="#8b949e" font-size="9">gate</text>
+  </g>
+<g>
+    <rect x="862" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="870" y="755" fill="#fff" font-size="11" font-weight="700">Collapse measure</text>
+    <text x="870" y="769" fill="#8b949e" font-size="9">gate</text>
+  </g>
+<g>
+    <rect x="948" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="956" y="755" fill="#fff" font-size="11" font-weight="700">Collapse fan-in</text>
+    <text x="956" y="769" fill="#8b949e" font-size="9">gate</text>
+  </g>
+<g>
+    <rect x="1034" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="1042" y="755" fill="#fff" font-size="11" font-weight="700">Collapse complete</text>
+    <text x="1042" y="769" fill="#8b949e" font-size="9">gate</text>
+  </g>
+<g>
+    <rect x="1120" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="1128" y="755" fill="#fff" font-size="11" font-weight="700">Drawer teardown</text>
+    <text x="1128" y="769" fill="#8b949e" font-size="9">gate</text>
+  </g>
+<g>
+    <rect x="1206" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="1214" y="755" fill="#fff" font-size="11" font-weight="700">Sheet exit</text>
+    <text x="1214" y="769" fill="#8b949e" font-size="9">gate</text>
+  </g>
+<g>
+    <rect x="1292" y="738" width="116" height="42" rx="8" fill="#241c33" stroke="#bc8cff" />
+    <text x="1300" y="755" fill="#fff" font-size="11" font-weight="700">layoutId morph back (APEX)</text>
+    <text x="1300" y="769" fill="#8b949e" font-size="9">gate - apex</text>
+  </g>
+<g>
+    <rect x="1378" y="738" width="116" height="42" rx="8" fill="#241c33" stroke="#bc8cff" />
+    <text x="1386" y="755" fill="#fff" font-size="11" font-weight="700">Drop elevation / z-index (APEX)</text>
+    <text x="1386" y="769" fill="#8b949e" font-size="9">gate - apex</text>
+  </g>
+<g>
+    <rect x="1464" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="1472" y="755" fill="#fff" font-size="11" font-weight="700">Blueprint tap</text>
+    <text x="1472" y="769" fill="#8b949e" font-size="9">gate</text>
+  </g>
+<g>
+    <rect x="1550" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="1558" y="755" fill="#fff" font-size="11" font-weight="700">URL pushState</text>
+    <text x="1558" y="769" fill="#8b949e" font-size="9">gate</text>
+  </g>
+<g>
+    <rect x="1636" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="1644" y="755" fill="#fff" font-size="11" font-weight="700">Builder mount</text>
+    <text x="1644" y="769" fill="#8b949e" font-size="9">gate</text>
+  </g>
+<g>
+    <rect x="1722" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="1730" y="755" fill="#fff" font-size="11" font-weight="700">Blueprint morph in</text>
+    <text x="1730" y="769" fill="#8b949e" font-size="9">gate</text>
+  </g>
+<g>
+    <rect x="1808" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="1816" y="755" fill="#fff" font-size="11" font-weight="700">Builder content stagger</text>
+    <text x="1816" y="769" fill="#8b949e" font-size="9">gate</text>
+  </g>
+<g>
+    <rect x="1894" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="1902" y="755" fill="#fff" font-size="11" font-weight="700">Dismiss trigger</text>
+    <text x="1902" y="769" fill="#8b949e" font-size="9">gate</text>
+  </g>
+<g>
+    <rect x="1980" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="1988" y="755" fill="#fff" font-size="11" font-weight="700">Builder exit</text>
+    <text x="1988" y="769" fill="#8b949e" font-size="9">gate</text>
+  </g>
+<g>
+    <rect x="2066" y="738" width="116" height="42" rx="8" fill="#241c33" stroke="#bc8cff" />
+    <text x="2074" y="755" fill="#fff" font-size="11" font-weight="700">Blueprint morph back (APEX)</text>
+    <text x="2074" y="769" fill="#8b949e" font-size="9">gate - apex</text>
+  </g>
+<g>
+    <rect x="2152" y="738" width="116" height="42" rx="8" fill="#102818" stroke="#3fb950" />
+    <text x="2160" y="755" fill="#fff" font-size="11" font-weight="700">Table restored</text>
+    <text x="2160" y="769" fill="#8b949e" font-size="9">gate</text>
   </g>
 </svg>
     </div>
@@ -505,6 +634,69 @@
         <td>close</td>
         <td><span class="badge apex">apex</span></td>
         <td>SealedPack setCardElevated(false)</td>
+      </tr>
+<tr>
+        <td><code>blueprint-tap</code></td>
+        <td>Blueprint tap</td>
+        <td>deck-open</td>
+        <td></td>
+        <td>DeckTableShell.openDeck -&gt; phase=blueprint-morphing</td>
+      </tr>
+<tr>
+        <td><code>url-push</code></td>
+        <td>URL pushState</td>
+        <td>deck-open</td>
+        <td></td>
+        <td>DeckTableShell.pushDeckPath (window.history.pushState)</td>
+      </tr>
+<tr>
+        <td><code>builder-mount</code></td>
+        <td>Builder mount</td>
+        <td>deck-open</td>
+        <td></td>
+        <td>AnimatePresence mounts BuilderPanel (owns layoutId)</td>
+      </tr>
+<tr>
+        <td><code>blueprint-morph-in</code></td>
+        <td>Blueprint morph in</td>
+        <td>deck-open</td>
+        <td></td>
+        <td>BuilderPanel onLayoutAnimationComplete -&gt; builder-open</td>
+      </tr>
+<tr>
+        <td><code>builder-content-in</code></td>
+        <td>Builder content stagger</td>
+        <td>deck-open</td>
+        <td></td>
+        <td>content variants animate to visible</td>
+      </tr>
+<tr>
+        <td><code>dismiss-trigger</code></td>
+        <td>Dismiss trigger</td>
+        <td>deck-close</td>
+        <td></td>
+        <td>DeckTableShell.closeDeck -&gt; phase=builder-dismissing</td>
+      </tr>
+<tr>
+        <td><code>builder-exit</code></td>
+        <td>Builder exit</td>
+        <td>deck-close</td>
+        <td></td>
+        <td>BuilderPanel AnimatePresence exit (fast content fade)</td>
+      </tr>
+<tr>
+        <td><code>blueprint-morph-out</code></td>
+        <td>Blueprint morph back (APEX)</td>
+        <td>deck-close</td>
+        <td><span class="badge apex">apex</span></td>
+        <td>source blueprint onLayoutAnimationComplete (flash apex)</td>
+      </tr>
+<tr>
+        <td><code>table-restored</code></td>
+        <td>Table restored</td>
+        <td>deck-close</td>
+        <td></td>
+        <td>DeckTableShell.onCloseMorphComplete -&gt; table, focus restored</td>
       </tr>
         </tbody>
       </table>
@@ -654,6 +846,78 @@
         <td>Drop card elevation only after the close apex is inspectable</td>
       </tr>
 <tr>
+        <td><code>deck-blueprint-tap</code></td>
+        <td><code>deck-phase</code> -> <code>deck-activeSlug</code></td>
+        <td>blueprint-tap</td>
+        <td>DeckTableShell.openDeck</td>
+        <td>phase === table</td>
+        <td>Capture origin button and set phase=blueprint-morphing</td>
+      </tr>
+<tr>
+        <td><code>deck-url-push</code></td>
+        <td><code>deck-activeSlug</code> -> <code>builder-mounted</code></td>
+        <td>url-push</td>
+        <td>DeckTableShell.pushDeckPath</td>
+        <td></td>
+        <td>window.history.pushState(/deck/[slug]) and set activeDeckSlug</td>
+      </tr>
+<tr>
+        <td><code>deck-builder-mount</code></td>
+        <td><code>builder-mounted</code> -> <code>builder-morph</code></td>
+        <td>builder-mount</td>
+        <td>AnimatePresence (DeckTableShell)</td>
+        <td></td>
+        <td>Mount BuilderPanel, which claims the shared layoutId</td>
+      </tr>
+<tr>
+        <td><code>deck-morph-in</code></td>
+        <td><code>builder-morph</code> -> <code>deck-phase</code></td>
+        <td>blueprint-morph-in</td>
+        <td>BuilderPanel onLayoutAnimationComplete</td>
+        <td>phase === blueprint-morphing (one-shot)</td>
+        <td>Land the chrome morph and advance phase=builder-open</td>
+      </tr>
+<tr>
+        <td><code>deck-content-in</code></td>
+        <td><code>deck-phase</code> -> <code>builder-content</code></td>
+        <td>builder-content-in</td>
+        <td>BuilderPanel content variants</td>
+        <td></td>
+        <td>Stagger header, slot columns, and shelf to visible</td>
+      </tr>
+<tr>
+        <td><code>deck-dismiss-trigger</code></td>
+        <td><code>builder-content</code> -> <code>deck-phase</code></td>
+        <td>dismiss-trigger</td>
+        <td>DeckTableShell.closeDeck</td>
+        <td>phase === builder-open</td>
+        <td>Fast content fade and set phase=builder-dismissing</td>
+      </tr>
+<tr>
+        <td><code>deck-builder-exit</code></td>
+        <td><code>deck-phase</code> -> <code>deck-closingSlug</code></td>
+        <td>builder-exit</td>
+        <td>BuilderPanel AnimatePresence exit</td>
+        <td></td>
+        <td>Hold the source blueprint hidden via closingSlug through the morph-back</td>
+      </tr>
+<tr>
+        <td><code>deck-morph-out</code></td>
+        <td><code>deck-closingSlug</code> -> <code>deck-activeSlug</code></td>
+        <td>blueprint-morph-out</td>
+        <td>source blueprint onLayoutAnimationComplete</td>
+        <td></td>
+        <td>Morph the chrome back onto the table blueprint (flash apex)</td>
+      </tr>
+<tr>
+        <td><code>deck-table-restored</code></td>
+        <td><code>deck-activeSlug</code> -> <code>deck-phase</code></td>
+        <td>table-restored</td>
+        <td>DeckTableShell.onCloseMorphComplete</td>
+        <td>phase === builder-dismissing (one-shot)</td>
+        <td>Clear closingSlug, set phase=table, restore focus to the origin blueprint</td>
+      </tr>
+<tr>
         <td><code>reset-state</code></td>
         <td><code>debug-reset</code> -> <code>page-activePack</code></td>
         <td>reset</td>
@@ -692,9 +956,19 @@
       "y": 362
     },
     {
+      "id": "deck-shell",
+      "label": "DeckTableShell",
+      "y": 472
+    },
+    {
+      "id": "builder",
+      "label": "BuilderPanel",
+      "y": 582
+    },
+    {
       "id": "debug-gates",
       "label": "Debug Gates",
-      "y": 482
+      "y": 692
     }
   ],
   "nodes": [
@@ -1027,7 +1301,114 @@
       ],
       "description": "Reset clears reached/paused graph state, page state, and target pack motion values.",
       "x": 1464,
-      "y": 528
+      "y": 738
+    },
+    {
+      "id": "deck-phase",
+      "label": "phase",
+      "lane": "deck-shell",
+      "phase": "deck-open",
+      "kind": "state",
+      "trackedFields": [
+        "deckShell.phase"
+      ],
+      "description": "DeckTableShell lifecycle: table -> blueprint-morphing -> builder-open -> builder-dismissing -> table.",
+      "x": 88,
+      "y": 518
+    },
+    {
+      "id": "deck-activeSlug",
+      "label": "activeDeckSlug",
+      "lane": "deck-shell",
+      "phase": "deck-open",
+      "kind": "state",
+      "trackedFields": [
+        "deckShell.activeDeckSlug"
+      ],
+      "description": "Route-truth deck slug; non-null mounts BuilderPanel and is kept in sync with the URL via pushState/popstate.",
+      "x": 268,
+      "y": 518
+    },
+    {
+      "id": "deck-closingSlug",
+      "label": "closingSlug",
+      "lane": "deck-shell",
+      "phase": "deck-close",
+      "kind": "ref",
+      "trackedFields": [
+        "deckShell.closingSlug"
+      ],
+      "description": "Keeps the dismissing deck's source blueprint hidden through the morph-back so it never double-visions the exiting panel.",
+      "x": 456,
+      "y": 518
+    },
+    {
+      "id": "deck-reducedMotion",
+      "label": "reducedMotion",
+      "lane": "deck-shell",
+      "phase": "deck-open",
+      "kind": "state",
+      "trackedFields": [
+        "deckShell.reducedMotion"
+      ],
+      "description": "prefers-reduced-motion: omits the layoutId and runs the identical phase chain as a 120ms crossfade.",
+      "x": 644,
+      "y": 518
+    },
+    {
+      "id": "builder-mounted",
+      "label": "mounted",
+      "lane": "builder",
+      "phase": "deck-open",
+      "kind": "state",
+      "stepId": "builder-mount",
+      "trackedFields": [
+        "builder.mounted"
+      ],
+      "description": "Whether AnimatePresence is rendering the BuilderPanel subtree (the layoutId morph target).",
+      "x": 88,
+      "y": 628
+    },
+    {
+      "id": "builder-morph",
+      "label": "chrome morph",
+      "lane": "builder",
+      "phase": "deck-open",
+      "kind": "motion",
+      "stepId": "blueprint-morph-in",
+      "trackedFields": [
+        "builder.morphing"
+      ],
+      "description": "The shared-layout chrome rectangle morphing between the table blueprint and the full builder panel.",
+      "x": 268,
+      "y": 628
+    },
+    {
+      "id": "builder-content",
+      "label": "contentState",
+      "lane": "builder",
+      "phase": "deck-open",
+      "kind": "motion",
+      "stepId": "builder-content-in",
+      "trackedFields": [
+        "builder.contentState"
+      ],
+      "description": "Builder content (header, slot columns, shelf) staggers to visible only after the morph lands.",
+      "x": 456,
+      "y": 628
+    },
+    {
+      "id": "builder-collectedCount",
+      "label": "collectedCount",
+      "lane": "builder",
+      "phase": "deck-open",
+      "kind": "state",
+      "trackedFields": [
+        "builder.collectedCount"
+      ],
+      "description": "Presentation count of collected cards for the active deck (optimistic, localStorage-backed).",
+      "x": 644,
+      "y": 628
     },
     {
       "id": "step-tear",
@@ -1042,7 +1423,7 @@
       ],
       "description": "SealedPack.completeTear",
       "x": 88,
-      "y": 528
+      "y": 738
     },
     {
       "id": "step-card-lift",
@@ -1057,7 +1438,7 @@
       ],
       "description": "SealedPack.handleCardPointerUp",
       "x": 174,
-      "y": 528
+      "y": 738
     },
     {
       "id": "step-card-click-rise",
@@ -1072,7 +1453,7 @@
       ],
       "description": "SealedPack.handlePackClick",
       "x": 260,
-      "y": 528
+      "y": 738
     },
     {
       "id": "step-elevate-card",
@@ -1087,7 +1468,7 @@
       ],
       "description": "setCardElevated(true)",
       "x": 346,
-      "y": 528
+      "y": 738
     },
     {
       "id": "step-request-open",
@@ -1102,7 +1483,7 @@
       ],
       "description": "onOpen(getOrigin())",
       "x": 432,
-      "y": 528
+      "y": 738
     },
     {
       "id": "step-sheet-open",
@@ -1117,7 +1498,7 @@
       ],
       "description": "BottomSheet sheet onAnimationComplete",
       "x": 518,
-      "y": 528
+      "y": 738
     },
     {
       "id": "step-layout-morph-in",
@@ -1132,7 +1513,7 @@
       ],
       "description": "PackOpener card0 onLayoutAnimationComplete",
       "x": 604,
-      "y": 528
+      "y": 738
     },
     {
       "id": "step-fan-out",
@@ -1147,7 +1528,7 @@
       ],
       "description": "PackOpener last card onAnimationComplete",
       "x": 690,
-      "y": 528
+      "y": 738
     },
     {
       "id": "step-close-trigger",
@@ -1162,7 +1543,7 @@
       ],
       "description": "page.handleClose -> phase=closing-collapse",
       "x": 776,
-      "y": 528
+      "y": 738
     },
     {
       "id": "step-collapse-measure",
@@ -1177,7 +1558,7 @@
       ],
       "description": "PackOpener collapse useLayoutEffect",
       "x": 862,
-      "y": 528
+      "y": 738
     },
     {
       "id": "step-collapse-fan",
@@ -1192,7 +1573,7 @@
       ],
       "description": "PackOpener collapse springs",
       "x": 948,
-      "y": 528
+      "y": 738
     },
     {
       "id": "step-collapse-complete",
@@ -1207,7 +1588,7 @@
       ],
       "description": "PackOpener onCollapseComplete",
       "x": 1034,
-      "y": 528
+      "y": 738
     },
     {
       "id": "step-drawer-teardown",
@@ -1222,7 +1603,7 @@
       ],
       "description": "page.handleCollapseComplete -> phase=sheet-exiting",
       "x": 1120,
-      "y": 528
+      "y": 738
     },
     {
       "id": "step-sheet-exit",
@@ -1237,7 +1618,7 @@
       ],
       "description": "BottomSheet AnimatePresence onExitComplete",
       "x": 1206,
-      "y": 528
+      "y": 738
     },
     {
       "id": "step-layout-morph-out",
@@ -1253,7 +1634,7 @@
       ],
       "description": "SealedPack onLayoutAnimationComplete (pre-body)",
       "x": 1292,
-      "y": 528
+      "y": 738
     },
     {
       "id": "step-drop-elevation",
@@ -1269,7 +1650,143 @@
       ],
       "description": "SealedPack setCardElevated(false)",
       "x": 1378,
-      "y": 528
+      "y": 738
+    },
+    {
+      "id": "step-blueprint-tap",
+      "label": "Blueprint tap",
+      "lane": "debug-gates",
+      "phase": "deck-open",
+      "kind": "gate",
+      "stepId": "blueprint-tap",
+      "trackedFields": [
+        "debug.pausedAtStep",
+        "debug.reachedSteps"
+      ],
+      "description": "DeckTableShell.openDeck -> phase=blueprint-morphing",
+      "x": 1464,
+      "y": 738
+    },
+    {
+      "id": "step-url-push",
+      "label": "URL pushState",
+      "lane": "debug-gates",
+      "phase": "deck-open",
+      "kind": "gate",
+      "stepId": "url-push",
+      "trackedFields": [
+        "debug.pausedAtStep",
+        "debug.reachedSteps"
+      ],
+      "description": "DeckTableShell.pushDeckPath (window.history.pushState)",
+      "x": 1550,
+      "y": 738
+    },
+    {
+      "id": "step-builder-mount",
+      "label": "Builder mount",
+      "lane": "debug-gates",
+      "phase": "deck-open",
+      "kind": "gate",
+      "stepId": "builder-mount",
+      "trackedFields": [
+        "debug.pausedAtStep",
+        "debug.reachedSteps"
+      ],
+      "description": "AnimatePresence mounts BuilderPanel (owns layoutId)",
+      "x": 1636,
+      "y": 738
+    },
+    {
+      "id": "step-blueprint-morph-in",
+      "label": "Blueprint morph in",
+      "lane": "debug-gates",
+      "phase": "deck-open",
+      "kind": "gate",
+      "stepId": "blueprint-morph-in",
+      "trackedFields": [
+        "debug.pausedAtStep",
+        "debug.reachedSteps"
+      ],
+      "description": "BuilderPanel onLayoutAnimationComplete -> builder-open",
+      "x": 1722,
+      "y": 738
+    },
+    {
+      "id": "step-builder-content-in",
+      "label": "Builder content stagger",
+      "lane": "debug-gates",
+      "phase": "deck-open",
+      "kind": "gate",
+      "stepId": "builder-content-in",
+      "trackedFields": [
+        "debug.pausedAtStep",
+        "debug.reachedSteps"
+      ],
+      "description": "content variants animate to visible",
+      "x": 1808,
+      "y": 738
+    },
+    {
+      "id": "step-dismiss-trigger",
+      "label": "Dismiss trigger",
+      "lane": "debug-gates",
+      "phase": "deck-close",
+      "kind": "gate",
+      "stepId": "dismiss-trigger",
+      "trackedFields": [
+        "debug.pausedAtStep",
+        "debug.reachedSteps"
+      ],
+      "description": "DeckTableShell.closeDeck -> phase=builder-dismissing",
+      "x": 1894,
+      "y": 738
+    },
+    {
+      "id": "step-builder-exit",
+      "label": "Builder exit",
+      "lane": "debug-gates",
+      "phase": "deck-close",
+      "kind": "gate",
+      "stepId": "builder-exit",
+      "trackedFields": [
+        "debug.pausedAtStep",
+        "debug.reachedSteps"
+      ],
+      "description": "BuilderPanel AnimatePresence exit (fast content fade)",
+      "x": 1980,
+      "y": 738
+    },
+    {
+      "id": "step-blueprint-morph-out",
+      "label": "Blueprint morph back (APEX)",
+      "lane": "debug-gates",
+      "phase": "deck-close",
+      "kind": "gate",
+      "stepId": "blueprint-morph-out",
+      "apex": true,
+      "trackedFields": [
+        "debug.pausedAtStep",
+        "debug.reachedSteps"
+      ],
+      "description": "source blueprint onLayoutAnimationComplete (flash apex)",
+      "x": 2066,
+      "y": 738
+    },
+    {
+      "id": "step-table-restored",
+      "label": "Table restored",
+      "lane": "debug-gates",
+      "phase": "deck-close",
+      "kind": "gate",
+      "stepId": "table-restored",
+      "trackedFields": [
+        "debug.pausedAtStep",
+        "debug.reachedSteps"
+      ],
+      "description": "DeckTableShell.onCloseMorphComplete -> table, focus restored",
+      "x": 2152,
+      "y": 738
     }
   ],
   "transitions": [
@@ -1429,6 +1946,91 @@
       "stepId": "drop-elevation"
     },
     {
+      "id": "deck-blueprint-tap",
+      "from": "deck-phase",
+      "to": "deck-activeSlug",
+      "trigger": "blueprint-tap",
+      "source": "DeckTableShell.openDeck",
+      "guard": "phase === table",
+      "effect": "Capture origin button and set phase=blueprint-morphing",
+      "stepId": "blueprint-tap"
+    },
+    {
+      "id": "deck-url-push",
+      "from": "deck-activeSlug",
+      "to": "builder-mounted",
+      "trigger": "url-push",
+      "source": "DeckTableShell.pushDeckPath",
+      "effect": "window.history.pushState(/deck/[slug]) and set activeDeckSlug",
+      "stepId": "url-push"
+    },
+    {
+      "id": "deck-builder-mount",
+      "from": "builder-mounted",
+      "to": "builder-morph",
+      "trigger": "builder-mount",
+      "source": "AnimatePresence (DeckTableShell)",
+      "effect": "Mount BuilderPanel, which claims the shared layoutId",
+      "stepId": "builder-mount"
+    },
+    {
+      "id": "deck-morph-in",
+      "from": "builder-morph",
+      "to": "deck-phase",
+      "trigger": "blueprint-morph-in",
+      "source": "BuilderPanel onLayoutAnimationComplete",
+      "guard": "phase === blueprint-morphing (one-shot)",
+      "effect": "Land the chrome morph and advance phase=builder-open",
+      "stepId": "blueprint-morph-in"
+    },
+    {
+      "id": "deck-content-in",
+      "from": "deck-phase",
+      "to": "builder-content",
+      "trigger": "builder-content-in",
+      "source": "BuilderPanel content variants",
+      "effect": "Stagger header, slot columns, and shelf to visible",
+      "stepId": "builder-content-in"
+    },
+    {
+      "id": "deck-dismiss-trigger",
+      "from": "builder-content",
+      "to": "deck-phase",
+      "trigger": "dismiss-trigger",
+      "source": "DeckTableShell.closeDeck",
+      "guard": "phase === builder-open",
+      "effect": "Fast content fade and set phase=builder-dismissing",
+      "stepId": "dismiss-trigger"
+    },
+    {
+      "id": "deck-builder-exit",
+      "from": "deck-phase",
+      "to": "deck-closingSlug",
+      "trigger": "builder-exit",
+      "source": "BuilderPanel AnimatePresence exit",
+      "effect": "Hold the source blueprint hidden via closingSlug through the morph-back",
+      "stepId": "builder-exit"
+    },
+    {
+      "id": "deck-morph-out",
+      "from": "deck-closingSlug",
+      "to": "deck-activeSlug",
+      "trigger": "blueprint-morph-out",
+      "source": "source blueprint onLayoutAnimationComplete",
+      "effect": "Morph the chrome back onto the table blueprint (flash apex)",
+      "stepId": "blueprint-morph-out"
+    },
+    {
+      "id": "deck-table-restored",
+      "from": "deck-activeSlug",
+      "to": "deck-phase",
+      "trigger": "table-restored",
+      "source": "DeckTableShell.onCloseMorphComplete",
+      "guard": "phase === builder-dismissing (one-shot)",
+      "effect": "Clear closingSlug, set phase=table, restore focus to the origin blueprint",
+      "stepId": "table-restored"
+    },
+    {
       "id": "reset-state",
       "from": "debug-reset",
       "to": "page-activePack",
@@ -1538,6 +2140,65 @@
       "boundary": "SealedPack setCardElevated(false)",
       "apex": true
     }
+  ],
+  "deckOpenSteps": [
+    {
+      "id": "blueprint-tap",
+      "label": "Blueprint tap",
+      "phase": "deck-open",
+      "boundary": "DeckTableShell.openDeck -> phase=blueprint-morphing"
+    },
+    {
+      "id": "url-push",
+      "label": "URL pushState",
+      "phase": "deck-open",
+      "boundary": "DeckTableShell.pushDeckPath (window.history.pushState)"
+    },
+    {
+      "id": "builder-mount",
+      "label": "Builder mount",
+      "phase": "deck-open",
+      "boundary": "AnimatePresence mounts BuilderPanel (owns layoutId)"
+    },
+    {
+      "id": "blueprint-morph-in",
+      "label": "Blueprint morph in",
+      "phase": "deck-open",
+      "boundary": "BuilderPanel onLayoutAnimationComplete -> builder-open"
+    },
+    {
+      "id": "builder-content-in",
+      "label": "Builder content stagger",
+      "phase": "deck-open",
+      "boundary": "content variants animate to visible"
+    }
+  ],
+  "deckCloseSteps": [
+    {
+      "id": "dismiss-trigger",
+      "label": "Dismiss trigger",
+      "phase": "deck-close",
+      "boundary": "DeckTableShell.closeDeck -> phase=builder-dismissing"
+    },
+    {
+      "id": "builder-exit",
+      "label": "Builder exit",
+      "phase": "deck-close",
+      "boundary": "BuilderPanel AnimatePresence exit (fast content fade)"
+    },
+    {
+      "id": "blueprint-morph-out",
+      "label": "Blueprint morph back (APEX)",
+      "phase": "deck-close",
+      "boundary": "source blueprint onLayoutAnimationComplete (flash apex)",
+      "apex": true
+    },
+    {
+      "id": "table-restored",
+      "label": "Table restored",
+      "phase": "deck-close",
+      "boundary": "DeckTableShell.onCloseMorphComplete -> table, focus restored"
+    }
   ]
 }</script>
     <pre><code>{
@@ -1563,9 +2224,19 @@
       &quot;y&quot;: 362
     },
     {
+      &quot;id&quot;: &quot;deck-shell&quot;,
+      &quot;label&quot;: &quot;DeckTableShell&quot;,
+      &quot;y&quot;: 472
+    },
+    {
+      &quot;id&quot;: &quot;builder&quot;,
+      &quot;label&quot;: &quot;BuilderPanel&quot;,
+      &quot;y&quot;: 582
+    },
+    {
       &quot;id&quot;: &quot;debug-gates&quot;,
       &quot;label&quot;: &quot;Debug Gates&quot;,
-      &quot;y&quot;: 482
+      &quot;y&quot;: 692
     }
   ],
   &quot;nodes&quot;: [
@@ -1898,7 +2569,114 @@
       ],
       &quot;description&quot;: &quot;Reset clears reached/paused graph state, page state, and target pack motion values.&quot;,
       &quot;x&quot;: 1464,
-      &quot;y&quot;: 528
+      &quot;y&quot;: 738
+    },
+    {
+      &quot;id&quot;: &quot;deck-phase&quot;,
+      &quot;label&quot;: &quot;phase&quot;,
+      &quot;lane&quot;: &quot;deck-shell&quot;,
+      &quot;phase&quot;: &quot;deck-open&quot;,
+      &quot;kind&quot;: &quot;state&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;deckShell.phase&quot;
+      ],
+      &quot;description&quot;: &quot;DeckTableShell lifecycle: table -&gt; blueprint-morphing -&gt; builder-open -&gt; builder-dismissing -&gt; table.&quot;,
+      &quot;x&quot;: 88,
+      &quot;y&quot;: 518
+    },
+    {
+      &quot;id&quot;: &quot;deck-activeSlug&quot;,
+      &quot;label&quot;: &quot;activeDeckSlug&quot;,
+      &quot;lane&quot;: &quot;deck-shell&quot;,
+      &quot;phase&quot;: &quot;deck-open&quot;,
+      &quot;kind&quot;: &quot;state&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;deckShell.activeDeckSlug&quot;
+      ],
+      &quot;description&quot;: &quot;Route-truth deck slug; non-null mounts BuilderPanel and is kept in sync with the URL via pushState/popstate.&quot;,
+      &quot;x&quot;: 268,
+      &quot;y&quot;: 518
+    },
+    {
+      &quot;id&quot;: &quot;deck-closingSlug&quot;,
+      &quot;label&quot;: &quot;closingSlug&quot;,
+      &quot;lane&quot;: &quot;deck-shell&quot;,
+      &quot;phase&quot;: &quot;deck-close&quot;,
+      &quot;kind&quot;: &quot;ref&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;deckShell.closingSlug&quot;
+      ],
+      &quot;description&quot;: &quot;Keeps the dismissing deck's source blueprint hidden through the morph-back so it never double-visions the exiting panel.&quot;,
+      &quot;x&quot;: 456,
+      &quot;y&quot;: 518
+    },
+    {
+      &quot;id&quot;: &quot;deck-reducedMotion&quot;,
+      &quot;label&quot;: &quot;reducedMotion&quot;,
+      &quot;lane&quot;: &quot;deck-shell&quot;,
+      &quot;phase&quot;: &quot;deck-open&quot;,
+      &quot;kind&quot;: &quot;state&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;deckShell.reducedMotion&quot;
+      ],
+      &quot;description&quot;: &quot;prefers-reduced-motion: omits the layoutId and runs the identical phase chain as a 120ms crossfade.&quot;,
+      &quot;x&quot;: 644,
+      &quot;y&quot;: 518
+    },
+    {
+      &quot;id&quot;: &quot;builder-mounted&quot;,
+      &quot;label&quot;: &quot;mounted&quot;,
+      &quot;lane&quot;: &quot;builder&quot;,
+      &quot;phase&quot;: &quot;deck-open&quot;,
+      &quot;kind&quot;: &quot;state&quot;,
+      &quot;stepId&quot;: &quot;builder-mount&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;builder.mounted&quot;
+      ],
+      &quot;description&quot;: &quot;Whether AnimatePresence is rendering the BuilderPanel subtree (the layoutId morph target).&quot;,
+      &quot;x&quot;: 88,
+      &quot;y&quot;: 628
+    },
+    {
+      &quot;id&quot;: &quot;builder-morph&quot;,
+      &quot;label&quot;: &quot;chrome morph&quot;,
+      &quot;lane&quot;: &quot;builder&quot;,
+      &quot;phase&quot;: &quot;deck-open&quot;,
+      &quot;kind&quot;: &quot;motion&quot;,
+      &quot;stepId&quot;: &quot;blueprint-morph-in&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;builder.morphing&quot;
+      ],
+      &quot;description&quot;: &quot;The shared-layout chrome rectangle morphing between the table blueprint and the full builder panel.&quot;,
+      &quot;x&quot;: 268,
+      &quot;y&quot;: 628
+    },
+    {
+      &quot;id&quot;: &quot;builder-content&quot;,
+      &quot;label&quot;: &quot;contentState&quot;,
+      &quot;lane&quot;: &quot;builder&quot;,
+      &quot;phase&quot;: &quot;deck-open&quot;,
+      &quot;kind&quot;: &quot;motion&quot;,
+      &quot;stepId&quot;: &quot;builder-content-in&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;builder.contentState&quot;
+      ],
+      &quot;description&quot;: &quot;Builder content (header, slot columns, shelf) staggers to visible only after the morph lands.&quot;,
+      &quot;x&quot;: 456,
+      &quot;y&quot;: 628
+    },
+    {
+      &quot;id&quot;: &quot;builder-collectedCount&quot;,
+      &quot;label&quot;: &quot;collectedCount&quot;,
+      &quot;lane&quot;: &quot;builder&quot;,
+      &quot;phase&quot;: &quot;deck-open&quot;,
+      &quot;kind&quot;: &quot;state&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;builder.collectedCount&quot;
+      ],
+      &quot;description&quot;: &quot;Presentation count of collected cards for the active deck (optimistic, localStorage-backed).&quot;,
+      &quot;x&quot;: 644,
+      &quot;y&quot;: 628
     },
     {
       &quot;id&quot;: &quot;step-tear&quot;,
@@ -1913,7 +2691,7 @@
       ],
       &quot;description&quot;: &quot;SealedPack.completeTear&quot;,
       &quot;x&quot;: 88,
-      &quot;y&quot;: 528
+      &quot;y&quot;: 738
     },
     {
       &quot;id&quot;: &quot;step-card-lift&quot;,
@@ -1928,7 +2706,7 @@
       ],
       &quot;description&quot;: &quot;SealedPack.handleCardPointerUp&quot;,
       &quot;x&quot;: 174,
-      &quot;y&quot;: 528
+      &quot;y&quot;: 738
     },
     {
       &quot;id&quot;: &quot;step-card-click-rise&quot;,
@@ -1943,7 +2721,7 @@
       ],
       &quot;description&quot;: &quot;SealedPack.handlePackClick&quot;,
       &quot;x&quot;: 260,
-      &quot;y&quot;: 528
+      &quot;y&quot;: 738
     },
     {
       &quot;id&quot;: &quot;step-elevate-card&quot;,
@@ -1958,7 +2736,7 @@
       ],
       &quot;description&quot;: &quot;setCardElevated(true)&quot;,
       &quot;x&quot;: 346,
-      &quot;y&quot;: 528
+      &quot;y&quot;: 738
     },
     {
       &quot;id&quot;: &quot;step-request-open&quot;,
@@ -1973,7 +2751,7 @@
       ],
       &quot;description&quot;: &quot;onOpen(getOrigin())&quot;,
       &quot;x&quot;: 432,
-      &quot;y&quot;: 528
+      &quot;y&quot;: 738
     },
     {
       &quot;id&quot;: &quot;step-sheet-open&quot;,
@@ -1988,7 +2766,7 @@
       ],
       &quot;description&quot;: &quot;BottomSheet sheet onAnimationComplete&quot;,
       &quot;x&quot;: 518,
-      &quot;y&quot;: 528
+      &quot;y&quot;: 738
     },
     {
       &quot;id&quot;: &quot;step-layout-morph-in&quot;,
@@ -2003,7 +2781,7 @@
       ],
       &quot;description&quot;: &quot;PackOpener card0 onLayoutAnimationComplete&quot;,
       &quot;x&quot;: 604,
-      &quot;y&quot;: 528
+      &quot;y&quot;: 738
     },
     {
       &quot;id&quot;: &quot;step-fan-out&quot;,
@@ -2018,7 +2796,7 @@
       ],
       &quot;description&quot;: &quot;PackOpener last card onAnimationComplete&quot;,
       &quot;x&quot;: 690,
-      &quot;y&quot;: 528
+      &quot;y&quot;: 738
     },
     {
       &quot;id&quot;: &quot;step-close-trigger&quot;,
@@ -2033,7 +2811,7 @@
       ],
       &quot;description&quot;: &quot;page.handleClose -&gt; phase=closing-collapse&quot;,
       &quot;x&quot;: 776,
-      &quot;y&quot;: 528
+      &quot;y&quot;: 738
     },
     {
       &quot;id&quot;: &quot;step-collapse-measure&quot;,
@@ -2048,7 +2826,7 @@
       ],
       &quot;description&quot;: &quot;PackOpener collapse useLayoutEffect&quot;,
       &quot;x&quot;: 862,
-      &quot;y&quot;: 528
+      &quot;y&quot;: 738
     },
     {
       &quot;id&quot;: &quot;step-collapse-fan&quot;,
@@ -2063,7 +2841,7 @@
       ],
       &quot;description&quot;: &quot;PackOpener collapse springs&quot;,
       &quot;x&quot;: 948,
-      &quot;y&quot;: 528
+      &quot;y&quot;: 738
     },
     {
       &quot;id&quot;: &quot;step-collapse-complete&quot;,
@@ -2078,7 +2856,7 @@
       ],
       &quot;description&quot;: &quot;PackOpener onCollapseComplete&quot;,
       &quot;x&quot;: 1034,
-      &quot;y&quot;: 528
+      &quot;y&quot;: 738
     },
     {
       &quot;id&quot;: &quot;step-drawer-teardown&quot;,
@@ -2093,7 +2871,7 @@
       ],
       &quot;description&quot;: &quot;page.handleCollapseComplete -&gt; phase=sheet-exiting&quot;,
       &quot;x&quot;: 1120,
-      &quot;y&quot;: 528
+      &quot;y&quot;: 738
     },
     {
       &quot;id&quot;: &quot;step-sheet-exit&quot;,
@@ -2108,7 +2886,7 @@
       ],
       &quot;description&quot;: &quot;BottomSheet AnimatePresence onExitComplete&quot;,
       &quot;x&quot;: 1206,
-      &quot;y&quot;: 528
+      &quot;y&quot;: 738
     },
     {
       &quot;id&quot;: &quot;step-layout-morph-out&quot;,
@@ -2124,7 +2902,7 @@
       ],
       &quot;description&quot;: &quot;SealedPack onLayoutAnimationComplete (pre-body)&quot;,
       &quot;x&quot;: 1292,
-      &quot;y&quot;: 528
+      &quot;y&quot;: 738
     },
     {
       &quot;id&quot;: &quot;step-drop-elevation&quot;,
@@ -2140,7 +2918,143 @@
       ],
       &quot;description&quot;: &quot;SealedPack setCardElevated(false)&quot;,
       &quot;x&quot;: 1378,
-      &quot;y&quot;: 528
+      &quot;y&quot;: 738
+    },
+    {
+      &quot;id&quot;: &quot;step-blueprint-tap&quot;,
+      &quot;label&quot;: &quot;Blueprint tap&quot;,
+      &quot;lane&quot;: &quot;debug-gates&quot;,
+      &quot;phase&quot;: &quot;deck-open&quot;,
+      &quot;kind&quot;: &quot;gate&quot;,
+      &quot;stepId&quot;: &quot;blueprint-tap&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;debug.pausedAtStep&quot;,
+        &quot;debug.reachedSteps&quot;
+      ],
+      &quot;description&quot;: &quot;DeckTableShell.openDeck -&gt; phase=blueprint-morphing&quot;,
+      &quot;x&quot;: 1464,
+      &quot;y&quot;: 738
+    },
+    {
+      &quot;id&quot;: &quot;step-url-push&quot;,
+      &quot;label&quot;: &quot;URL pushState&quot;,
+      &quot;lane&quot;: &quot;debug-gates&quot;,
+      &quot;phase&quot;: &quot;deck-open&quot;,
+      &quot;kind&quot;: &quot;gate&quot;,
+      &quot;stepId&quot;: &quot;url-push&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;debug.pausedAtStep&quot;,
+        &quot;debug.reachedSteps&quot;
+      ],
+      &quot;description&quot;: &quot;DeckTableShell.pushDeckPath (window.history.pushState)&quot;,
+      &quot;x&quot;: 1550,
+      &quot;y&quot;: 738
+    },
+    {
+      &quot;id&quot;: &quot;step-builder-mount&quot;,
+      &quot;label&quot;: &quot;Builder mount&quot;,
+      &quot;lane&quot;: &quot;debug-gates&quot;,
+      &quot;phase&quot;: &quot;deck-open&quot;,
+      &quot;kind&quot;: &quot;gate&quot;,
+      &quot;stepId&quot;: &quot;builder-mount&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;debug.pausedAtStep&quot;,
+        &quot;debug.reachedSteps&quot;
+      ],
+      &quot;description&quot;: &quot;AnimatePresence mounts BuilderPanel (owns layoutId)&quot;,
+      &quot;x&quot;: 1636,
+      &quot;y&quot;: 738
+    },
+    {
+      &quot;id&quot;: &quot;step-blueprint-morph-in&quot;,
+      &quot;label&quot;: &quot;Blueprint morph in&quot;,
+      &quot;lane&quot;: &quot;debug-gates&quot;,
+      &quot;phase&quot;: &quot;deck-open&quot;,
+      &quot;kind&quot;: &quot;gate&quot;,
+      &quot;stepId&quot;: &quot;blueprint-morph-in&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;debug.pausedAtStep&quot;,
+        &quot;debug.reachedSteps&quot;
+      ],
+      &quot;description&quot;: &quot;BuilderPanel onLayoutAnimationComplete -&gt; builder-open&quot;,
+      &quot;x&quot;: 1722,
+      &quot;y&quot;: 738
+    },
+    {
+      &quot;id&quot;: &quot;step-builder-content-in&quot;,
+      &quot;label&quot;: &quot;Builder content stagger&quot;,
+      &quot;lane&quot;: &quot;debug-gates&quot;,
+      &quot;phase&quot;: &quot;deck-open&quot;,
+      &quot;kind&quot;: &quot;gate&quot;,
+      &quot;stepId&quot;: &quot;builder-content-in&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;debug.pausedAtStep&quot;,
+        &quot;debug.reachedSteps&quot;
+      ],
+      &quot;description&quot;: &quot;content variants animate to visible&quot;,
+      &quot;x&quot;: 1808,
+      &quot;y&quot;: 738
+    },
+    {
+      &quot;id&quot;: &quot;step-dismiss-trigger&quot;,
+      &quot;label&quot;: &quot;Dismiss trigger&quot;,
+      &quot;lane&quot;: &quot;debug-gates&quot;,
+      &quot;phase&quot;: &quot;deck-close&quot;,
+      &quot;kind&quot;: &quot;gate&quot;,
+      &quot;stepId&quot;: &quot;dismiss-trigger&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;debug.pausedAtStep&quot;,
+        &quot;debug.reachedSteps&quot;
+      ],
+      &quot;description&quot;: &quot;DeckTableShell.closeDeck -&gt; phase=builder-dismissing&quot;,
+      &quot;x&quot;: 1894,
+      &quot;y&quot;: 738
+    },
+    {
+      &quot;id&quot;: &quot;step-builder-exit&quot;,
+      &quot;label&quot;: &quot;Builder exit&quot;,
+      &quot;lane&quot;: &quot;debug-gates&quot;,
+      &quot;phase&quot;: &quot;deck-close&quot;,
+      &quot;kind&quot;: &quot;gate&quot;,
+      &quot;stepId&quot;: &quot;builder-exit&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;debug.pausedAtStep&quot;,
+        &quot;debug.reachedSteps&quot;
+      ],
+      &quot;description&quot;: &quot;BuilderPanel AnimatePresence exit (fast content fade)&quot;,
+      &quot;x&quot;: 1980,
+      &quot;y&quot;: 738
+    },
+    {
+      &quot;id&quot;: &quot;step-blueprint-morph-out&quot;,
+      &quot;label&quot;: &quot;Blueprint morph back (APEX)&quot;,
+      &quot;lane&quot;: &quot;debug-gates&quot;,
+      &quot;phase&quot;: &quot;deck-close&quot;,
+      &quot;kind&quot;: &quot;gate&quot;,
+      &quot;stepId&quot;: &quot;blueprint-morph-out&quot;,
+      &quot;apex&quot;: true,
+      &quot;trackedFields&quot;: [
+        &quot;debug.pausedAtStep&quot;,
+        &quot;debug.reachedSteps&quot;
+      ],
+      &quot;description&quot;: &quot;source blueprint onLayoutAnimationComplete (flash apex)&quot;,
+      &quot;x&quot;: 2066,
+      &quot;y&quot;: 738
+    },
+    {
+      &quot;id&quot;: &quot;step-table-restored&quot;,
+      &quot;label&quot;: &quot;Table restored&quot;,
+      &quot;lane&quot;: &quot;debug-gates&quot;,
+      &quot;phase&quot;: &quot;deck-close&quot;,
+      &quot;kind&quot;: &quot;gate&quot;,
+      &quot;stepId&quot;: &quot;table-restored&quot;,
+      &quot;trackedFields&quot;: [
+        &quot;debug.pausedAtStep&quot;,
+        &quot;debug.reachedSteps&quot;
+      ],
+      &quot;description&quot;: &quot;DeckTableShell.onCloseMorphComplete -&gt; table, focus restored&quot;,
+      &quot;x&quot;: 2152,
+      &quot;y&quot;: 738
     }
   ],
   &quot;transitions&quot;: [
@@ -2300,6 +3214,91 @@
       &quot;stepId&quot;: &quot;drop-elevation&quot;
     },
     {
+      &quot;id&quot;: &quot;deck-blueprint-tap&quot;,
+      &quot;from&quot;: &quot;deck-phase&quot;,
+      &quot;to&quot;: &quot;deck-activeSlug&quot;,
+      &quot;trigger&quot;: &quot;blueprint-tap&quot;,
+      &quot;source&quot;: &quot;DeckTableShell.openDeck&quot;,
+      &quot;guard&quot;: &quot;phase === table&quot;,
+      &quot;effect&quot;: &quot;Capture origin button and set phase=blueprint-morphing&quot;,
+      &quot;stepId&quot;: &quot;blueprint-tap&quot;
+    },
+    {
+      &quot;id&quot;: &quot;deck-url-push&quot;,
+      &quot;from&quot;: &quot;deck-activeSlug&quot;,
+      &quot;to&quot;: &quot;builder-mounted&quot;,
+      &quot;trigger&quot;: &quot;url-push&quot;,
+      &quot;source&quot;: &quot;DeckTableShell.pushDeckPath&quot;,
+      &quot;effect&quot;: &quot;window.history.pushState(/deck/[slug]) and set activeDeckSlug&quot;,
+      &quot;stepId&quot;: &quot;url-push&quot;
+    },
+    {
+      &quot;id&quot;: &quot;deck-builder-mount&quot;,
+      &quot;from&quot;: &quot;builder-mounted&quot;,
+      &quot;to&quot;: &quot;builder-morph&quot;,
+      &quot;trigger&quot;: &quot;builder-mount&quot;,
+      &quot;source&quot;: &quot;AnimatePresence (DeckTableShell)&quot;,
+      &quot;effect&quot;: &quot;Mount BuilderPanel, which claims the shared layoutId&quot;,
+      &quot;stepId&quot;: &quot;builder-mount&quot;
+    },
+    {
+      &quot;id&quot;: &quot;deck-morph-in&quot;,
+      &quot;from&quot;: &quot;builder-morph&quot;,
+      &quot;to&quot;: &quot;deck-phase&quot;,
+      &quot;trigger&quot;: &quot;blueprint-morph-in&quot;,
+      &quot;source&quot;: &quot;BuilderPanel onLayoutAnimationComplete&quot;,
+      &quot;guard&quot;: &quot;phase === blueprint-morphing (one-shot)&quot;,
+      &quot;effect&quot;: &quot;Land the chrome morph and advance phase=builder-open&quot;,
+      &quot;stepId&quot;: &quot;blueprint-morph-in&quot;
+    },
+    {
+      &quot;id&quot;: &quot;deck-content-in&quot;,
+      &quot;from&quot;: &quot;deck-phase&quot;,
+      &quot;to&quot;: &quot;builder-content&quot;,
+      &quot;trigger&quot;: &quot;builder-content-in&quot;,
+      &quot;source&quot;: &quot;BuilderPanel content variants&quot;,
+      &quot;effect&quot;: &quot;Stagger header, slot columns, and shelf to visible&quot;,
+      &quot;stepId&quot;: &quot;builder-content-in&quot;
+    },
+    {
+      &quot;id&quot;: &quot;deck-dismiss-trigger&quot;,
+      &quot;from&quot;: &quot;builder-content&quot;,
+      &quot;to&quot;: &quot;deck-phase&quot;,
+      &quot;trigger&quot;: &quot;dismiss-trigger&quot;,
+      &quot;source&quot;: &quot;DeckTableShell.closeDeck&quot;,
+      &quot;guard&quot;: &quot;phase === builder-open&quot;,
+      &quot;effect&quot;: &quot;Fast content fade and set phase=builder-dismissing&quot;,
+      &quot;stepId&quot;: &quot;dismiss-trigger&quot;
+    },
+    {
+      &quot;id&quot;: &quot;deck-builder-exit&quot;,
+      &quot;from&quot;: &quot;deck-phase&quot;,
+      &quot;to&quot;: &quot;deck-closingSlug&quot;,
+      &quot;trigger&quot;: &quot;builder-exit&quot;,
+      &quot;source&quot;: &quot;BuilderPanel AnimatePresence exit&quot;,
+      &quot;effect&quot;: &quot;Hold the source blueprint hidden via closingSlug through the morph-back&quot;,
+      &quot;stepId&quot;: &quot;builder-exit&quot;
+    },
+    {
+      &quot;id&quot;: &quot;deck-morph-out&quot;,
+      &quot;from&quot;: &quot;deck-closingSlug&quot;,
+      &quot;to&quot;: &quot;deck-activeSlug&quot;,
+      &quot;trigger&quot;: &quot;blueprint-morph-out&quot;,
+      &quot;source&quot;: &quot;source blueprint onLayoutAnimationComplete&quot;,
+      &quot;effect&quot;: &quot;Morph the chrome back onto the table blueprint (flash apex)&quot;,
+      &quot;stepId&quot;: &quot;blueprint-morph-out&quot;
+    },
+    {
+      &quot;id&quot;: &quot;deck-table-restored&quot;,
+      &quot;from&quot;: &quot;deck-activeSlug&quot;,
+      &quot;to&quot;: &quot;deck-phase&quot;,
+      &quot;trigger&quot;: &quot;table-restored&quot;,
+      &quot;source&quot;: &quot;DeckTableShell.onCloseMorphComplete&quot;,
+      &quot;guard&quot;: &quot;phase === builder-dismissing (one-shot)&quot;,
+      &quot;effect&quot;: &quot;Clear closingSlug, set phase=table, restore focus to the origin blueprint&quot;,
+      &quot;stepId&quot;: &quot;table-restored&quot;
+    },
+    {
       &quot;id&quot;: &quot;reset-state&quot;,
       &quot;from&quot;: &quot;debug-reset&quot;,
       &quot;to&quot;: &quot;page-activePack&quot;,
@@ -2408,6 +3407,65 @@
       &quot;phase&quot;: &quot;close&quot;,
       &quot;boundary&quot;: &quot;SealedPack setCardElevated(false)&quot;,
       &quot;apex&quot;: true
+    }
+  ],
+  &quot;deckOpenSteps&quot;: [
+    {
+      &quot;id&quot;: &quot;blueprint-tap&quot;,
+      &quot;label&quot;: &quot;Blueprint tap&quot;,
+      &quot;phase&quot;: &quot;deck-open&quot;,
+      &quot;boundary&quot;: &quot;DeckTableShell.openDeck -&gt; phase=blueprint-morphing&quot;
+    },
+    {
+      &quot;id&quot;: &quot;url-push&quot;,
+      &quot;label&quot;: &quot;URL pushState&quot;,
+      &quot;phase&quot;: &quot;deck-open&quot;,
+      &quot;boundary&quot;: &quot;DeckTableShell.pushDeckPath (window.history.pushState)&quot;
+    },
+    {
+      &quot;id&quot;: &quot;builder-mount&quot;,
+      &quot;label&quot;: &quot;Builder mount&quot;,
+      &quot;phase&quot;: &quot;deck-open&quot;,
+      &quot;boundary&quot;: &quot;AnimatePresence mounts BuilderPanel (owns layoutId)&quot;
+    },
+    {
+      &quot;id&quot;: &quot;blueprint-morph-in&quot;,
+      &quot;label&quot;: &quot;Blueprint morph in&quot;,
+      &quot;phase&quot;: &quot;deck-open&quot;,
+      &quot;boundary&quot;: &quot;BuilderPanel onLayoutAnimationComplete -&gt; builder-open&quot;
+    },
+    {
+      &quot;id&quot;: &quot;builder-content-in&quot;,
+      &quot;label&quot;: &quot;Builder content stagger&quot;,
+      &quot;phase&quot;: &quot;deck-open&quot;,
+      &quot;boundary&quot;: &quot;content variants animate to visible&quot;
+    }
+  ],
+  &quot;deckCloseSteps&quot;: [
+    {
+      &quot;id&quot;: &quot;dismiss-trigger&quot;,
+      &quot;label&quot;: &quot;Dismiss trigger&quot;,
+      &quot;phase&quot;: &quot;deck-close&quot;,
+      &quot;boundary&quot;: &quot;DeckTableShell.closeDeck -&gt; phase=builder-dismissing&quot;
+    },
+    {
+      &quot;id&quot;: &quot;builder-exit&quot;,
+      &quot;label&quot;: &quot;Builder exit&quot;,
+      &quot;phase&quot;: &quot;deck-close&quot;,
+      &quot;boundary&quot;: &quot;BuilderPanel AnimatePresence exit (fast content fade)&quot;
+    },
+    {
+      &quot;id&quot;: &quot;blueprint-morph-out&quot;,
+      &quot;label&quot;: &quot;Blueprint morph back (APEX)&quot;,
+      &quot;phase&quot;: &quot;deck-close&quot;,
+      &quot;boundary&quot;: &quot;source blueprint onLayoutAnimationComplete (flash apex)&quot;,
+      &quot;apex&quot;: true
+    },
+    {
+      &quot;id&quot;: &quot;table-restored&quot;,
+      &quot;label&quot;: &quot;Table restored&quot;,
+      &quot;phase&quot;: &quot;deck-close&quot;,
+      &quot;boundary&quot;: &quot;DeckTableShell.onCloseMorphComplete -&gt; table, focus restored&quot;
     }
   ]
 }</code></pre>

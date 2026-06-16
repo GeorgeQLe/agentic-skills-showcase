@@ -40,6 +40,9 @@ export interface DebugDrivers {
   openClick?: () => void;
   openTear?: () => void;
   close?: () => void;
+  /** Deck-builder blueprint-morph drivers (animation-plan-deck-builder.md §F). */
+  openDeck?: () => void;
+  dismissDeck?: () => void;
   reset?: () => void;
 }
 
@@ -280,7 +283,13 @@ export function DebugProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const drive = useCallback((name: keyof DebugDrivers) => {
-    if (name === "openClick" || name === "openTear" || name === "close") {
+    if (
+      name === "openClick" ||
+      name === "openTear" ||
+      name === "close" ||
+      name === "openDeck" ||
+      name === "dismissDeck"
+    ) {
       lastDriverRef.current = name;
       setReachedSteps([]);
       setCurrentStepIndex(-1);

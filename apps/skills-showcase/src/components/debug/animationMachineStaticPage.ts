@@ -14,13 +14,18 @@ import {
 
 const NODE_W = 116;
 const NODE_H = 42;
-const VIEWBOX_W = 1600;
-const VIEWBOX_H = 620;
+const VIEWBOX_W = 2400;
+const VIEWBOX_H = 800;
 
 export function renderAnimationStateMachineReferencePage(
   model: AnimationMachineModel = ANIMATION_MACHINE_MODEL
 ): string {
-  const stepRows = [...model.openSteps, ...model.closeSteps]
+  const stepRows = [
+    ...model.openSteps,
+    ...model.closeSteps,
+    ...model.deckOpenSteps,
+    ...model.deckCloseSteps,
+  ]
     .map(
       (step) => `<tr>
         <td><code>${escapeHtml(step.id)}</code></td>
@@ -102,7 +107,7 @@ export function renderAnimationStateMachineReferencePage(
   <header>
     <p class="muted">Static reference generated from <code>src/components/debug/animationMachine.ts</code>.</p>
     <h1>Animation State Machine - Pack Drawer Prototype</h1>
-    <p>The live <code>/prototype</code> debug panel and this static page share the same canonical model export. The model maps page state, SealedPack refs and motion values, BottomSheet state, PackOpener collapse internals, and every existing debug gate from <code>OPEN_STEPS</code> / <code>CLOSE_STEPS</code>.</p>
+    <p>The live <code>/prototype</code> debug panel and this static page share the same canonical model export. The model maps page state, SealedPack refs and motion values, BottomSheet state, PackOpener collapse internals, the deck-builder <code>blueprint-morph</code> lifecycle (DeckTableShell + BuilderPanel), and every debug gate from <code>OPEN_STEPS</code> / <code>CLOSE_STEPS</code> / <code>DECK_OPEN_STEPS</code> / <code>DECK_CLOSE_STEPS</code>.</p>
   </header>
 
   <section class="toc" id="toc">
@@ -118,7 +123,7 @@ export function renderAnimationStateMachineReferencePage(
 
   <section id="graph">
     <h2>State Machine Graph</h2>
-    <p class="muted">Lanes match runtime owners: Page, SealedPack, BottomSheet, PackOpener, and Debug Gates. Purple nodes are apex gates; orange transition labels identify close-path boundaries that can be paused in stepped mode.</p>
+    <p class="muted">Lanes match runtime owners: Page, SealedPack, BottomSheet, PackOpener, DeckTableShell, BuilderPanel, and Debug Gates. Purple nodes are apex gates; orange transition labels identify close-path boundaries that can be paused in stepped mode.</p>
     <div class="graph-shell">
       ${renderSvg(model)}
     </div>

@@ -9,7 +9,14 @@
 
 import { useState } from "react";
 import { useDebug } from "./DebugController";
-import { ALL_STEPS, OPEN_STEPS, CLOSE_STEPS, type StepDef } from "./steps";
+import {
+  ALL_STEPS,
+  OPEN_STEPS,
+  CLOSE_STEPS,
+  DECK_OPEN_STEPS,
+  DECK_CLOSE_STEPS,
+  type StepDef,
+} from "./steps";
 // Surfaced in the panel so the chosen slow-mo approach is visible at a glance
 // and future devs know the manual clock was evaluated and rejected - see
 // manualClock.ts for the full investigation log.
@@ -40,6 +47,7 @@ export default function DebugPanel() {
     return (
       <button
         onClick={() => dbg.setEnabled(true)}
+        data-testid="debug-open"
         title="Open animation debug harness"
         style={{
           position: "fixed",
@@ -202,6 +210,27 @@ export default function DebugPanel() {
           </div>
         </Section>
 
+        {/* Deck drivers — no-ops on /prototype (no deck drivers registered);
+            wired by the deck route's DeckDebugHarness bridge. */}
+        <Section title="Drive deck (blueprint-morph)">
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            <button
+              onClick={() => dbg.drive("openDeck")}
+              data-testid="drive-openDeck"
+              style={{ ...chip, flex: 1 }}
+            >
+              Open deck
+            </button>
+            <button
+              onClick={() => dbg.drive("dismissDeck")}
+              data-testid="drive-dismissDeck"
+              style={{ ...chip, flex: 1 }}
+            >
+              Dismiss deck
+            </button>
+          </div>
+        </Section>
+
         {/* Live readout */}
         <Section title="Live state">
           <Readout label="step" value={dbg.pausedAtStep ?? "(running)"} highlight={parked} />
@@ -265,6 +294,8 @@ export default function DebugPanel() {
         <Section title="Step timeline">
           <Timeline title="OPEN" steps={OPEN_STEPS} dbg={dbg} />
           <Timeline title="CLOSE" steps={CLOSE_STEPS} dbg={dbg} />
+          <Timeline title="DECK OPEN" steps={DECK_OPEN_STEPS} dbg={dbg} />
+          <Timeline title="DECK CLOSE" steps={DECK_CLOSE_STEPS} dbg={dbg} />
         </Section>
       </div>
     </div>

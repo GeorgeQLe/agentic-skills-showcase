@@ -155,6 +155,27 @@ test("blueprint-morph restores focus to the originating blueprint on close", asy
   await expect(page.getByTestId(`deck-blueprint-${SLUG}`)).toBeFocused();
 });
 
+test("debug harness drives the deck open/close morph via registered drivers (§F)", async ({
+  page,
+}) => {
+  await page.goto(TABLE_PATH);
+  await expect(page.getByTestId("deck-phase")).toHaveText("table");
+
+  // The harness is mounted on the deck route (DebugProvider + DebugPanel).
+  await page.getByTestId("debug-open").click();
+
+  // openDeck driver taps the first blueprint and runs the real morph callbacks.
+  await page.getByTestId("drive-openDeck").click();
+  await expect(page.getByTestId("deck-phase")).toHaveText("builder-open");
+  await expect(page.getByTestId("deck-builder-panel")).toBeVisible();
+  await expect(page).toHaveURL(/\/deck\/[^/]+$/);
+
+  // dismissDeck driver closes back to the table.
+  await page.getByTestId("drive-dismissDeck").click();
+  await expect(page.getByTestId("deck-phase")).toHaveText("table");
+  await expect(page.getByTestId("deck-builder-panel")).toHaveCount(0);
+});
+
 test("Back during/after open returns to the table", async ({ page }) => {
   await page.goto(TABLE_PATH);
   await expect(page.getByTestId("deck-phase")).toHaveText("table");

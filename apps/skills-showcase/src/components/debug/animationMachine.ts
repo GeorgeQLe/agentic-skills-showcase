@@ -6,16 +6,44 @@
  * documentation/code drift: change a node or transition here and every consumer
  * picks it up automatically.
  */
-import { ALL_STEPS, CLOSE_STEPS, OPEN_STEPS, type StepDef } from "./steps";
+import {
+  ALL_STEPS,
+  CLOSE_STEPS,
+  DECK_CLOSE_STEPS,
+  DECK_OPEN_STEPS,
+  OPEN_STEPS,
+  type StepDef,
+} from "./steps";
 
 export type AnimationMachineLane =
   | "page"
   | "sealed-pack"
   | "bottom-sheet"
   | "pack-opener"
+  | "deck-shell"
+  | "builder"
   | "debug-gates";
 
-export type AnimationMachinePhase = "idle" | "open" | "close" | "reset";
+export type AnimationMachinePhase =
+  | "idle"
+  | "open"
+  | "close"
+  | "reset"
+  | "deck-open"
+  | "deck-close";
+
+/**
+ * DeckFlowPhase mirrors DeckTableShell's lifecycle union. It is duplicated here
+ * (rather than imported) so the canonical machine model carries no dependency on
+ * the React shell component — animationMachine.ts must stay importable by the
+ * static-page generator and tests without pulling in framer-motion / Next.
+ */
+export type DeckFlowPhase =
+  | "table"
+  | "blueprint-morphing"
+  | "builder-open"
+  | "builder-dismissing"
+  | "table-restored";
 
 export type AnimationMachineNodeKind =
   | "state"
@@ -105,11 +133,33 @@ export interface AnimationMachineSheetRuntime {
   dismissable: boolean;
 }
 
+/**
+ * Deck-builder `blueprint-morph` runtime slice (animation-plan-deck-builder.md
+ * §F). `deckShell` is the DeckTableShell lifecycle owner; `builder` is the
+ * AnimatePresence-mounted BuilderPanel target. The flight Map / FlightLayer is
+ * deferred with the card-flight slice.
+ */
+export interface AnimationMachineDeckShellRuntime {
+  phase: DeckFlowPhase;
+  activeDeckSlug: string | null;
+  closingSlug: string | null;
+  reducedMotion: boolean;
+}
+
+export interface AnimationMachineBuilderRuntime {
+  mounted: boolean;
+  morphing: boolean;
+  contentState: "hidden" | "visible";
+  collectedCount: number;
+}
+
 export interface AnimationMachineRuntimeState {
   page: AnimationMachinePageRuntime;
   pack: AnimationMachinePackRuntime;
   drawer: AnimationMachineDrawerRuntime;
   sheet: AnimationMachineSheetRuntime;
+  deckShell: AnimationMachineDeckShellRuntime;
+  builder: AnimationMachineBuilderRuntime;
 }
 
 export interface AnimationMachineRuntimePatch {
@@ -117,6 +167,8 @@ export interface AnimationMachineRuntimePatch {
   pack?: Partial<AnimationMachinePackRuntime>;
   drawer?: Partial<AnimationMachineDrawerRuntime>;
   sheet?: Partial<AnimationMachineSheetRuntime>;
+  deckShell?: Partial<AnimationMachineDeckShellRuntime>;
+  builder?: Partial<AnimationMachineBuilderRuntime>;
 }
 
 export interface AnimationMachineDebugRuntime {
@@ -141,6 +193,8 @@ export interface AnimationMachineModel {
   transitions: AnimationMachineTransition[];
   openSteps: StepDef[];
   closeSteps: StepDef[];
+  deckOpenSteps: StepDef[];
+  deckCloseSteps: StepDef[];
 }
 
 // Hand-positioned constants - visual spacing for the SVG graph lanes.
@@ -150,7 +204,9 @@ const LANE_Y: Record<AnimationMachineLane, number> = {
   "sealed-pack": 142,
   "bottom-sheet": 252,
   "pack-opener": 362,
-  "debug-gates": 482,
+  "deck-shell": 472,
+  builder: 582,
+  "debug-gates": 692,
 };
 
 export const ANIMATION_MACHINE_LANES: AnimationMachineLaneDef[] = [
@@ -158,6 +214,8 @@ export const ANIMATION_MACHINE_LANES: AnimationMachineLaneDef[] = [
   { id: "sealed-pack", label: "SealedPack", y: LANE_Y["sealed-pack"] },
   { id: "bottom-sheet", label: "BottomSheet", y: LANE_Y["bottom-sheet"] },
   { id: "pack-opener", label: "PackOpener", y: LANE_Y["pack-opener"] },
+  { id: "deck-shell", label: "DeckTableShell", y: LANE_Y["deck-shell"] },
+  { id: "builder", label: "BuilderPanel", y: LANE_Y.builder },
   { id: "debug-gates", label: "Debug Gates", y: LANE_Y["debug-gates"] },
 ];
 
@@ -465,6 +523,97 @@ export const ANIMATION_MACHINE_NODES: AnimationMachineNode[] = [
     x: 1464,
     y: nodeY("debug-gates"),
   },
+  {
+    id: "deck-phase",
+    label: "phase",
+    lane: "deck-shell",
+    phase: "deck-open",
+    kind: "state",
+    trackedFields: ["deckShell.phase"],
+    description: "DeckTableShell lifecycle: table -> blueprint-morphing -> builder-open -> builder-dismissing -> table.",
+    x: 88,
+    y: nodeY("deck-shell"),
+  },
+  {
+    id: "deck-activeSlug",
+    label: "activeDeckSlug",
+    lane: "deck-shell",
+    phase: "deck-open",
+    kind: "state",
+    trackedFields: ["deckShell.activeDeckSlug"],
+    description: "Route-truth deck slug; non-null mounts BuilderPanel and is kept in sync with the URL via pushState/popstate.",
+    x: 268,
+    y: nodeY("deck-shell"),
+  },
+  {
+    id: "deck-closingSlug",
+    label: "closingSlug",
+    lane: "deck-shell",
+    phase: "deck-close",
+    kind: "ref",
+    trackedFields: ["deckShell.closingSlug"],
+    description: "Keeps the dismissing deck's source blueprint hidden through the morph-back so it never double-visions the exiting panel.",
+    x: 456,
+    y: nodeY("deck-shell"),
+  },
+  {
+    id: "deck-reducedMotion",
+    label: "reducedMotion",
+    lane: "deck-shell",
+    phase: "deck-open",
+    kind: "state",
+    trackedFields: ["deckShell.reducedMotion"],
+    description: "prefers-reduced-motion: omits the layoutId and runs the identical phase chain as a 120ms crossfade.",
+    x: 644,
+    y: nodeY("deck-shell"),
+  },
+  {
+    id: "builder-mounted",
+    label: "mounted",
+    lane: "builder",
+    phase: "deck-open",
+    kind: "state",
+    stepId: "builder-mount",
+    trackedFields: ["builder.mounted"],
+    description: "Whether AnimatePresence is rendering the BuilderPanel subtree (the layoutId morph target).",
+    x: 88,
+    y: nodeY("builder"),
+  },
+  {
+    id: "builder-morph",
+    label: "chrome morph",
+    lane: "builder",
+    phase: "deck-open",
+    kind: "motion",
+    stepId: "blueprint-morph-in",
+    trackedFields: ["builder.morphing"],
+    description: "The shared-layout chrome rectangle morphing between the table blueprint and the full builder panel.",
+    x: 268,
+    y: nodeY("builder"),
+  },
+  {
+    id: "builder-content",
+    label: "contentState",
+    lane: "builder",
+    phase: "deck-open",
+    kind: "motion",
+    stepId: "builder-content-in",
+    trackedFields: ["builder.contentState"],
+    description: "Builder content (header, slot columns, shelf) staggers to visible only after the morph lands.",
+    x: 456,
+    y: nodeY("builder"),
+  },
+  {
+    id: "builder-collectedCount",
+    label: "collectedCount",
+    lane: "builder",
+    phase: "deck-open",
+    kind: "state",
+    trackedFields: ["builder.collectedCount"],
+    description: "Presentation count of collected cards for the active deck (optimistic, localStorage-backed).",
+    x: 644,
+    y: nodeY("builder"),
+  },
   ...ALL_STEPS.map(stepNode),
 ];
 
@@ -625,6 +774,91 @@ export const ANIMATION_MACHINE_TRANSITIONS: AnimationMachineTransition[] = [
     stepId: "drop-elevation",
   },
   {
+    id: "deck-blueprint-tap",
+    from: "deck-phase",
+    to: "deck-activeSlug",
+    trigger: "blueprint-tap",
+    source: "DeckTableShell.openDeck",
+    guard: "phase === table",
+    effect: "Capture origin button and set phase=blueprint-morphing",
+    stepId: "blueprint-tap",
+  },
+  {
+    id: "deck-url-push",
+    from: "deck-activeSlug",
+    to: "builder-mounted",
+    trigger: "url-push",
+    source: "DeckTableShell.pushDeckPath",
+    effect: "window.history.pushState(/deck/[slug]) and set activeDeckSlug",
+    stepId: "url-push",
+  },
+  {
+    id: "deck-builder-mount",
+    from: "builder-mounted",
+    to: "builder-morph",
+    trigger: "builder-mount",
+    source: "AnimatePresence (DeckTableShell)",
+    effect: "Mount BuilderPanel, which claims the shared layoutId",
+    stepId: "builder-mount",
+  },
+  {
+    id: "deck-morph-in",
+    from: "builder-morph",
+    to: "deck-phase",
+    trigger: "blueprint-morph-in",
+    source: "BuilderPanel onLayoutAnimationComplete",
+    guard: "phase === blueprint-morphing (one-shot)",
+    effect: "Land the chrome morph and advance phase=builder-open",
+    stepId: "blueprint-morph-in",
+  },
+  {
+    id: "deck-content-in",
+    from: "deck-phase",
+    to: "builder-content",
+    trigger: "builder-content-in",
+    source: "BuilderPanel content variants",
+    effect: "Stagger header, slot columns, and shelf to visible",
+    stepId: "builder-content-in",
+  },
+  {
+    id: "deck-dismiss-trigger",
+    from: "builder-content",
+    to: "deck-phase",
+    trigger: "dismiss-trigger",
+    source: "DeckTableShell.closeDeck",
+    guard: "phase === builder-open",
+    effect: "Fast content fade and set phase=builder-dismissing",
+    stepId: "dismiss-trigger",
+  },
+  {
+    id: "deck-builder-exit",
+    from: "deck-phase",
+    to: "deck-closingSlug",
+    trigger: "builder-exit",
+    source: "BuilderPanel AnimatePresence exit",
+    effect: "Hold the source blueprint hidden via closingSlug through the morph-back",
+    stepId: "builder-exit",
+  },
+  {
+    id: "deck-morph-out",
+    from: "deck-closingSlug",
+    to: "deck-activeSlug",
+    trigger: "blueprint-morph-out",
+    source: "source blueprint onLayoutAnimationComplete",
+    effect: "Morph the chrome back onto the table blueprint (flash apex)",
+    stepId: "blueprint-morph-out",
+  },
+  {
+    id: "deck-table-restored",
+    from: "deck-activeSlug",
+    to: "deck-phase",
+    trigger: "table-restored",
+    source: "DeckTableShell.onCloseMorphComplete",
+    guard: "phase === builder-dismissing (one-shot)",
+    effect: "Clear closingSlug, set phase=table, restore focus to the origin blueprint",
+    stepId: "table-restored",
+  },
+  {
     id: "reset-state",
     from: "debug-reset",
     to: "page-activePack",
@@ -640,6 +874,8 @@ export const ANIMATION_MACHINE_MODEL: AnimationMachineModel = {
   transitions: ANIMATION_MACHINE_TRANSITIONS,
   openSteps: OPEN_STEPS,
   closeSteps: CLOSE_STEPS,
+  deckOpenSteps: DECK_OPEN_STEPS,
+  deckCloseSteps: DECK_CLOSE_STEPS,
 };
 
 export const DEFAULT_ANIMATION_MACHINE_RUNTIME: AnimationMachineRuntimeState = {
@@ -681,6 +917,18 @@ export const DEFAULT_ANIMATION_MACHINE_RUNTIME: AnimationMachineRuntimeState = {
     exiting: false,
     dismissable: true,
   },
+  deckShell: {
+    phase: "table",
+    activeDeckSlug: null,
+    closingSlug: null,
+    reducedMotion: false,
+  },
+  builder: {
+    mounted: false,
+    morphing: false,
+    contentState: "hidden",
+    collectedCount: 0,
+  },
 };
 
 const DEFAULT_DEBUG_RUNTIME: AnimationMachineDebugRuntime = {
@@ -707,6 +955,12 @@ export function mergeAnimationMachineRuntime(
     pack: patch.pack ? { ...previous.pack, ...patch.pack } : previous.pack,
     drawer: patch.drawer ? { ...previous.drawer, ...patch.drawer } : previous.drawer,
     sheet: patch.sheet ? { ...previous.sheet, ...patch.sheet } : previous.sheet,
+    deckShell: patch.deckShell
+      ? { ...previous.deckShell, ...patch.deckShell }
+      : previous.deckShell,
+    builder: patch.builder
+      ? { ...previous.builder, ...patch.builder }
+      : previous.builder,
   };
 }
 
@@ -752,6 +1006,16 @@ export function buildAnimationMachineSnapshot(
   }
   if (runtime.drawer.collapseCompleteFiredRef) activeNodeIds.add("drawer-collapseCompleteFired");
 
+  if (runtime.deckShell.phase !== "table") activeNodeIds.add("deck-phase");
+  if (runtime.deckShell.activeDeckSlug) activeNodeIds.add("deck-activeSlug");
+  if (runtime.deckShell.closingSlug) activeNodeIds.add("deck-closingSlug");
+  if (runtime.deckShell.reducedMotion) activeNodeIds.add("deck-reducedMotion");
+
+  if (runtime.builder.mounted) activeNodeIds.add("builder-mounted");
+  if (runtime.builder.morphing) activeNodeIds.add("builder-morph");
+  if (runtime.builder.contentState === "visible") activeNodeIds.add("builder-content");
+  if (runtime.builder.collectedCount > 0) activeNodeIds.add("builder-collectedCount");
+
   if (debug.pausedAtStep) {
     activeNodeIds.add(getAnimationMachineStepNodeId(debug.pausedAtStep));
   }
@@ -762,6 +1026,9 @@ export function buildAnimationMachineSnapshot(
     runtime.page.openedPacks.length === 0 &&
     !runtime.pack.cardElevated &&
     !runtime.drawer.collapseState &&
+    runtime.deckShell.phase === "table" &&
+    !runtime.deckShell.activeDeckSlug &&
+    !runtime.builder.mounted &&
     debug.reachedSteps.length === 0 &&
     debug.pausedAtStep === null;
 

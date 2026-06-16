@@ -9,7 +9,7 @@
  * stepping freezes the apex frame by frame.
  */
 
-export type Phase = "open" | "close";
+export type Phase = "open" | "close" | "deck-open" | "deck-close";
 
 export interface StepDef {
   id: string;
@@ -43,7 +43,36 @@ export const CLOSE_STEPS: StepDef[] = [
   { id: "drop-elevation", label: "Drop elevation / z-index (APEX)", phase: "close", boundary: "SealedPack setCardElevated(false)", apex: true },
 ];
 
-export const ALL_STEPS: StepDef[] = [...OPEN_STEPS, ...CLOSE_STEPS];
+/**
+ * Deck-builder `blueprint-morph` boundaries (animation-plan-deck-builder.md §F).
+ * Distinct ids from the pack flow (the pack uses layout-morph-in/out; the deck
+ * uses blueprint-morph-in/out) so ALL_STEPS stays a flat, collision-free index.
+ *
+ * The card-flight contract's FLIGHT_STEPS plus the close-path `flights-flushed`
+ * / `drawer-fast-teardown` conditionals are deferred to the later card-flight
+ * slice, matching the implementation handoff for this §F harness step.
+ */
+export const DECK_OPEN_STEPS: StepDef[] = [
+  { id: "blueprint-tap", label: "Blueprint tap", phase: "deck-open", boundary: "DeckTableShell.openDeck -> phase=blueprint-morphing" },
+  { id: "url-push", label: "URL pushState", phase: "deck-open", boundary: "DeckTableShell.pushDeckPath (window.history.pushState)" },
+  { id: "builder-mount", label: "Builder mount", phase: "deck-open", boundary: "AnimatePresence mounts BuilderPanel (owns layoutId)" },
+  { id: "blueprint-morph-in", label: "Blueprint morph in", phase: "deck-open", boundary: "BuilderPanel onLayoutAnimationComplete -> builder-open" },
+  { id: "builder-content-in", label: "Builder content stagger", phase: "deck-open", boundary: "content variants animate to visible" },
+];
+
+export const DECK_CLOSE_STEPS: StepDef[] = [
+  { id: "dismiss-trigger", label: "Dismiss trigger", phase: "deck-close", boundary: "DeckTableShell.closeDeck -> phase=builder-dismissing" },
+  { id: "builder-exit", label: "Builder exit", phase: "deck-close", boundary: "BuilderPanel AnimatePresence exit (fast content fade)" },
+  { id: "blueprint-morph-out", label: "Blueprint morph back (APEX)", phase: "deck-close", boundary: "source blueprint onLayoutAnimationComplete (flash apex)", apex: true },
+  { id: "table-restored", label: "Table restored", phase: "deck-close", boundary: "DeckTableShell.onCloseMorphComplete -> table, focus restored" },
+];
+
+export const ALL_STEPS: StepDef[] = [
+  ...OPEN_STEPS,
+  ...CLOSE_STEPS,
+  ...DECK_OPEN_STEPS,
+  ...DECK_CLOSE_STEPS,
+];
 
 export function stepIndex(id: string): number {
   return ALL_STEPS.findIndex((s) => s.id === id);
