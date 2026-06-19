@@ -106,11 +106,17 @@ declare global {
      * landings/flushes through this hook (same idiom as __deckMorphComplete).
      * `landAll` settles in-flight clones as if they landed (with pulse);
      * `finishAll` runs the interrupt flush; `inFlight` reads the live ids.
+     * The completion `gather` (settled slot cards flying into the stack before
+     * it flips) rides the same idiom: `gatherInFlight` reads the live gather
+     * clone ids, `landGather` settles them as if they landed (triggering the
+     * stack flip once the last lands).
      */
     __deckFlight?: {
       inFlight: () => string[];
       landAll: () => void;
       finishAll: () => void;
+      gatherInFlight: () => string[];
+      landGather: () => void;
     };
     /**
      * Test bridge for the tear-open pack ritual. jsdom can't perform the
@@ -669,6 +675,28 @@ function BuilderPanel({
   const inFlightIdsRef = useRef<Set<string>>(new Set());
   const batchRemainingRef = useRef(0);
 
+  // Completion gather (§6 "slots briefly gather into a stacked deck"): on the
+  // completion edge a clone per settled slot card flies into the completion
+  // stack's rect (the same FlightClone/FlightLayer primitive, target = the
+  // stack), then the stack flips. revealCompletion gates the flip so it begins
+  // only after the gather clones land; reduced motion skips the gather and
+  // reveals immediately. gatherFiredRef one-shots the launch per mounted deck.
+  const [gatherFlights, setGatherFlights] = useState<FlightRecord[]>([]);
+  const gatherFlightsRef = useRef(gatherFlights);
+  gatherFlightsRef.current = gatherFlights;
+  const [revealCompletion, setRevealCompletion] = useState(false);
+  const gatherRemainingRef = useRef(0);
+  const gatherFiredRef = useRef(false);
+
+  // Settle one gather clone: drop it and, once the last lands, trigger the
+  // stack flip. Idempotent — a late animate .then() after the bridge already
+  // reconciled is clamped to a no-op by the Math.max guard.
+  const onGatherLand = useCallback((id: string) => {
+    setGatherFlights((prev) => prev.filter((f) => f.id !== id));
+    gatherRemainingRef.current = Math.max(0, gatherRemainingRef.current - 1);
+    if (gatherRemainingRef.current === 0) setRevealCompletion(true);
+  }, []);
+
   // Stable slot identity: a card maps to the same phase column for its whole
   // lifetime (its position in deck.skills, round-robin over phases). This is the
   // flight's continuity target, so it must not depend on collection order.
@@ -891,11 +919,14 @@ function BuilderPanel({
       finishAll: () => {
         finishAllFlightsImmediately();
       },
+      gatherInFlight: () => gatherFlightsRef.current.map((f) => f.id),
+      landGather: () =>
+        gatherFlightsRef.current.forEach((f) => onGatherLand(f.id)),
     };
     return () => {
       delete window.__deckFlight;
     };
-  }, [settle, finishAllFlightsImmediately]);
+  }, [settle, finishAllFlightsImmediately, onGatherLand]);
 
   // Chrome morph: the layoutId rectangle animates chrome only (no declarative
   // transform on it, §E); content motion lives on the child wrappers below.
@@ -918,6 +949,53 @@ function BuilderPanel({
     () => deck.skills.filter((s) => settledIds.has(s.id)),
     [deck.skills, settledIds],
   );
+
+  // Launch the completion gather on the completion edge (§6). The effect runs
+  // after the commit that mounts DeckCompletionPanel, so both the settled slot
+  // cards and the stack target ([data-completion-target]) are in the DOM —
+  // measure synchronously (no rAF) and register a FlightRecord per settled card
+  // flying into the stack's rect. One-shot per mounted deck. Reduced motion (or
+  // a missing target/source) skips straight to the reveal, matching the
+  // existing flight reduced-motion path.
+  useEffect(() => {
+    if (!deckComplete || completionDismissed || gatherFiredRef.current) return;
+    gatherFiredRef.current = true;
+    // On a hydrated full-deck mount this one-shot can fire before the shell's
+    // matchMedia effect has propagated `reducedMotion` (child effects run before
+    // parent effects), so read the query directly here as the source of truth.
+    const prefersReduced =
+      reducedMotion ||
+      (typeof window !== "undefined" &&
+        (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false));
+    if (prefersReduced) {
+      setRevealCompletion(true);
+      return;
+    }
+    const targetEl = panelRef.current?.querySelector<HTMLElement>(
+      "[data-completion-target]",
+    );
+    const sources = settledSkills
+      .map((s) => {
+        const el = panelRef.current?.querySelector<HTMLElement>(
+          `[data-testid="deck-slot-card-${s.id}"]`,
+        );
+        return el ? { skill: s, el } : null;
+      })
+      .filter((x): x is { skill: Skill; el: HTMLElement } => x !== null);
+    if (!targetEl || sources.length === 0) {
+      setRevealCompletion(true);
+      return;
+    }
+    const to = rectOf(targetEl);
+    const records = sources.map(({ skill, el }) => ({
+      id: `gather-${skill.id}`,
+      label: skill.title || skill.name,
+      from: rectOf(el),
+      to,
+    }));
+    gatherRemainingRef.current = records.length;
+    setGatherFlights(records);
+  }, [deckComplete, completionDismissed, reducedMotion, settledSkills]);
 
   return (
     <motion.section
@@ -976,7 +1054,11 @@ function BuilderPanel({
         <DeckCompletionPanel
           deck={deck}
           reducedMotion={reducedMotion}
-          onKeepEditing={() => setCompletionDismissed(true)}
+          revealed={revealCompletion}
+          onKeepEditing={() => {
+            setCompletionDismissed(true);
+            setGatherFlights([]); // drop any clones mid-gather on dismiss
+          }}
         />
       ) : null}
 
@@ -1086,6 +1168,14 @@ function BuilderPanel({
       />
 
       <FlightLayer flights={flights} reducedMotion={reducedMotion} dbg={dbg} onLand={settle} />
+      {/* Completion gather clones (§6): a separate FlightLayer so the gather's
+          onLand (trigger the flip) never crosses the card-flight settle path. */}
+      <FlightLayer
+        flights={gatherFlights}
+        reducedMotion={reducedMotion}
+        dbg={dbg}
+        onLand={onGatherLand}
+      />
     </motion.section>
   );
 }
@@ -1177,29 +1267,23 @@ function BuilderCliPanel({
  * which emits the canonical `install-deck` command, a `project.json` download
  * mirroring the `.agents/project.json` shape, a share affordance, and a "keep
  * editing" dismiss. The back face is always in the DOM (hidden by backface) so
- * the output is testable independent of the flip frame. Reduced motion skips the
- * gather/flip and shows the output immediately (§E).
+ * the output is testable independent of the flip frame. The flip is sequenced by
+ * the parent: `revealed` flips to the output only after the per-slot gather
+ * clones land (§6). Reduced motion reveals immediately (no gather/flip, §E).
  */
 function DeckCompletionPanel({
   deck,
   reducedMotion,
+  revealed,
   onKeepEditing,
 }: {
   deck: Deck;
   reducedMotion: boolean;
+  revealed: boolean;
   onKeepEditing: () => void;
 }) {
   const dbg = useDebug();
   const command = `npx skillpacks install-deck ${deck.slug}`;
-
-  // The stack-then-flip sequence: mount shows the deck-back (front face), then a
-  // beat later it flips to the output. Reduced motion starts revealed (no flip).
-  const [revealed, setRevealed] = useState(reducedMotion);
-  useEffect(() => {
-    if (reducedMotion) return;
-    const timer = window.setTimeout(() => setRevealed(true), 520);
-    return () => window.clearTimeout(timer);
-  }, [reducedMotion]);
 
   // Transient affordance feedback for share (link copied) and download, mirroring
   // the CLI panel's best-effort clipboard pattern. Cleared on a timer.
@@ -1260,6 +1344,7 @@ function DeckCompletionPanel({
     >
       <motion.div
         className="deck-completion-card"
+        data-completion-target
         style={{ transformStyle: "preserve-3d" }}
         animate={{ rotateY: revealed ? 180 : 0 }}
         transition={dbg.scaleT(

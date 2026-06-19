@@ -72,6 +72,16 @@ function inFlightIds(): string[] {
   return window.__deckFlight?.inFlight() ?? [];
 }
 
+// The completion gather (settled slot cards flying into the stack before it
+// flips) rides the same window bridge — clones never settle under jsdom, so the
+// gather landing is driven here, mirroring landAllFlights above.
+function gatherInFlightIds(): string[] {
+  return window.__deckFlight?.gatherInFlight() ?? [];
+}
+function landGather() {
+  act(() => window.__deckFlight?.landGather());
+}
+
 // The card-flight source is now the torn-pack fan, not a flat shelf. jsdom can't
 // perform the SealedPack drag gesture, so the ritual is driven through the
 // window bridge BuilderPackFlow exposes (mirrors the flight/morph bridges).
@@ -439,6 +449,37 @@ describe("DeckTableShell blueprint-morph", () => {
     expect(screen.queryByTestId("deck-completion")).not.toBeInTheDocument();
     expect(screen.getByTestId("deck-slot-card-skill-a")).toBeInTheDocument();
     expect(screen.getByTestId("deck-slot-card-skill-b")).toBeInTheDocument();
+  });
+
+  it("completion gather: settled cards fly into the stack, then the panel flips to reveal", () => {
+    render(<DeckTableShell hardLoad initialDeckSlug={SLUG} />);
+    openPack();
+
+    fireEvent.click(screen.getByTestId("deck-card-skill-a"));
+    landAllFlights();
+    fireEvent.click(screen.getByTestId("deck-card-skill-b"));
+    landAllFlights();
+
+    // Deck complete: the panel mounts on its front face (not yet revealed) and a
+    // gather clone per settled card launches toward the stack (§6).
+    expect(screen.getByTestId("deck-completion")).toHaveAttribute("data-revealed", "false");
+    expect(gatherInFlightIds().sort()).toEqual(["gather-skill-a", "gather-skill-b"]);
+
+    // The gather clones land → the flip follows, revealing the output back.
+    landGather();
+    expect(screen.getByTestId("deck-completion")).toHaveAttribute("data-revealed", "true");
+    expect(gatherInFlightIds()).toEqual([]);
+  });
+
+  it("completion gather: reduced motion reveals the output immediately with no gather clones", () => {
+    mockReducedMotion(true);
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(["skill-a", "skill-b"]));
+
+    render(<DeckTableShell hardLoad initialDeckSlug={SLUG} />);
+
+    // Reduced motion skips the gather and reveals the output at once (§E).
+    expect(screen.getByTestId("deck-completion")).toHaveAttribute("data-revealed", "true");
+    expect(gatherInFlightIds()).toEqual([]);
   });
 
   it("buildDeckProjectJson mirrors enabled_packs + deck metadata", () => {

@@ -569,6 +569,72 @@ test("completion: collecting every card reveals the deck-complete output panel",
   await expect(page.getByTestId("deck-cli-panel")).toBeVisible();
 });
 
+test("completion gather: settled slot cards fly into the stack, then the stack flips to reveal", async ({
+  page,
+}) => {
+  await page.goto(`/deck/${SLUG}`);
+  await expect(page.getByTestId("deck-phase")).toHaveText("builder-open");
+
+  await openPackViaBridge(page);
+  const total = await page.locator("[data-card-id]").count();
+
+  // Sample over every rAF for gather clones painting (.deck-flight-clone with a
+  // gather-* id) and whether the stack ever revealed before any gather clone was
+  // seen (the flip must follow the gather, not precede it).
+  await page.evaluate(() => {
+    const w = window as unknown as {
+      __gather?: { cloneFrames: number; revealedBeforeClone: number; frames: number };
+      __gatherSampling?: boolean;
+    };
+    w.__gather = { cloneFrames: 0, revealedBeforeClone: 0, frames: 0 };
+    w.__gatherSampling = true;
+    let everSawClone = false;
+    const sample = () => {
+      if (!w.__gatherSampling) return;
+      const g = w.__gather!;
+      g.frames++;
+      const clone = document.querySelector('.deck-flight-clone[data-testid^="deck-flight-clone-gather-"]');
+      const completion = document.querySelector('[data-testid="deck-completion"]');
+      const revealed = completion?.getAttribute("data-revealed") === "true";
+      if (clone) {
+        g.cloneFrames++;
+        everSawClone = true;
+      }
+      if (revealed && !everSawClone) g.revealedBeforeClone++;
+      requestAnimationFrame(sample);
+    };
+    requestAnimationFrame(sample);
+  });
+
+  // Complete the deck — the gather launches, then the stack flips.
+  await page.getByTestId("deck-collect-all").click();
+  await expect(page.getByTestId("deck-collected-count")).toHaveText(
+    new RegExp(`^${total} / ${total} `),
+  );
+
+  const completion = page.getByTestId("deck-completion");
+  await expect(completion).toBeVisible();
+  // The flip follows the gather: the stack reveals the output back.
+  await expect(completion).toHaveAttribute("data-revealed", "true");
+  await expect(page.getByTestId("deck-completion-command")).toHaveText(
+    `npx skillpacks install-deck ${SLUG}`,
+  );
+
+  const result = await page.evaluate(() => {
+    const w = window as unknown as {
+      __gather: { cloneFrames: number; revealedBeforeClone: number; frames: number };
+      __gatherSampling: boolean;
+    };
+    w.__gatherSampling = false;
+    return w.__gather;
+  });
+  expect(result.frames).toBeGreaterThan(0);
+  // The gather clones painted...
+  expect(result.cloneFrames).toBeGreaterThan(0);
+  // ...and the reveal never preceded the gather.
+  expect(result.revealedBeforeClone).toBe(0);
+});
+
 test("Back during/after open returns to the table", async ({ page }) => {
   await page.goto(TABLE_PATH);
   await expect(page.getByTestId("deck-phase")).toHaveText("table");
