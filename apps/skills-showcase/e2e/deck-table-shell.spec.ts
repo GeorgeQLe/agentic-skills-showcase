@@ -473,6 +473,35 @@ test("wanted rim: empty-phase card glows; rim is gone once it is collected", asy
   );
 });
 
+test("overlay row: visible in the builder with the fan closed, updates after a collect", async ({
+  page,
+}) => {
+  await page.goto(`/deck/${SLUG}`);
+  await expect(page.getByTestId("deck-phase")).toHaveText("builder-open");
+
+  // The row is present before the pack is ever torn open — its empty state shows.
+  await expect(page.getByTestId("deck-overlay-row")).toBeVisible();
+  await expect(page.getByTestId("deck-overlay-empty")).toBeVisible();
+
+  await openPackViaBridge(page);
+  const firstCard = page.locator('.deck-fan-card[data-collected="false"]').first();
+  const id = await firstCard.getAttribute("data-card-id");
+  expect(id).toBeTruthy();
+
+  await firstCard.click();
+  // The chip lands once the flight settles, mirroring the slot fill.
+  await expect(page.getByTestId(`deck-overlay-chip-${id}`)).toBeVisible();
+  await expect(page.getByTestId("deck-overlay-empty")).toHaveCount(0);
+
+  // Collapse the fan: the overlay row persists as the always-on deck readout.
+  await page.evaluate(() => {
+    (window as unknown as { __deckPack?: { close: () => void } }).__deckPack?.close();
+  });
+  await expect(page.getByTestId("deck-pack-phase")).toHaveText("sealed");
+  await expect(page.getByTestId("deck-overlay-row")).toBeVisible();
+  await expect(page.getByTestId(`deck-overlay-chip-${id}`)).toBeVisible();
+});
+
 test("Back during/after open returns to the table", async ({ page }) => {
   await page.goto(TABLE_PATH);
   await expect(page.getByTestId("deck-phase")).toHaveText("table");

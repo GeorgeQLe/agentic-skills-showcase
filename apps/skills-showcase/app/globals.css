@@ -1689,6 +1689,69 @@ a.tag-link:hover {
   gap: 10px;
 }
 
+/* In-deck overlay row: a persistent, compact strip of the cards settled into the
+   deck, always visible in the builder whether or not the pack fan is open. Sits
+   between the phase slots and the pack-flow region. Palette tracks the teal
+   slot-card chips so it reads as the same collected-card surface. */
+.deck-overlay-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  margin-bottom: 24px;
+  padding: 12px 14px;
+  border: 1px solid rgba(94, 234, 212, 0.22);
+  border-radius: 10px;
+  background: rgba(2, 6, 23, 0.4);
+}
+
+.deck-overlay-label {
+  margin: 0;
+  color: #5eead4;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.deck-overlay-empty {
+  margin: 0;
+  color: rgba(148, 163, 184, 0.6);
+  font-size: 0.82rem;
+}
+
+.deck-overlay-chips {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.deck-overlay-chip {
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(94, 234, 212, 0.35);
+  background: rgba(94, 234, 212, 0.12);
+  color: #f0fdfa;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  animation: deckSlotIn 0.12s ease-out;
+}
+
+/* One-shot land pulse, shared with the slot cards (§D card-flight step 5) so a
+   collected card pulses in both the slot column and the overlay row on land. */
+.deck-overlay-chip[data-pulse="true"] {
+  animation: deckSlotPulse 0.25s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .deck-overlay-chip[data-pulse="true"] {
+    animation: deckSlotIn 0.12s ease-out;
+  }
+}
+
 /* Pack-flow region — the in-builder tear affordance (one SealedPack,
    deck-as-pack) plus its aside. The fanned cards live in the BottomSheet, so
    this row only holds the sealed pack and the collect-all control. */

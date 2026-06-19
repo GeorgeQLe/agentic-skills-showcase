@@ -317,6 +317,47 @@ describe("DeckTableShell blueprint-morph", () => {
     expect(screen.getByTestId("deck-card-skill-b")).toHaveAttribute("data-collected", "true");
   });
 
+  it("overlay row: empty until a card settles, reflects settled cards, with the fan closed", () => {
+    render(<DeckTableShell hardLoad initialDeckSlug={SLUG} />);
+
+    // The row is always visible in the builder, independent of the pack fan.
+    expect(screen.getByTestId("deck-overlay-row")).toBeInTheDocument();
+    expect(screen.getByTestId("deck-overlay-empty")).toBeInTheDocument();
+    expect(screen.queryByTestId("deck-overlay-chip-skill-a")).not.toBeInTheDocument();
+
+    openPack();
+    fireEvent.click(screen.getByTestId("deck-card-skill-a"));
+
+    // Off settledIds, not the optimistic commit: no chip until the clone lands.
+    expect(screen.queryByTestId("deck-overlay-chip-skill-a")).not.toBeInTheDocument();
+
+    landAllFlights();
+
+    // The chip appears and the empty state clears the frame the slot fills.
+    expect(screen.getByTestId("deck-overlay-chip-skill-a")).toBeInTheDocument();
+    expect(screen.queryByTestId("deck-overlay-empty")).not.toBeInTheDocument();
+
+    // Persists once the fan is collapsed — the row is the always-on readout.
+    act(() => window.__deckPack?.close());
+    expect(screen.getByTestId("deck-overlay-chip-skill-a")).toBeInTheDocument();
+  });
+
+  it("overlay row: hydrates from localStorage and reflects every settled card", () => {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(["skill-b"]));
+
+    render(<DeckTableShell hardLoad initialDeckSlug={SLUG} />);
+    // Hydrated cards are settled on mount, so they show in the row immediately.
+    expect(screen.getByTestId("deck-overlay-chip-skill-b")).toBeInTheDocument();
+    expect(screen.queryByTestId("deck-overlay-empty")).not.toBeInTheDocument();
+
+    openPack();
+    fireEvent.click(screen.getByTestId("deck-card-skill-a"));
+    landAllFlights();
+
+    expect(screen.getByTestId("deck-overlay-chip-skill-a")).toBeInTheDocument();
+    expect(screen.getByTestId("deck-overlay-chip-skill-b")).toBeInTheDocument();
+  });
+
   it("wanted rims: first card of each empty phase glows; clears once its slot fills", () => {
     // Market Intel has two phases (LAB-01, LAB-02); skill-a maps to column 0,
     // skill-b to column 1, so both columns start empty and both cards are wanted.

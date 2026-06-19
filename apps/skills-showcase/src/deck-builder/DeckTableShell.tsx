@@ -874,6 +874,13 @@ function BuilderPanel({
   const layoutId = reducedMotion ? undefined : `deck-blueprint-${deck.slug}`;
   const contentState = phase === "builder-open" ? "visible" : "hidden";
   const settledCount = settledIds.size;
+  // Settled cards in stable deck order for the overlay row — the persistent
+  // "here's your deck so far" strip. Off settledIds (slot truth), not the
+  // optimistic commit, so a card appears here the same frame its slot fills.
+  const settledSkills = useMemo(
+    () => deck.skills.filter((s) => settledIds.has(s.id)),
+    [deck.skills, settledIds],
+  );
 
   return (
     <motion.section
@@ -964,6 +971,43 @@ function BuilderPanel({
             </div>
           );
         })}
+      </motion.div>
+
+      {/* In-deck overlay row (§2 "OVERLAYS"): a persistent, compact strip of the
+          cards settled into the deck so far, always visible in the builder
+          independent of whether the pack fan is torn open — the slot columns
+          group by phase and the fan badges only show while the pack is open, so
+          this is the single at-a-glance "here's your deck" readout. Driven off
+          settledIds (never the optimistic commit, matching the slots) and reuses
+          pulsingIds for a one-shot pulse the frame a card lands. */}
+      <motion.div
+        className="deck-overlay-row"
+        data-testid="deck-overlay-row"
+        custom={2}
+        variants={contentVariants}
+        initial="hidden"
+        animate={contentState}
+        exit={contentExit}
+      >
+        <p className="deck-overlay-label">In deck</p>
+        {settledSkills.length === 0 ? (
+          <p className="deck-overlay-empty" data-testid="deck-overlay-empty">
+            No cards collected yet — tear the pack and tap a card.
+          </p>
+        ) : (
+          <ul className="deck-overlay-chips">
+            {settledSkills.map((s) => (
+              <li
+                key={s.id}
+                className="deck-overlay-chip"
+                data-testid={`deck-overlay-chip-${s.id}`}
+                data-pulse={String(pulsingIds.has(s.id))}
+              >
+                {s.title || s.name}
+              </li>
+            ))}
+          </ul>
+        )}
       </motion.div>
 
       <BuilderPackFlow
@@ -1128,7 +1172,7 @@ function BuilderPackFlow({
       <motion.div
         className="deck-pack-flow"
         data-testid="deck-pack-flow"
-        custom={2}
+        custom={3}
         variants={contentVariants}
         initial="hidden"
         animate={contentState}
