@@ -449,6 +449,30 @@ test("pack ritual: tear the pack -> fan opens -> tapping a card flies it to its 
   await expect(page.locator(".deck-flight-clone")).toHaveCount(0);
 });
 
+test("wanted rim: empty-phase card glows; rim is gone once it is collected", async ({
+  page,
+}) => {
+  await page.goto(`/deck/${SLUG}`);
+  await expect(page.getByTestId("deck-phase")).toHaveText("builder-open");
+
+  await openPackViaBridge(page);
+  const firstCard = page.locator('.deck-fan-card[data-wanted="true"]').first();
+  await expect(firstCard).toBeVisible();
+  const id = await firstCard.getAttribute("data-card-id");
+  expect(id).toBeTruthy();
+  // The rim is a real teal box-shadow, not just the data flag.
+  await expect(firstCard).not.toHaveCSS("box-shadow", "none");
+
+  // Collecting it clears the rim: a collected card never glows.
+  await firstCard.click();
+  await expect(page.getByTestId(`deck-slot-card-${id}`)).toBeVisible();
+  await expect(page.locator(`[data-card-id="${id}"]`)).toHaveAttribute("data-wanted", "false");
+  await expect(page.locator(`.deck-fan-card[data-card-id="${id}"]`)).toHaveCSS(
+    "box-shadow",
+    "none",
+  );
+});
+
 test("Back during/after open returns to the table", async ({ page }) => {
   await page.goto(TABLE_PATH);
   await expect(page.getByTestId("deck-phase")).toHaveText("table");

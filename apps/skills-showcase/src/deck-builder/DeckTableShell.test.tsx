@@ -316,4 +316,30 @@ describe("DeckTableShell blueprint-morph", () => {
     openPack();
     expect(screen.getByTestId("deck-card-skill-b")).toHaveAttribute("data-collected", "true");
   });
+
+  it("wanted rims: first card of each empty phase glows; clears once its slot fills", () => {
+    // Market Intel has two phases (LAB-01, LAB-02); skill-a maps to column 0,
+    // skill-b to column 1, so both columns start empty and both cards are wanted.
+    render(<DeckTableShell hardLoad initialDeckSlug={SLUG} />);
+    openPack();
+
+    expect(screen.getByTestId("deck-card-skill-a")).toHaveAttribute("data-wanted", "true");
+    expect(screen.getByTestId("deck-card-skill-b")).toHaveAttribute("data-wanted", "true");
+
+    // Collect skill-a: the optimistic commit clears its rim the same frame (a
+    // collected card never glows), and its slot fills on land — skill-b, whose
+    // LAB-02 column is still empty, keeps glowing.
+    fireEvent.click(screen.getByTestId("deck-card-skill-a"));
+    landAllFlights();
+
+    expect(screen.getByTestId("deck-card-skill-a")).toHaveAttribute("data-wanted", "false");
+    expect(screen.getByTestId("deck-slot-card-skill-a")).toBeInTheDocument();
+    expect(screen.getByTestId("deck-card-skill-b")).toHaveAttribute("data-wanted", "true");
+
+    // Filling the last empty column clears the last rim.
+    fireEvent.click(screen.getByTestId("deck-card-skill-b"));
+    landAllFlights();
+
+    expect(screen.getByTestId("deck-card-skill-b")).toHaveAttribute("data-wanted", "false");
+  });
 });

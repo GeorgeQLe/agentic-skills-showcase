@@ -653,6 +653,28 @@ function BuilderPanel({
     [deck.phases, slotColumnIndex],
   );
 
+  // wantedIds — the "collect me next" hint set surfaced on the open fan. A phase
+  // column is *empty* until a card settles into it; for each still-empty column
+  // the first uncollected card mapping to it is "wanted", so the fan glows the
+  // one card to grab next per phase. Tracks settledIds (slot fill) AND collected
+  // (optimistic commit), so a wanted rim clears the frame its card is tapped and
+  // the column's next card lights up only once a slot actually fills. PackOpener
+  // additionally gates the rim on !isCollected, so an in-flight card never glows.
+  const wantedIds = useMemo(() => {
+    const wanted = new Set<string>();
+    deck.phases.forEach((_phaseId, columnIndex) => {
+      const columnFilled = deck.skills.some(
+        (s) => settledIds.has(s.id) && slotColumnIndex(s.id) === columnIndex,
+      );
+      if (columnFilled) return;
+      const firstUncollected = deck.skills.find(
+        (s) => slotColumnIndex(s.id) === columnIndex && !collected.has(s.id),
+      );
+      if (firstUncollected) wanted.add(firstUncollected.id);
+    });
+    return wanted;
+  }, [collected, deck.phases, deck.skills, settledIds, slotColumnIndex]);
+
   // Report the flight runtime slice to the harness graph (enabled-gated so
   // debug-off stays zero-overhead, matching the bridge).
   const reportFlight = useCallback(() => {
@@ -947,6 +969,7 @@ function BuilderPanel({
       <BuilderPackFlow
         deck={deck}
         collected={collected}
+        wantedIds={wantedIds}
         contentState={contentState}
         // The fanned cards are the card-flight source: a tap feeds the tapped
         // skill + its wrapper element straight into the existing flyCard handler;
@@ -979,12 +1002,14 @@ function BuilderPanel({
 function BuilderPackFlow({
   deck,
   collected,
+  wantedIds,
   contentState,
   onCollect,
   onCollectAll,
 }: {
   deck: Deck;
   collected: Set<string>;
+  wantedIds?: Set<string>;
   contentState: "visible" | "hidden";
   onCollect: (skill: Skill, sourceEl: HTMLElement | null) => void;
   onCollectAll: (sources: Map<string, HTMLElement>) => void;
@@ -1154,6 +1179,7 @@ function BuilderPackFlow({
             onOpenMorphComplete={handleOpenMorphComplete}
             onCollect={onCollect}
             collectedIds={collected}
+            wantedIds={wantedIds}
             onCollectAll={onCollectAll}
             disableSharedMorph
           />

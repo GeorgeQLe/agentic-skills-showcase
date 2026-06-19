@@ -27,6 +27,13 @@ interface PackOpenerProps {
   onCollect?: (skill: Skill, sourceEl: HTMLElement | null) => void;
   collectedIds?: Set<string>;
   /**
+   * The "collect me next" hint set. A fanned card whose target phase slot is
+   * still empty glows a teal rim so the open fan teaches which card to grab next
+   * per phase. Gated on `!isCollected` here, so an in-flight/collected card never
+   * glows. Optional, so /prototype (no wantedIds) is unaffected.
+   */
+  wantedIds?: Set<string>;
+  /**
    * Add-all from inside the fan. The fan lives in a body-portaled sheet above
    * the scrim, so the builder's own "Collect all" button would be unclickable
    * (scrim-covered) and out of `panelRef`. Rendering it here, and gathering the
@@ -51,7 +58,7 @@ interface CollapseState {
   animatedSet: Set<number>;
 }
 
-export default function PackOpener({ skills, packName, isClosing, onCollapseComplete, isRisingToApex, onApexComplete, onOpenMorphComplete, onCollect, collectedIds, onCollectAll, disableSharedMorph }: PackOpenerProps) {
+export default function PackOpener({ skills, packName, isClosing, onCollapseComplete, isRisingToApex, onApexComplete, onOpenMorphComplete, onCollect, collectedIds, wantedIds, onCollectAll, disableSharedMorph }: PackOpenerProps) {
   const dbg = useDebug();
   const debugEnabled = dbg.enabled;
   const debugReport = dbg.report;
@@ -296,12 +303,16 @@ export default function PackOpener({ skills, packName, isClosing, onCollapseComp
   const renderCard = (skill: Skill) => {
     if (!onCollect) return <SkillCard skill={skill} />;
     const isCollected = collectedIds?.has(skill.id) ?? false;
+    // A wanted card glows only while still uncollected — once tapped it is being
+    // flown into its slot, so the rim yields to the collected dim/badge.
+    const isWanted = !isCollected && (wantedIds?.has(skill.id) ?? false);
     return (
       <div
-        className={`deck-fan-card${isCollected ? " is-collected" : ""}`}
+        className={`deck-fan-card${isCollected ? " is-collected" : ""}${isWanted ? " is-wanted" : ""}`}
         data-card-id={skill.id}
         data-testid={`deck-card-${skill.id}`}
         data-collected={String(isCollected)}
+        data-wanted={String(isWanted)}
         onClick={(e) => onCollect(skill, e.currentTarget)}
       >
         <SkillCard skill={skill} />

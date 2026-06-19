@@ -1731,6 +1731,39 @@ a.tag-link:hover {
   filter: saturate(0.7);
 }
 
+/* Wanted-card rim: the fanned card whose target phase slot is still empty glows
+   a teal rim so the open fan teaches which card to collect next per phase. Uses
+   --teal to stay consistent with the badge/pulse palette. A soft pulse draws the
+   eye without competing with the in-deck dim (which a wanted card never carries —
+   the rim is gated on !isCollected). */
+.deck-fan-card.is-wanted {
+  border-radius: 12px;
+  box-shadow:
+    0 0 0 2px var(--teal),
+    0 0 16px 2px rgba(0, 212, 170, 0.45);
+  animation: deck-wanted-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes deck-wanted-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 2px var(--teal),
+      0 0 12px 1px rgba(0, 212, 170, 0.35);
+  }
+  50% {
+    box-shadow:
+      0 0 0 2px var(--teal),
+      0 0 20px 4px rgba(0, 212, 170, 0.6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .deck-fan-card.is-wanted {
+    animation: none;
+  }
+}
+
 .deck-fan-card .deck-card-badge {
   position: absolute;
   top: 8px;
