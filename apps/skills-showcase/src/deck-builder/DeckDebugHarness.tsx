@@ -79,19 +79,22 @@ function DeckDebugBridge({ children }: { children: ReactNode }) {
           ?.click();
       },
       dismissDeck: clickBack,
-      // flyCard taps the first uncollected shelf card (the same surface a user
-      // taps), so the real flyCard → optimistic-commit → clone path runs.
+      // flyCard taps the first uncollected fan card (the same surface a user
+      // taps), so the real flyCard → optimistic-commit → clone path runs. The
+      // fan lives in the body-portaled sheet (outside the harness container), so
+      // query the document rather than the local root.
       flyCard: () => {
-        root()
-          ?.querySelector<HTMLButtonElement>(
-            '[data-testid^="deck-card-"][data-collected="false"]',
+        document
+          .querySelector<HTMLElement>(
+            '.deck-fan-card[data-collected="false"]',
           )
           ?.click();
       },
-      // flyAll taps the "Collect all" button, launching the staggered batch.
+      // flyAll taps the "Collect all" button inside the fan, launching the
+      // staggered batch (also in the body portal — query the document).
       flyAll: () => {
-        root()
-          ?.querySelector<HTMLButtonElement>('[data-testid="deck-collect-all"]:not([disabled])')
+        document
+          .querySelector<HTMLButtonElement>('[data-testid="deck-collect-all"]:not([disabled])')
           ?.click();
       },
       // DebugProvider.reset() already cleared the machine runtime; returning the

@@ -1648,6 +1648,9 @@ a.tag-link:hover {
   border: 1px dashed rgba(148, 163, 184, 0.32);
   border-radius: 8px;
   background: rgba(2, 6, 23, 0.4);
+  /* When a card-flight scrolls a slot into view (block: "start"), leave room at
+     the top so the slot lands above the fixed pack sheet, not flush at y=0. */
+  scroll-margin-top: 72px;
 }
 
 .deck-slot-label {
@@ -1684,6 +1687,56 @@ a.tag-link:hover {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+}
+
+/* Pack-flow region — the in-builder tear affordance (one SealedPack,
+   deck-as-pack) plus its aside. The fanned cards live in the BottomSheet, so
+   this row only holds the sealed pack and the collect-all control. */
+.deck-pack-flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 24px;
+}
+
+.deck-pack-flow-aside {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.deck-pack-flow-hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* Fanned card in the open pack: a card-flight source. Dims + frames once
+   collected; the "in deck" badge pins to its top-right corner. */
+.deck-fan-card {
+  position: relative;
+  /* Pin to the SkillCard footprint so each fan item sizes to the card (not the
+     full flex line) — this is also the card-flight source rect, so an oversized
+     wrapper would make the clone balloon past the viewport. */
+  width: 180px;
+  height: 252px;
+  cursor: pointer;
+  border-radius: 12px;
+  transition: opacity 0.15s ease, filter 0.15s ease;
+}
+
+.deck-fan-card.is-collected {
+  opacity: 0.5;
+  filter: saturate(0.7);
+}
+
+.deck-fan-card .deck-card-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  box-shadow: 0 2px 8px rgba(2, 6, 23, 0.6);
 }
 
 .deck-card {

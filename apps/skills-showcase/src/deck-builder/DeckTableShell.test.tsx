@@ -4,9 +4,17 @@ import { act, cleanup, fireEvent, render, screen } from "@testing-library/react"
 // Two skills in one pack so the "market-intel" deck
 // (packs: business-discovery + customer-lifecycle) resolves to a non-empty
 // deck; every other set resolves empty and is filtered out by buildDecks.
+// Full skill shape — the fan now renders SkillCard (tags/description/platform/
+// scope/version), not a bare title button, so the fixtures carry those fields.
 const skills = [
-  { id: "skill-a", name: "skill-a", title: "Skill A", pack: "business-discovery" },
-  { id: "skill-b", name: "skill-b", title: "Skill B", pack: "business-discovery" },
+  {
+    id: "skill-a", name: "skill-a", title: "Skill A", pack: "business-discovery",
+    description: "Skill A desc", platform: "claude", scope: "global", version: "v0.0", tags: ["x"],
+  },
+  {
+    id: "skill-b", name: "skill-b", title: "Skill B", pack: "business-discovery",
+    description: "Skill B desc", platform: "claude", scope: "global", version: "v0.0", tags: ["y"],
+  },
 ];
 
 vi.mock("@/hooks/useSkillsData", () => ({
@@ -61,6 +69,16 @@ function landAllFlights() {
 }
 function inFlightIds(): string[] {
   return window.__deckFlight?.inFlight() ?? [];
+}
+
+// The card-flight source is now the torn-pack fan, not a flat shelf. jsdom can't
+// perform the SealedPack drag gesture, so the ritual is driven through the
+// window bridge BuilderPackFlow exposes (mirrors the flight/morph bridges).
+function openPack() {
+  act(() => window.__deckPack?.open());
+}
+function packPhase(): string | null {
+  return screen.getByTestId("deck-pack-phase").textContent;
 }
 
 // Force prefers-reduced-motion for the crossfade-path test. Default tests leave
@@ -168,12 +186,28 @@ describe("DeckTableShell blueprint-morph", () => {
     expect(screen.getByTestId("deck-builder-panel")).toBeInTheDocument();
   });
 
-  it("card-flight: optimistic commit on tap, slot/counter tick only on land", () => {
+  it("pack ritual: sealed -> drawer-open on open, closing-collapse on close", () => {
     render(<DeckTableShell hardLoad initialDeckSlug={SLUG} />);
 
+    expect(packPhase()).toBe("sealed");
+
+    openPack();
+    expect(packPhase()).toBe("drawer-open");
+    // The fanned cards (the card-flight source) are now mounted in the sheet.
+    expect(screen.getByTestId("deck-card-skill-a")).toBeInTheDocument();
+    expect(screen.getByTestId("deck-card-skill-b")).toBeInTheDocument();
+
+    act(() => window.__deckPack?.close());
+    expect(packPhase()).toBe("closing-collapse");
+  });
+
+  it("card-flight: optimistic commit on tap, slot/counter tick only on land", () => {
+    render(<DeckTableShell hardLoad initialDeckSlug={SLUG} />);
+    expect(screen.getByTestId("deck-collected-count").textContent).toBe("0 / 2 collected");
+
+    openPack();
     const card = screen.getByTestId("deck-card-skill-a");
     expect(card).toHaveAttribute("data-collected", "false");
-    expect(screen.getByTestId("deck-collected-count").textContent).toBe("0 / 2 collected");
 
     fireEvent.click(card);
 
@@ -197,6 +231,7 @@ describe("DeckTableShell blueprint-morph", () => {
 
   it("card-flight: interrupt (close) reconciles the counter — finishAllFlightsImmediately", () => {
     render(<DeckTableShell hardLoad initialDeckSlug={SLUG} />);
+    openPack();
 
     fireEvent.click(screen.getByTestId("deck-card-skill-a"));
     fireEvent.click(screen.getByTestId("deck-card-skill-b"));
@@ -215,6 +250,7 @@ describe("DeckTableShell blueprint-morph", () => {
 
   it("re-tap of a collected or in-flight card is a no-op", () => {
     render(<DeckTableShell hardLoad initialDeckSlug={SLUG} />);
+    openPack();
 
     const card = () => screen.getByTestId("deck-card-skill-a");
     fireEvent.click(card()); // commits + launches one flight
@@ -233,6 +269,7 @@ describe("DeckTableShell blueprint-morph", () => {
     vi.useFakeTimers();
     try {
       render(<DeckTableShell hardLoad initialDeckSlug={SLUG} />);
+      openPack();
 
       fireEvent.click(screen.getByTestId("deck-collect-all"));
 
@@ -257,6 +294,7 @@ describe("DeckTableShell blueprint-morph", () => {
   it("reduced motion fills slots with no clone and ticks the counter immediately", () => {
     mockReducedMotion(true);
     render(<DeckTableShell hardLoad initialDeckSlug={SLUG} />);
+    openPack();
 
     fireEvent.click(screen.getByTestId("deck-card-skill-a"));
 
@@ -271,8 +309,11 @@ describe("DeckTableShell blueprint-morph", () => {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(["skill-b"]));
 
     render(<DeckTableShell hardLoad initialDeckSlug={SLUG} />);
-
-    expect(screen.getByTestId("deck-card-skill-b")).toHaveAttribute("data-collected", "true");
+    // The counter reflects hydrated state immediately; the per-card "in deck"
+    // dim/badge lives on the fanned card, so open the pack to assert it.
     expect(screen.getByTestId("deck-collected-count").textContent).toBe("1 / 2 collected");
+
+    openPack();
+    expect(screen.getByTestId("deck-card-skill-b")).toHaveAttribute("data-collected", "true");
   });
 });

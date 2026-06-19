@@ -3,6 +3,35 @@ import { expect, test } from "@playwright/test";
 const TABLE_PATH = "/prototype/deck-routing-spike";
 const SLUG = "market-intel";
 
+// The card-flight source is now the torn-pack fan. The adapted flight specs fan
+// the pack through the window bridge BuilderPackFlow exposes (the same hook the
+// Vitest suite uses), then wait for the fanned cards to mount.
+async function openPackViaBridge(page: import("@playwright/test").Page) {
+  await page.waitForFunction(() => Boolean((window as unknown as { __deckPack?: unknown }).__deckPack));
+  await page.evaluate(() => {
+    (window as unknown as { __deckPack?: { open: () => void } }).__deckPack?.open();
+  });
+  await expect(page.locator("[data-card-id]").first()).toBeVisible();
+}
+
+// Real tear gesture on the SealedPack drag zone (top third), dragging past the
+// 120 px threshold so completeTear fires and (autoOpenOnTear) the fan opens.
+async function tearPack(page: import("@playwright/test").Page) {
+  const pack = page.locator(".deck-pack-flow .w-48.h-64").first();
+  // The builder sits below the table grid, so the pack starts below the fold —
+  // scroll it into the viewport before the mouse can reach its drag zone.
+  await pack.scrollIntoViewIfNeeded();
+  const box = await pack.boundingBox();
+  if (!box) throw new Error("SealedPack not found");
+  const y = box.y + box.height * 0.16; // inside the top-33% drag zone
+  await page.mouse.move(box.x + 6, y);
+  await page.mouse.down();
+  for (let x = 6; x <= box.width + 30; x += 12) {
+    await page.mouse.move(box.x + x, y);
+  }
+  await page.mouse.up();
+}
+
 test("pushState routing opens/closes the builder and keeps the shell mounted", async ({
   page,
 }) => {
@@ -82,7 +111,7 @@ async function installMorphSampler(page: import("@playwright/test").Page) {
         document.querySelector('[data-testid="deck-phase"]')?.textContent ?? null;
       const source = document.querySelector(`[data-testid="deck-blueprint-${slug}"]`);
       const panel = document.querySelector('[data-testid="deck-builder-panel"]');
-      const shelf = document.querySelector('[data-testid="deck-shelf"]');
+      const shelf = document.querySelector('[data-testid="deck-pack-flow"]');
 
       // Double-vision: both the source blueprint and the builder panel painted
       // (opacity > 0.1) at disjoint positions in the same frame.
@@ -114,7 +143,7 @@ test("blueprint-morph open/close never double-visions and gates content on build
   await expect(page.getByTestId("deck-phase")).toHaveText("builder-open");
   await expect(page.getByTestId("deck-builder-panel")).toBeVisible();
   // Content staggers in only after the morph lands.
-  await expect(page.getByTestId("deck-shelf")).toHaveCSS("opacity", "1");
+  await expect(page.getByTestId("deck-pack-flow")).toHaveCSS("opacity", "1");
   // The morph source stays mounted at opacity 0 — exactly one visible owner.
   await expect(page.getByTestId(`deck-blueprint-${SLUG}`)).toHaveCSS("opacity", "0");
 
@@ -236,7 +265,8 @@ test("card-flight: clone overlays above the sheet without clipping and fills the
   await page.goto(`/deck/${SLUG}`);
   await expect(page.getByTestId("deck-phase")).toHaveText("builder-open");
 
-  const firstCard = page.locator('.deck-card[data-collected="false"]').first();
+  await openPackViaBridge(page);
+  const firstCard = page.locator('.deck-fan-card[data-collected="false"]').first();
   const id = await firstCard.getAttribute("data-card-id");
   expect(id).toBeTruthy();
 
@@ -269,7 +299,8 @@ test("card-flight: re-tap of a collected/in-flight card is a no-op", async ({ pa
   await page.goto(`/deck/${SLUG}`);
   await expect(page.getByTestId("deck-phase")).toHaveText("builder-open");
 
-  const firstCard = page.locator('.deck-card[data-collected="false"]').first();
+  await openPackViaBridge(page);
+  const firstCard = page.locator('.deck-fan-card[data-collected="false"]').first();
   const id = await firstCard.getAttribute("data-card-id");
   const sameCard = page.locator(`[data-card-id="${id}"]`);
 
@@ -282,32 +313,43 @@ test("card-flight: re-tap of a collected/in-flight card is a no-op", async ({ pa
   await expect(page.getByTestId(`deck-slot-card-${id}`)).toHaveCount(1);
 });
 
-test("card-flight: close mid-flight flushes clones and persists the optimistic commit", async ({
+test("card-flight: collect then close persists the optimistic commit, no orphan clones", async ({
   page,
 }) => {
   await page.goto(`/deck/${SLUG}`);
   await expect(page.getByTestId("deck-phase")).toHaveText("builder-open");
 
-  const firstCard = page.locator('.deck-card[data-collected="false"]').first();
+  await openPackViaBridge(page);
+  const firstCard = page.locator('.deck-fan-card[data-collected="false"]').first();
   const id = await firstCard.getAttribute("data-card-id");
 
-  await firstCard.click(); // commit + launch
-  await page.getByTestId("deck-back").click(); // finishAllFlightsImmediately() then dismiss
+  await firstCard.click(); // commit + launch (lands fast)
+  await expect(page.getByTestId("deck-collected-count")).toHaveText(/^1 \//);
+
+  // The fan sheet's scrim covers the builder, so dismiss the pack before Back is
+  // reachable; closeDeck then runs finishAllFlightsImmediately() before dismiss.
+  await page.evaluate(() => {
+    (window as unknown as { __deckPack?: { close: () => void } }).__deckPack?.close();
+  });
+  await expect(page.getByTestId("deck-pack-phase")).toHaveText("sealed");
+  await page.getByTestId("deck-back").click();
 
   await expect(page.getByTestId("deck-phase")).toHaveText("table");
-  // No orphaned clones survive the flush.
+  // No orphaned clones survive.
   await expect(page.locator(".deck-flight-clone")).toHaveCount(0);
 
   // The optimistic commit persisted (localStorage) — reopening shows it collected.
   await page.goto(`/deck/${SLUG}`);
-  await expect(page.locator(`[data-card-id="${id}"]`)).toHaveAttribute("data-collected", "true");
   await expect(page.getByTestId(`deck-slot-card-${id}`)).toBeVisible();
+  await openPackViaBridge(page);
+  await expect(page.locator(`[data-card-id="${id}"]`)).toHaveAttribute("data-collected", "true");
 });
 
 test("card-flight: add-all commits every card and lands the whole batch", async ({ page }) => {
   await page.goto(`/deck/${SLUG}`);
   await expect(page.getByTestId("deck-phase")).toHaveText("builder-open");
 
+  await openPackViaBridge(page);
   const total = await page.locator("[data-card-id]").count();
   expect(total).toBeGreaterThan(1);
 
@@ -331,7 +373,8 @@ test("card-flight reduced motion: fills the slot with no clone, counter ticks at
   await page.goto(`/deck/${SLUG}`);
   await expect(page.getByTestId("deck-phase")).toHaveText("builder-open");
 
-  const firstCard = page.locator('.deck-card[data-collected="false"]').first();
+  await openPackViaBridge(page);
+  const firstCard = page.locator('.deck-fan-card[data-collected="false"]').first();
   const id = await firstCard.getAttribute("data-card-id");
 
   // Sampler: prove no clone is ever painted (§E "card-flight mounts no clone").
@@ -365,10 +408,11 @@ test("debug harness drives card-flight via flyCard/flyAll drivers (§F)", async 
   await page.goto(`/deck/${SLUG}`);
   await expect(page.getByTestId("deck-phase")).toHaveText("builder-open");
 
+  await openPackViaBridge(page);
   const total = await page.locator("[data-card-id]").count();
   await page.getByTestId("debug-open").click();
 
-  // flyCard taps the first uncollected shelf card through its real handler.
+  // flyCard taps the first uncollected fan card through its real handler.
   await page.getByTestId("drive-flyCard").click();
   await expect(page.getByTestId("deck-collected-count")).toHaveText(/^1 \//);
 
@@ -377,6 +421,31 @@ test("debug harness drives card-flight via flyCard/flyAll drivers (§F)", async 
   await expect(page.getByTestId("deck-collected-count")).toHaveText(
     new RegExp(`^${total} / ${total} `),
   );
+  await expect(page.locator(".deck-flight-clone")).toHaveCount(0);
+});
+
+test("pack ritual: tear the pack -> fan opens -> tapping a card flies it to its slot", async ({
+  page,
+}) => {
+  await page.goto(`/deck/${SLUG}`);
+  await expect(page.getByTestId("deck-phase")).toHaveText("builder-open");
+  await expect(page.getByTestId("deck-pack-phase")).toHaveText("sealed");
+
+  // Real drag tear of the SealedPack — the signature ritual, end to end.
+  await tearPack(page);
+
+  // autoOpenOnTear fans the deck into the BottomSheet; the fanned cards mount.
+  await expect(page.getByTestId("deck-pack-phase")).toHaveText("drawer-open");
+  const firstCard = page.locator('.deck-fan-card[data-collected="false"]').first();
+  await expect(firstCard).toBeVisible();
+  const id = await firstCard.getAttribute("data-card-id");
+  expect(id).toBeTruthy();
+
+  // Tap a fanned card: optimistic commit + a clone flies to its phase slot.
+  await firstCard.click();
+  await expect(page.locator(`[data-card-id="${id}"]`)).toHaveAttribute("data-collected", "true");
+  await expect(page.getByTestId(`deck-slot-card-${id}`)).toBeVisible();
+  await expect(page.getByTestId("deck-collected-count")).toHaveText(/^1 \//);
   await expect(page.locator(".deck-flight-clone")).toHaveCount(0);
 });
 

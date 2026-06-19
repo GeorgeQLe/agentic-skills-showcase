@@ -17,6 +17,32 @@ interface PackOpenerProps {
   isRisingToApex?: boolean;
   onApexComplete?: () => void;
   onOpenMorphComplete?: () => void;
+  /**
+   * Builder integration (all optional, so the /prototype harness is unaffected).
+   * When `onCollect` is supplied each fanned card becomes a card-flight source:
+   * tapping it reports the tapped skill + its wrapper element to the builder,
+   * which flies a clone to the matching phase slot. `collectedIds` dims already-
+   * collected cards and renders their "in deck" badge.
+   */
+  onCollect?: (skill: Skill, sourceEl: HTMLElement | null) => void;
+  collectedIds?: Set<string>;
+  /**
+   * Add-all from inside the fan. The fan lives in a body-portaled sheet above
+   * the scrim, so the builder's own "Collect all" button would be unclickable
+   * (scrim-covered) and out of `panelRef`. Rendering it here, and gathering the
+   * flight sources from the fan's own container, keeps add-all reachable and
+   * correctly sourced. Receives a Map of skill id → fan card element.
+   */
+  onCollectAll?: (sources: Map<string, HTMLElement>) => void;
+  /**
+   * When true, card 0 does NOT claim the shared `pack-card` layoutId — it fans
+   * in like every other card. The builder embeds this fan inside a layoutId
+   * panel whose residual transform is a containing block; a shared-layout morph
+   * measured across that boundary (and the sheet's body portal) projects card 0
+   * to a wild size. Dropping the morph there keeps the fan robust. /prototype
+   * leaves this false and keeps the pack→fan card morph.
+   */
+  disableSharedMorph?: boolean;
 }
 
 interface CollapseState {
@@ -25,7 +51,7 @@ interface CollapseState {
   animatedSet: Set<number>;
 }
 
-export default function PackOpener({ skills, packName, isClosing, onCollapseComplete, isRisingToApex, onApexComplete, onOpenMorphComplete }: PackOpenerProps) {
+export default function PackOpener({ skills, packName, isClosing, onCollapseComplete, isRisingToApex, onApexComplete, onOpenMorphComplete, onCollect, collectedIds, onCollectAll, disableSharedMorph }: PackOpenerProps) {
   const dbg = useDebug();
   const debugEnabled = dbg.enabled;
   const debugReport = dbg.report;
@@ -260,6 +286,34 @@ export default function PackOpener({ skills, packName, isClosing, onCollapseComp
     };
   }, [debugEnabled, debugReport, card0X, card0Y]);
 
+  // In builder mode (onCollect supplied) every fanned card is wrapped with the
+  // card-flight collect affordance: a tappable element carrying data-card-id (the
+  // flight source the builder measures), data-collected, an "in deck" badge, and
+  // a dim when already collected. In prototype mode (no onCollect) the bare
+  // SkillCard renders unchanged so /prototype stays pixel-identical.
+  const uncollectedCount = skills.filter((s) => !(collectedIds?.has(s.id) ?? false)).length;
+
+  const renderCard = (skill: Skill) => {
+    if (!onCollect) return <SkillCard skill={skill} />;
+    const isCollected = collectedIds?.has(skill.id) ?? false;
+    return (
+      <div
+        className={`deck-fan-card${isCollected ? " is-collected" : ""}`}
+        data-card-id={skill.id}
+        data-testid={`deck-card-${skill.id}`}
+        data-collected={String(isCollected)}
+        onClick={(e) => onCollect(skill, e.currentTarget)}
+      >
+        <SkillCard skill={skill} />
+        {isCollected ? (
+          <span className="deck-card-badge" data-testid={`deck-card-badge-${skill.id}`}>
+            in deck
+          </span>
+        ) : null}
+      </div>
+    );
+  };
+
   return (
     <div className="relative pt-4 pb-4">
       <motion.h2
@@ -271,9 +325,32 @@ export default function PackOpener({ skills, packName, isClosing, onCollapseComp
         {formatPackName(packName)}
       </motion.h2>
 
+      {onCollect && onCollectAll ? (
+        <div className="flex justify-center mb-4">
+          <button
+            className="deck-collect-all"
+            data-testid="deck-collect-all"
+            type="button"
+            disabled={uncollectedCount === 0}
+            onClick={() => {
+              const el = containerRef.current;
+              if (!el) return;
+              const sources = new Map<string, HTMLElement>();
+              el.querySelectorAll<HTMLElement>("[data-card-id]").forEach((c) => {
+                const id = c.dataset.cardId;
+                if (id) sources.set(id, c);
+              });
+              onCollectAll(sources);
+            }}
+          >
+            Collect all {uncollectedCount}
+          </button>
+        </div>
+      ) : null}
+
       <div ref={containerRef} className="flex flex-wrap justify-center gap-4 px-4 max-w-4xl mx-auto">
         {skills.map((skill, i) => {
-          if (i === 0) {
+          if (i === 0 && !disableSharedMorph) {
             return (
               <motion.div
                 key={skill.id}
@@ -287,7 +364,7 @@ export default function PackOpener({ skills, packName, isClosing, onCollapseComp
                   onOpenMorphComplete?.();
                 }}
               >
-                <SkillCard skill={skill} />
+                {renderCard(skill)}
               </motion.div>
             );
           }
@@ -313,7 +390,7 @@ export default function PackOpener({ skills, packName, isClosing, onCollapseComp
                   animate={{ opacity: 0 }}
                   transition={{ duration: 0 }}
                 >
-                  <SkillCard skill={skill} />
+                  {renderCard(skill)}
                 </motion.div>
               );
             }
@@ -364,9 +441,20 @@ export default function PackOpener({ skills, packName, isClosing, onCollapseComp
                 damping: 25,
                 delay: staggerDelay,
               })}
-              onAnimationComplete={isLastFan ? () => dbg.mark("fan-out") : undefined}
+              onAnimationComplete={
+                isLastFan
+                  ? () => {
+                      dbg.mark("fan-out");
+                      // With the shared morph disabled, card 0 no longer fires
+                      // the open-morph completion via its layout callback, so the
+                      // fan landing stands in for it (advances the builder's
+                      // openMorphComplete / unclip gate).
+                      if (disableSharedMorph) onOpenMorphComplete?.();
+                    }
+                  : undefined
+              }
             >
-              <SkillCard skill={skill} />
+              {renderCard(skill)}
             </motion.div>
           );
         })}

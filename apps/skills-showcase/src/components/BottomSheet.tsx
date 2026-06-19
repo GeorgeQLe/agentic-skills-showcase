@@ -9,6 +9,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import {
   motion,
   AnimatePresence,
@@ -50,6 +51,15 @@ export default function BottomSheet({
   // open-to-closed transition and trigger exit animation before AnimatePresence
   // unmounts the children.
   const wasOpenRef = useRef(isOpen);
+
+  // Portal the sheet to <body> so its fixed scrim/drawer escape any transformed
+  // ancestor (e.g. the builder's layoutId panel), which would otherwise become
+  // the containing block and place the "fixed" sheet deep in the document
+  // instead of over the viewport. Same rationale as FlightLayer's body portal.
+  // The shared `pack-card` layoutId morph still resolves across the portal: it
+  // uses viewport coordinates and the LayoutGroup React context crosses portals.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   function handleDragEnd(_: unknown, info: PanInfo) {
     if (info.offset.y > 100 || info.velocity.y > 500) {
@@ -110,7 +120,7 @@ export default function BottomSheet({
     return () => unsubscribe();
   }, [debugEnabled, debugReport, sheetY]);
 
-  return (
+  const tree = (
     <AnimatePresence
       onExitComplete={() => {
         setIsExiting(false);
@@ -186,6 +196,9 @@ export default function BottomSheet({
       )}
     </AnimatePresence>
   );
+
+  if (!mounted) return null;
+  return createPortal(tree, document.body);
 }
 
 function roundMotionValue(value: number): number {
