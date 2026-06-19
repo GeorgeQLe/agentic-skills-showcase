@@ -532,6 +532,43 @@ test("CLI panel: visible locked in the builder, unlocks with a copy affordance a
   await expect(page.getByTestId("deck-cli-copy")).toBeVisible();
 });
 
+test("completion: collecting every card reveals the deck-complete output panel", async ({
+  page,
+}) => {
+  await page.goto(`/deck/${SLUG}`);
+  await expect(page.getByTestId("deck-phase")).toHaveText("builder-open");
+
+  // No completion panel while the deck is incomplete.
+  await expect(page.getByTestId("deck-completion")).toHaveCount(0);
+
+  await openPackViaBridge(page);
+  const total = await page.locator("[data-card-id]").count();
+  await page.getByTestId("deck-collect-all").click();
+  await expect(page.getByTestId("deck-collected-count")).toHaveText(
+    new RegExp(`^${total} / ${total} `),
+  );
+
+  // The deck completes: the panel gathers + flips to reveal the output back.
+  const completion = page.getByTestId("deck-completion");
+  await expect(completion).toBeVisible();
+  await expect(completion).toHaveAttribute("data-revealed", "true");
+  await expect(page.getByTestId("deck-completion-command")).toHaveText(
+    `npx skillpacks install-deck ${SLUG}`,
+  );
+  await expect(page.getByTestId("deck-completion-download")).toBeVisible();
+  await expect(page.getByTestId("deck-completion-share")).toBeVisible();
+
+  // Collapse the fan so its sheet scrim no longer covers the builder, then dismiss
+  // the celebration via keep editing; the always-on CLI panel remains.
+  await page.evaluate(() => {
+    (window as unknown as { __deckPack?: { close: () => void } }).__deckPack?.close();
+  });
+  await expect(page.getByTestId("deck-pack-phase")).toHaveText("sealed");
+  await page.getByTestId("deck-completion-keep").click();
+  await expect(page.getByTestId("deck-completion")).toHaveCount(0);
+  await expect(page.getByTestId("deck-cli-panel")).toBeVisible();
+});
+
 test("Back during/after open returns to the table", async ({ page }) => {
   await page.goto(TABLE_PATH);
   await expect(page.getByTestId("deck-phase")).toHaveText("table");

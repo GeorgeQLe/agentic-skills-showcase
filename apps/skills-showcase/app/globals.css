@@ -1811,6 +1811,119 @@ a.tag-link:hover {
   border-color: rgba(94, 234, 212, 0.7);
 }
 
+/* Deck-complete output panel (§6): when every card settles the deck "completes"
+   — the panel gathers in (scale) and flips (the SkillCard card-flip idiom,
+   rotateY + backface-visibility, scaled up) to reveal its back, the output
+   surface emitting the install command, a project.json download, and a share
+   affordance. No new primitive — composition of the proven flip motion. */
+.deck-completion {
+  margin-bottom: 24px;
+  perspective: 1400px;
+}
+
+.deck-completion-card {
+  position: relative;
+  min-height: 200px;
+  transform-style: preserve-3d;
+}
+
+.deck-completion-front,
+.deck-completion-back {
+  border: 1px solid rgba(94, 234, 212, 0.5);
+  border-radius: 12px;
+  background: linear-gradient(145deg, rgba(8, 47, 41, 0.92), rgba(2, 6, 23, 0.94));
+  padding: 22px;
+  backface-visibility: hidden;
+}
+
+.deck-completion-front {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 200px;
+  text-align: center;
+}
+
+.deck-completion-back {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transform: rotateY(180deg);
+}
+
+.deck-completion-eyebrow {
+  margin: 0;
+  color: #5eead4;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.deck-completion-title {
+  margin: 0;
+  color: #f0fdfa;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.deck-completion-sub {
+  margin: 0;
+  color: rgba(148, 163, 184, 0.75);
+  font-size: 0.82rem;
+}
+
+.deck-completion-command {
+  display: block;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(94, 234, 212, 0.32);
+  background: rgba(2, 6, 23, 0.55);
+  color: #f0fdfa;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow-x: auto;
+}
+
+.deck-completion-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: auto;
+}
+
+.deck-completion-btn {
+  padding: 9px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(94, 234, 212, 0.5);
+  background: rgba(94, 234, 212, 0.14);
+  color: #f0fdfa;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: background 0.12s ease-out, border-color 0.12s ease-out;
+}
+
+.deck-completion-btn:hover {
+  background: rgba(94, 234, 212, 0.24);
+  border-color: rgba(94, 234, 212, 0.7);
+}
+
+.deck-completion-btn.is-ghost {
+  border-color: rgba(148, 163, 184, 0.4);
+  background: rgba(2, 6, 23, 0.5);
+  color: #e2e8f0;
+}
+
+.deck-completion-btn.is-ghost:hover {
+  border-color: rgba(148, 163, 184, 0.7);
+  background: rgba(2, 6, 23, 0.7);
+}
+
 /* Pack-flow region — the in-builder tear affordance (one SealedPack,
    deck-as-pack) plus its aside. The fanned cards live in the BottomSheet, so
    this row only holds the sealed pack and the collect-all control. */

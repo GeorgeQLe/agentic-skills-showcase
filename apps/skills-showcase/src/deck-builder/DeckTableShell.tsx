@@ -215,6 +215,37 @@ function writeCollected(slug: string, ids: string[]): void {
   }
 }
 
+/** Unique packs feeding a deck, in stable card order — the `enabled_packs` set. */
+function deckPacks(deck: Deck): string[] {
+  const seen = new Set<string>();
+  const packs: string[] = [];
+  for (const skill of deck.skills) {
+    if (skill.pack && !seen.has(skill.pack)) {
+      seen.add(skill.pack);
+      packs.push(skill.pack);
+    }
+  }
+  return packs;
+}
+
+/**
+ * buildDeckProjectJson — the deck's `.agents/project.json` payload (§6 output).
+ * Mirrors the project designation shape (`enabled_packs` + `skill_pack_version`)
+ * per docs/skillpacks-npm-distribution.md, plus `deck` metadata so the file
+ * records which canonical deck produced it. Exported for direct unit assertion.
+ */
+export function buildDeckProjectJson(deck: Deck): string {
+  return JSON.stringify(
+    {
+      enabled_packs: deckPacks(deck),
+      skill_pack_version: 1,
+      deck: { slug: deck.slug, name: deck.name },
+    },
+    null,
+    2,
+  );
+}
+
 interface DeckTableShellProps {
   hardLoad?: boolean;
   initialDeckSlug?: string | null;
@@ -874,6 +905,12 @@ function BuilderPanel({
   const layoutId = reducedMotion ? undefined : `deck-blueprint-${deck.slug}`;
   const contentState = phase === "builder-open" ? "visible" : "hidden";
   const settledCount = settledIds.size;
+  // Deck completion (§6): every card has settled into its slot. The celebratory
+  // completion panel mounts on this edge; "keep editing" dismisses it back to the
+  // builder for the rest of the session (re-arms per deck — BuilderPanel is keyed
+  // by slug). No new collection state — derived purely from settledIds.
+  const deckComplete = deck.skills.length > 0 && settledCount === deck.skills.length;
+  const [completionDismissed, setCompletionDismissed] = useState(false);
   // Settled cards in stable deck order for the overlay row — the persistent
   // "here's your deck so far" strip. Off settledIds (slot truth), not the
   // optimistic commit, so a card appears here the same frame its slot fills.
@@ -930,6 +967,18 @@ function BuilderPanel({
           ← Back to table
         </button>
       </motion.header>
+
+      {/* Deck-complete output panel (§6): on the completion edge the deck gathers
+          and flips (card-flip primitive, scaled up) to reveal the output surface
+          — install command, project.json download, share. Gated on the morph
+          being settled (contentState) so it never paints during the morph-back. */}
+      {contentState === "visible" && deckComplete && !completionDismissed ? (
+        <DeckCompletionPanel
+          deck={deck}
+          reducedMotion={reducedMotion}
+          onKeepEditing={() => setCompletionDismissed(true)}
+        />
+      ) : null}
 
       <motion.div
         className="deck-slot-columns"
@@ -1116,6 +1165,149 @@ function BuilderCliPanel({
           🔒 {remaining} more to unlock
         </span>
       )}
+    </motion.div>
+  );
+}
+
+/**
+ * DeckCompletionPanel — the celebratory deck-complete output surface (§6). When
+ * every card has settled the deck "completes": the panel gathers in (scale, the
+ * collapse-to-target read) and flips (the SkillCard card-flip idiom — rotateY +
+ * backface-visibility, scaled up; "promote, don't rewrite") to reveal its back,
+ * which emits the canonical `install-deck` command, a `project.json` download
+ * mirroring the `.agents/project.json` shape, a share affordance, and a "keep
+ * editing" dismiss. The back face is always in the DOM (hidden by backface) so
+ * the output is testable independent of the flip frame. Reduced motion skips the
+ * gather/flip and shows the output immediately (§E).
+ */
+function DeckCompletionPanel({
+  deck,
+  reducedMotion,
+  onKeepEditing,
+}: {
+  deck: Deck;
+  reducedMotion: boolean;
+  onKeepEditing: () => void;
+}) {
+  const dbg = useDebug();
+  const command = `npx skillpacks install-deck ${deck.slug}`;
+
+  // The stack-then-flip sequence: mount shows the deck-back (front face), then a
+  // beat later it flips to the output. Reduced motion starts revealed (no flip).
+  const [revealed, setRevealed] = useState(reducedMotion);
+  useEffect(() => {
+    if (reducedMotion) return;
+    const timer = window.setTimeout(() => setRevealed(true), 520);
+    return () => window.clearTimeout(timer);
+  }, [reducedMotion]);
+
+  // Transient affordance feedback for share (link copied) and download, mirroring
+  // the CLI panel's best-effort clipboard pattern. Cleared on a timer.
+  const [shared, setShared] = useState(false);
+  const shareTimerRef = useRef<number | null>(null);
+  useEffect(
+    () => () => {
+      if (shareTimerRef.current !== null) window.clearTimeout(shareTimerRef.current);
+    },
+    [],
+  );
+
+  const handleShare = useCallback(() => {
+    const url =
+      typeof window !== "undefined"
+        ? `${window.location.origin}/deck/${deck.slug}`
+        : `/deck/${deck.slug}`;
+    void navigator.clipboard?.writeText(url).then(
+      () => {
+        setShared(true);
+        if (shareTimerRef.current !== null) window.clearTimeout(shareTimerRef.current);
+        shareTimerRef.current = window.setTimeout(() => setShared(false), 1500);
+      },
+      () => {
+        /* clipboard unavailable; the deck URL is still the slug route. */
+      },
+    );
+  }, [deck.slug]);
+
+  const handleDownload = useCallback(() => {
+    const json = buildDeckProjectJson(deck);
+    try {
+      if (typeof URL.createObjectURL !== "function") return;
+      const blob = new Blob([json], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = "project.json";
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      /* Blob/anchor download unavailable; the command path still installs. */
+    }
+  }, [deck]);
+
+  return (
+    <motion.div
+      className="deck-completion"
+      data-testid="deck-completion"
+      data-revealed={String(revealed)}
+      initial={reducedMotion ? false : { opacity: 0, scale: 0.62 }}
+      animate={reducedMotion ? undefined : { opacity: 1, scale: 1 }}
+      transition={dbg.scaleT(
+        reducedMotion ? { duration: 0 } : { type: "spring", stiffness: 220, damping: 26 },
+      )}
+    >
+      <motion.div
+        className="deck-completion-card"
+        style={{ transformStyle: "preserve-3d" }}
+        animate={{ rotateY: revealed ? 180 : 0 }}
+        transition={dbg.scaleT(
+          reducedMotion ? { duration: 0 } : { duration: 0.5, ease: [0.23, 1, 0.32, 1] },
+        )}
+      >
+        <div className="deck-completion-front">
+          <p className="deck-completion-eyebrow">Deck complete</p>
+          <p className="deck-completion-title">{deck.name}</p>
+          <p className="deck-completion-sub">{deck.skills.length} cards stacked</p>
+        </div>
+
+        <div className="deck-completion-back">
+          <p className="deck-completion-eyebrow">Deck complete · {deck.name}</p>
+          <code
+            className="deck-completion-command"
+            data-testid="deck-completion-command"
+          >
+            {command}
+          </code>
+          <div className="deck-completion-actions">
+            <button
+              type="button"
+              className="deck-completion-btn"
+              data-testid="deck-completion-download"
+              onClick={handleDownload}
+            >
+              ⬇ project.json
+            </button>
+            <button
+              type="button"
+              className="deck-completion-btn"
+              data-testid="deck-completion-share"
+              onClick={handleShare}
+            >
+              {shared ? "Link copied ✓" : "Share deck"}
+            </button>
+            <button
+              type="button"
+              className="deck-completion-btn is-ghost"
+              data-testid="deck-completion-keep"
+              onClick={onKeepEditing}
+            >
+              Keep editing
+            </button>
+          </div>
+        </div>
+      </motion.div>
     </motion.div>
   );
 }

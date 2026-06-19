@@ -24,7 +24,8 @@ vi.mock("@/hooks/useSkillsData", () => ({
     packName === "business-discovery" ? skills : [],
 }));
 
-import DeckTableShell from "./DeckTableShell";
+import DeckTableShell, { buildDeckProjectJson } from "./DeckTableShell";
+import type { Deck } from "./decks";
 
 const SLUG = "market-intel";
 const STORAGE_KEY = `deck:${SLUG}:collected`;
@@ -397,6 +398,62 @@ describe("DeckTableShell blueprint-morph", () => {
     expect(screen.getByTestId("deck-cli-panel")).toHaveAttribute("data-unlocked", "true");
     expect(screen.getByTestId("deck-cli-copy")).toBeInTheDocument();
     expect(screen.queryByTestId("deck-cli-lock")).not.toBeInTheDocument();
+  });
+
+  it("completion panel: hidden until every card settles, then emits the install command + outputs", () => {
+    render(<DeckTableShell hardLoad initialDeckSlug={SLUG} />);
+    openPack();
+
+    // Not complete yet — no completion panel.
+    expect(screen.queryByTestId("deck-completion")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId("deck-card-skill-a"));
+    landAllFlights();
+    // One of two settled — still incomplete.
+    expect(screen.queryByTestId("deck-completion")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId("deck-card-skill-b"));
+    landAllFlights();
+
+    // Every card settled: the completion panel mounts with the canonical command
+    // and the three output affordances (download / share / keep editing).
+    expect(screen.getByTestId("deck-completion")).toBeInTheDocument();
+    expect(screen.getByTestId("deck-completion-command").textContent).toBe(
+      `npx skillpacks install-deck ${SLUG}`,
+    );
+    expect(screen.getByTestId("deck-completion-download")).toBeInTheDocument();
+    expect(screen.getByTestId("deck-completion-share")).toBeInTheDocument();
+    expect(screen.getByTestId("deck-completion-keep")).toBeInTheDocument();
+  });
+
+  it("completion panel: appears on a hydrated full deck and 'keep editing' dismisses it", () => {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(["skill-a", "skill-b"]));
+
+    render(<DeckTableShell hardLoad initialDeckSlug={SLUG} />);
+
+    // Hydrated full deck completes on mount.
+    expect(screen.getByTestId("deck-completion")).toBeInTheDocument();
+
+    // Keep editing dismisses the celebration; the builder (slots) stays mounted.
+    fireEvent.click(screen.getByTestId("deck-completion-keep"));
+    expect(screen.queryByTestId("deck-completion")).not.toBeInTheDocument();
+    expect(screen.getByTestId("deck-slot-card-skill-a")).toBeInTheDocument();
+    expect(screen.getByTestId("deck-slot-card-skill-b")).toBeInTheDocument();
+  });
+
+  it("buildDeckProjectJson mirrors enabled_packs + deck metadata", () => {
+    const deck: Deck = {
+      name: "Market Intel",
+      slug: SLUG,
+      phases: ["LAB-01", "LAB-02"],
+      skills: skills as unknown as Deck["skills"],
+    };
+    const parsed = JSON.parse(buildDeckProjectJson(deck));
+    expect(parsed).toEqual({
+      enabled_packs: ["business-discovery"],
+      skill_pack_version: 1,
+      deck: { slug: SLUG, name: "Market Intel" },
+    });
   });
 
   it("wanted rims: first card of each empty phase glows; clears once its slot fills", () => {
