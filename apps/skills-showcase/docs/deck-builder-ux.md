@@ -172,8 +172,10 @@ Per the brief's map, scoped to the showcase only: UI labels lead with game terms
 
 ## Implementation phasing (suggested)
 
-1. **Table + builder skeleton** — routes, blueprints, phase-slot layout from deck data, static (no pack opening yet).
+1. **Table + builder skeleton** — routes, blueprints, phase-slot layout from deck data, static (no pack opening yet). _(done)_
 2. **Promote pack opening** — wire `/prototype` primitives into the builder context, wanted-card rims, in-deck badges.
+   - _Thin first cut shipped (2026-06-19):_ `BuilderPackFlow` composes `SealedPack` (deck-as-pack) → `BottomSheet` → `PackOpener` inside the builder; the torn-pack fan is the card-flight source feeding `flyCard`/`flyAll`; in-deck badges + dim on collected fan cards. Required: scoped Tailwind for `/deck` (`app/deck/{layout.tsx,deck.css}`), body-portaled `BottomSheet`, shared-morph disabled in-builder, non-uniform flight clone scale, slot scroll-above-sheet, collect-all moved into the fan.
+   - _Deferred to follow-on:_ wanted-card rims, overlay row, custom-deck freeform phases, multi-`SealedPack`-per-deck grouping, refactoring `/prototype` to consume `BuilderPackFlow`.
 3. **Collect loop** — tap-to-add flight, add-all, overlay row, localStorage persistence, locked/unlocked CLI panel.
 4. **Completion + output** — deck-complete sequence, CLI/`project.json`/share emission, custom-deck variant rules.
 5. **Card detail routes + redirects + archive** of old informational pages.
