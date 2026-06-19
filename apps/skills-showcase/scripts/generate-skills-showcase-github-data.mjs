@@ -6,7 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   fileFingerprint,
-  readText as readCatalogText
+  readTextFromIndex
 } from "../../../scripts/catalog/index.mjs";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
@@ -92,7 +92,7 @@ function git(args, fallback = null) {
 }
 
 function readText(relativePath) {
-  return readCatalogText(repoRoot, relativePath);
+  return readTextFromIndex(repoRoot, relativePath);
 }
 
 function normalizeRepoUrl(remoteUrl) {
@@ -207,7 +207,7 @@ async function main() {
     ...validationScripts.map((script) => script.path),
     "docs/skills-showcase/assets/skills-data.js"
   ].filter((relativePath) => existsSync(path.join(repoRoot, relativePath)));
-  const sourceFingerprint = fileFingerprint(repoRoot, sourceFiles);
+  const sourceFingerprint = fileFingerprint(repoRoot, sourceFiles, { source: "index" });
 
   const data = {
     generatedAt: "1970-01-01T00:00:00.000Z",

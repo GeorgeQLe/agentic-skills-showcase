@@ -13,7 +13,7 @@ import {
   listPacks,
   parseSkill,
   readJson as readCatalogJson,
-  readText as readCatalogText,
+  readTextFromIndex,
   titleize
 } from "../../../scripts/catalog/index.mjs";
 
@@ -23,7 +23,7 @@ const appOutputPath = path.join(repoRoot, "apps/skills-showcase/public/assets/sk
 const matrixOutputPath = path.join(repoRoot, "docs/benchmark-results-matrix.md");
 
 function readText(relativePath) {
-  return readCatalogText(repoRoot, relativePath);
+  return readTextFromIndex(repoRoot, relativePath);
 }
 
 function parsePercent(value) {
@@ -491,14 +491,14 @@ function main() {
   const sourcePaths = [...skillPaths, ...packPaths, ...benchmarkPaths, ...benchmarkReviewPaths, ...benchmarkDemoPaths].sort();
 
   const skills = skillPaths
-    .map((skillPath) => parseSkill(repoRoot, skillPath))
+    .map((skillPath) => parseSkill(repoRoot, skillPath, { source: "index" }))
     .map((skill) => {
       const evidence = benchmarkEvidence.get(skill.mirrorKey);
       return evidence ? { ...skill, benchmarkEvidence: evidence } : skill;
     })
     .sort((a, b) => a.path.localeCompare(b.path));
-  const packs = listPacks(repoRoot, files, skills);
-  const sourceFingerprint = fingerprintFiles(repoRoot, sourcePaths);
+  const packs = listPacks(repoRoot, files, skills, { source: "index" });
+  const sourceFingerprint = fingerprintFiles(repoRoot, sourcePaths, { source: "index" });
 
   const data = {
     generatedAt: "1970-01-01T00:00:00.000Z",
