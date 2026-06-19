@@ -358,6 +358,47 @@ describe("DeckTableShell blueprint-morph", () => {
     expect(screen.getByTestId("deck-overlay-chip-skill-b")).toBeInTheDocument();
   });
 
+  it("CLI panel: locked with remaining count until every card settles, then unlocks with the command + copy", () => {
+    render(<DeckTableShell hardLoad initialDeckSlug={SLUG} />);
+
+    // Visible from the first frame in a locked state — the command is shown but
+    // the copy affordance is replaced by a "N more to unlock" hint.
+    const panel = screen.getByTestId("deck-cli-panel");
+    expect(panel).toBeInTheDocument();
+    expect(panel).toHaveAttribute("data-unlocked", "false");
+    expect(screen.getByTestId("deck-cli-command").textContent).toBe(
+      `npx skillpacks install-deck ${SLUG}`,
+    );
+    expect(screen.getByTestId("deck-cli-lock").textContent).toBe("🔒 2 more to unlock");
+    expect(screen.queryByTestId("deck-cli-copy")).not.toBeInTheDocument();
+
+    // Collect one of two: the remaining count ticks down off settledIds (slot
+    // truth), not the optimistic commit, and the panel stays locked.
+    openPack();
+    fireEvent.click(screen.getByTestId("deck-card-skill-a"));
+    expect(screen.getByTestId("deck-cli-lock").textContent).toBe("🔒 2 more to unlock");
+    landAllFlights();
+    expect(screen.getByTestId("deck-cli-lock").textContent).toBe("🔒 1 more to unlock");
+    expect(screen.getByTestId("deck-cli-panel")).toHaveAttribute("data-unlocked", "false");
+
+    // Filling the last slot unlocks: the hint is gone, the copy button appears.
+    fireEvent.click(screen.getByTestId("deck-card-skill-b"));
+    landAllFlights();
+    expect(screen.getByTestId("deck-cli-panel")).toHaveAttribute("data-unlocked", "true");
+    expect(screen.queryByTestId("deck-cli-lock")).not.toBeInTheDocument();
+    expect(screen.getByTestId("deck-cli-copy")).toBeInTheDocument();
+  });
+
+  it("CLI panel: hydrated full deck unlocks immediately on hard-load", () => {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(["skill-a", "skill-b"]));
+
+    render(<DeckTableShell hardLoad initialDeckSlug={SLUG} />);
+
+    expect(screen.getByTestId("deck-cli-panel")).toHaveAttribute("data-unlocked", "true");
+    expect(screen.getByTestId("deck-cli-copy")).toBeInTheDocument();
+    expect(screen.queryByTestId("deck-cli-lock")).not.toBeInTheDocument();
+  });
+
   it("wanted rims: first card of each empty phase glows; clears once its slot fills", () => {
     // Market Intel has two phases (LAB-01, LAB-02); skill-a maps to column 0,
     // skill-b to column 1, so both columns start empty and both cards are wanted.

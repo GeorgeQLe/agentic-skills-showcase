@@ -502,6 +502,36 @@ test("overlay row: visible in the builder with the fan closed, updates after a c
   await expect(page.getByTestId(`deck-overlay-chip-${id}`)).toBeVisible();
 });
 
+test("CLI panel: visible locked in the builder, unlocks with a copy affordance after collect-all", async ({
+  page,
+}) => {
+  await page.goto(`/deck/${SLUG}`);
+  await expect(page.getByTestId("deck-phase")).toHaveText("builder-open");
+
+  // The destination is visible from the first frame in a locked state: command
+  // shown, copy affordance withheld behind a "N more to unlock" hint.
+  const panel = page.getByTestId("deck-cli-panel");
+  await expect(panel).toBeVisible();
+  await expect(panel).toHaveAttribute("data-unlocked", "false");
+  await expect(page.getByTestId("deck-cli-command")).toHaveText(
+    `npx skillpacks install-deck ${SLUG}`,
+  );
+  await expect(page.getByTestId("deck-cli-lock")).toBeVisible();
+  await expect(page.getByTestId("deck-cli-copy")).toHaveCount(0);
+
+  // Collect every card: the whole batch lands and the panel unlocks.
+  await openPackViaBridge(page);
+  const total = await page.locator("[data-card-id]").count();
+  await page.getByTestId("deck-collect-all").click();
+  await expect(page.getByTestId("deck-collected-count")).toHaveText(
+    new RegExp(`^${total} / ${total} `),
+  );
+
+  await expect(panel).toHaveAttribute("data-unlocked", "true");
+  await expect(page.getByTestId("deck-cli-lock")).toHaveCount(0);
+  await expect(page.getByTestId("deck-cli-copy")).toBeVisible();
+});
+
 test("Back during/after open returns to the table", async ({ page }) => {
   await page.goto(TABLE_PATH);
   await expect(page.getByTestId("deck-phase")).toHaveText("table");

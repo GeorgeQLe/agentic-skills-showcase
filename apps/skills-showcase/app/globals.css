@@ -1752,6 +1752,65 @@ a.tag-link:hover {
   }
 }
 
+/* Locked/unlocked CLI panel: the always-visible install-command destination at
+   the bottom of the builder. Locked until every deck card settles, then unlocks
+   with a copy affordance. Tracks the teal collected-card palette; the locked
+   state dims the command and swaps the copy button for a 🔒 unlock hint. */
+.deck-cli-panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  margin-top: 24px;
+  padding: 14px 16px;
+  border: 1px solid rgba(94, 234, 212, 0.22);
+  border-radius: 10px;
+  background: rgba(2, 6, 23, 0.4);
+}
+
+.deck-cli-panel[data-unlocked="true"] {
+  border-color: rgba(94, 234, 212, 0.5);
+  background: rgba(94, 234, 212, 0.08);
+}
+
+.deck-cli-command {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: rgba(148, 163, 184, 0.7);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow-x: auto;
+}
+
+.deck-cli-panel[data-unlocked="true"] .deck-cli-command {
+  color: #f0fdfa;
+}
+
+.deck-cli-lock {
+  color: rgba(148, 163, 184, 0.85);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.deck-cli-copy {
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(94, 234, 212, 0.5);
+  background: rgba(94, 234, 212, 0.14);
+  color: #f0fdfa;
+  font-size: 0.82rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s ease-out, border-color 0.12s ease-out;
+}
+
+.deck-cli-copy:hover {
+  background: rgba(94, 234, 212, 0.24);
+  border-color: rgba(94, 234, 212, 0.7);
+}
+
 /* Pack-flow region — the in-builder tear affordance (one SealedPack,
    deck-as-pack) plus its aside. The fanned cards live in the BottomSheet, so
    this row only holds the sealed pack and the collect-all control. */

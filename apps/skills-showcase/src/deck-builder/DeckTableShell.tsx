@@ -1022,8 +1022,101 @@ function BuilderPanel({
         onCollectAll={flyAll}
       />
 
+      {/* Locked/unlocked CLI panel (§2 "🔒 fill core" / §6): the always-visible
+          install-command destination. Visible from the first frame in a locked
+          state ("🔒 N more to unlock") so the output is never a surprise (§ design
+          principle "Browsing always converges on output"). Unlocks — revealing
+          the command + copy affordance — once every deck card has settled. Locked
+          status is derived from settledIds vs the deck requirement (all
+          deck.skills settled), reusing the existing collection state; no new state
+          is introduced. A core/overlay split can refine the requirement later. */}
+      <BuilderCliPanel
+        deck={deck}
+        settledCount={settledCount}
+        contentState={contentState}
+      />
+
       <FlightLayer flights={flights} reducedMotion={reducedMotion} dbg={dbg} onLand={settle} />
     </motion.section>
+  );
+}
+
+/**
+ * BuilderCliPanel — the locked/unlocked install-command destination pinned at
+ * the bottom of the builder (§2 "🔒 fill core", §6 deck completion / output).
+ * It is visible from the first frame so the output is never a surprise: while
+ * the deck is incomplete it shows the install command in a locked state with a
+ * "🔒 N more to unlock" hint; once every card has settled it unlocks, revealing
+ * the command and a copy button. Locked/unlocked is derived purely from
+ * settledCount vs the deck's card requirement — no new collection state.
+ */
+function BuilderCliPanel({
+  deck,
+  settledCount,
+  contentState,
+}: {
+  deck: Deck;
+  settledCount: number;
+  contentState: "visible" | "hidden";
+}) {
+  const required = deck.skills.length;
+  const remaining = Math.max(0, required - settledCount);
+  const unlocked = required > 0 && remaining === 0;
+  const command = `npx skillpacks install-deck ${deck.slug}`;
+
+  // Transient "Copied" affordance feedback. Cleared on a timer so a second copy
+  // re-flashes it; best-effort because clipboard access can reject (no HTTPS /
+  // permission denied) — the command stays visible to copy manually.
+  const [copied, setCopied] = useState(false);
+  const copyTimerRef = useRef<number | null>(null);
+  useEffect(
+    () => () => {
+      if (copyTimerRef.current !== null) window.clearTimeout(copyTimerRef.current);
+    },
+    [],
+  );
+  const handleCopy = useCallback(() => {
+    void navigator.clipboard?.writeText(command).then(
+      () => {
+        setCopied(true);
+        if (copyTimerRef.current !== null) window.clearTimeout(copyTimerRef.current);
+        copyTimerRef.current = window.setTimeout(() => setCopied(false), 1500);
+      },
+      () => {
+        /* clipboard unavailable; the command text stays selectable. */
+      },
+    );
+  }, [command]);
+
+  return (
+    <motion.div
+      className="deck-cli-panel"
+      data-testid="deck-cli-panel"
+      data-unlocked={String(unlocked)}
+      custom={4}
+      variants={contentVariants}
+      initial="hidden"
+      animate={contentState}
+      exit={contentExit}
+    >
+      <code className="deck-cli-command" data-testid="deck-cli-command">
+        {command}
+      </code>
+      {unlocked ? (
+        <button
+          type="button"
+          className="deck-cli-copy"
+          data-testid="deck-cli-copy"
+          onClick={handleCopy}
+        >
+          {copied ? "Copied ✓" : "Copy"}
+        </button>
+      ) : (
+        <span className="deck-cli-lock" data-testid="deck-cli-lock">
+          🔒 {remaining} more to unlock
+        </span>
+      )}
+    </motion.div>
   );
 }
 
