@@ -35,6 +35,7 @@ export interface Skill {
   scope: string;
   pack: string | null;
   path: string;
+  mirrorKey?: string;
   tags: string[];
   benchmarkEvidence: BenchmarkEvidence | null;
 }

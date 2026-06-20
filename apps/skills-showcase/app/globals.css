@@ -1681,6 +1681,37 @@ a.tag-link:hover {
   background: rgba(94, 234, 212, 0.12);
   color: #f8fafc;
   font-size: 0.82rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.deck-slot-card-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Expand = info, not collect: opens /card/[id] without touching the deck. */
+.deck-slot-card-expand {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: rgba(15, 23, 42, 0.5);
+  color: #cbd5e1;
+  cursor: pointer;
+}
+
+.deck-slot-card-expand:hover {
+  color: #fff;
+  background: rgba(15, 23, 42, 0.8);
 }
 
 .deck-shelf {

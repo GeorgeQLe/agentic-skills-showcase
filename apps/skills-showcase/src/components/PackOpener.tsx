@@ -2,6 +2,7 @@
 
 import { useRef, useLayoutEffect, useState, useMemo, useCallback } from "react";
 import { motion, useMotionValue, animate } from "framer-motion";
+import { Maximize2 } from "lucide-react";
 import SkillCard from "./SkillCard";
 import type { Skill } from "@/hooks/useSkillsData";
 import { useDebug } from "./debug/DebugController";
@@ -42,6 +43,13 @@ interface PackOpenerProps {
    */
   onCollectAll?: (sources: Map<string, HTMLElement>) => void;
   /**
+   * Info-vs-collect split (builder only). When supplied, each fanned card gains
+   * an explicit "expand" control that opens the card-detail surface (/card/[id])
+   * without collecting it — tapping the card body still collects/flies. Optional,
+   * so /prototype (no onExpand) keeps its plain tap-to-flip cards.
+   */
+  onExpand?: (id: string) => void;
+  /**
    * When true, card 0 does NOT claim the shared `pack-card` layoutId — it fans
    * in like every other card. The builder embeds this fan inside a layoutId
    * panel whose residual transform is a containing block; a shared-layout morph
@@ -58,7 +66,7 @@ interface CollapseState {
   animatedSet: Set<number>;
 }
 
-export default function PackOpener({ skills, packName, isClosing, onCollapseComplete, isRisingToApex, onApexComplete, onOpenMorphComplete, onCollect, collectedIds, wantedIds, onCollectAll, disableSharedMorph }: PackOpenerProps) {
+export default function PackOpener({ skills, packName, isClosing, onCollapseComplete, isRisingToApex, onApexComplete, onOpenMorphComplete, onCollect, collectedIds, wantedIds, onCollectAll, onExpand, disableSharedMorph }: PackOpenerProps) {
   const dbg = useDebug();
   const debugEnabled = dbg.enabled;
   const debugReport = dbg.report;
@@ -316,6 +324,21 @@ export default function PackOpener({ skills, packName, isClosing, onCollapseComp
         onClick={(e) => onCollect(skill, e.currentTarget)}
       >
         <SkillCard skill={skill} />
+        {onExpand ? (
+          <button
+            type="button"
+            className="deck-card-expand absolute top-1 left-1 z-20 inline-flex items-center justify-center w-6 h-6 rounded-md bg-zinc-900/80 text-zinc-300 hover:text-white hover:bg-zinc-800 border border-zinc-700/60"
+            data-testid={`deck-card-expand-${skill.id}`}
+            aria-label={`Expand ${skill.title || skill.name}`}
+            onClick={(e) => {
+              // Info, not collect — keep the tap off the card-flight handler.
+              e.stopPropagation();
+              onExpand(skill.id);
+            }}
+          >
+            <Maximize2 size={12} />
+          </button>
+        ) : null}
         {isCollected ? (
           <span className="deck-card-badge" data-testid={`deck-card-badge-${skill.id}`}>
             in deck

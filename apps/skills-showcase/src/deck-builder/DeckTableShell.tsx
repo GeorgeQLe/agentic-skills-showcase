@@ -48,7 +48,8 @@ import {
   useMotionValue,
 } from "framer-motion";
 import { createPortal } from "react-dom";
-import { usePathname } from "next/navigation";
+import { Maximize2 } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
 
 import { useDebug } from "@/components/debug/DebugController";
 import SealedPack, { type SealedPackHandle } from "@/components/SealedPack";
@@ -630,7 +631,18 @@ function BuilderPanel({
   flushFlightsRef: MutableRefObject<null | (() => boolean)>;
 }) {
   const dbg = useDebug();
+  const router = useRouter();
   const panelRef = useRef<HTMLElement | null>(null);
+
+  // Expand = info, not collect. Soft-navigate to the card-detail surface, which
+  // the @modal/(.)card/[id] intercepting route renders as an overlay over the
+  // builder (the deck's own pushState morph is a separate subtree, untouched).
+  const expandCard = useCallback(
+    (cardId: string) => {
+      router.push(`/card/${encodeURIComponent(cardId)}`);
+    },
+    [router],
+  );
 
   // collectedCardIds is the committed (optimistic) truth from the shell — it
   // drives the fan card's dim + "in deck" badge from the tap frame. collectedRef
@@ -1075,7 +1087,16 @@ function BuilderPanel({
                       data-testid={`deck-slot-card-${s.id}`}
                       data-pulse={String(pulsingIds.has(s.id))}
                     >
-                      {s.title || s.name}
+                      <span className="deck-slot-card-label">{s.title || s.name}</span>
+                      <button
+                        type="button"
+                        className="deck-slot-card-expand"
+                        data-testid={`deck-slot-card-expand-${s.id}`}
+                        aria-label={`Expand ${s.title || s.name}`}
+                        onClick={() => expandCard(s.id)}
+                      >
+                        <Maximize2 size={11} />
+                      </button>
                     </li>
                   ))}
                 </ul>
@@ -1132,6 +1153,7 @@ function BuilderPanel({
         // "Collect all" (rendered inside the fan) hands flyAll the fan sources.
         onCollect={flyCard}
         onCollectAll={flyAll}
+        onExpand={expandCard}
       />
 
       {/* Locked/unlocked CLI panel (§2 "🔒 fill core" / §6): the always-visible
@@ -1401,6 +1423,7 @@ function BuilderPackFlow({
   contentState,
   onCollect,
   onCollectAll,
+  onExpand,
 }: {
   deck: Deck;
   collected: Set<string>;
@@ -1408,6 +1431,7 @@ function BuilderPackFlow({
   contentState: "visible" | "hidden";
   onCollect: (skill: Skill, sourceEl: HTMLElement | null) => void;
   onCollectAll: (sources: Map<string, HTMLElement>) => void;
+  onExpand: (id: string) => void;
 }) {
   const flow = usePackFlow();
   const {
@@ -1496,6 +1520,7 @@ function BuilderPackFlow({
         collectedIds={collected}
         wantedIds={wantedIds}
         onCollectAll={onCollectAll}
+        onExpand={onExpand}
         disableSharedMorph
       />
     </LayoutGroup>

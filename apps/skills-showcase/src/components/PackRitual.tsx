@@ -182,6 +182,7 @@ export function PackFlowSheet({
   collectedIds,
   wantedIds,
   onCollectAll,
+  onExpand,
   disableSharedMorph,
 }: {
   flow: PackFlow;
@@ -191,6 +192,7 @@ export function PackFlowSheet({
   collectedIds?: Set<string>;
   wantedIds?: Set<string>;
   onCollectAll?: (sources: Map<string, HTMLElement>) => void;
+  onExpand?: (id: string) => void;
   disableSharedMorph?: boolean;
 }) {
   const {
@@ -231,6 +233,7 @@ export function PackFlowSheet({
           collectedIds={collectedIds}
           wantedIds={wantedIds}
           onCollectAll={onCollectAll}
+          onExpand={onExpand}
           disableSharedMorph={disableSharedMorph}
         />
       )}

@@ -39,9 +39,11 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({
-  children
+  children,
+  modal
 }: Readonly<{
   children: React.ReactNode;
+  modal: React.ReactNode;
 }>) {
   return (
     <html lang="en">
@@ -58,6 +60,7 @@ export default function RootLayout({
           <MobilePanel />
           <ShowcaseShell />
           {children}
+          {modal}
         </TRPCProvider>
       </body>
     </html>
