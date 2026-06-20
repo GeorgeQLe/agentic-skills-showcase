@@ -450,7 +450,7 @@ export default function DeckTableShell({
   );
 
   const decks = useMemo<Deck[]>(
-    () => (data ? buildDecks(data.skills) : []),
+    () => (data ? buildDecks(data) : []),
     [data],
   );
   const activeDeck = getDeckBySlug(decks, activeDeckSlug);
@@ -679,18 +679,21 @@ function BuilderPanel({
     if (gatherRemainingRef.current === 0) setRevealCompletion(true);
   }, []);
 
-  // Stable slot identity: a card maps to the same phase column for its whole
-  // lifetime (its position in deck.skills, round-robin over phases). This is the
-  // flight's continuity target, so it must not depend on collection order.
+  // Stable slot identity: a card maps to the named phase that suggests it (its
+  // real workflow-chain column), for its whole lifetime. This is the flight's
+  // continuity target, so it must not depend on collection order; a card with
+  // no owning phase falls back to the first column.
   const slotColumnIndex = useCallback(
     (skillId: string) => {
-      const i = deck.skills.findIndex((s) => s.id === skillId);
-      return i < 0 ? 0 : i % deck.phases.length;
+      const i = deck.phases.findIndex((phase) =>
+        phase.suggestedSkills.some((s) => s.id === skillId),
+      );
+      return i < 0 ? 0 : i;
     },
-    [deck.phases.length, deck.skills],
+    [deck.phases],
   );
   const targetPhaseId = useCallback(
-    (skillId: string) => deck.phases[slotColumnIndex(skillId)],
+    (skillId: string) => deck.phases[slotColumnIndex(skillId)].key,
     [deck.phases, slotColumnIndex],
   );
 
@@ -703,18 +706,14 @@ function BuilderPanel({
   // additionally gates the rim on !isCollected, so an in-flight card never glows.
   const wantedIds = useMemo(() => {
     const wanted = new Set<string>();
-    deck.phases.forEach((_phaseId, columnIndex) => {
-      const columnFilled = deck.skills.some(
-        (s) => settledIds.has(s.id) && slotColumnIndex(s.id) === columnIndex,
-      );
+    deck.phases.forEach((phase) => {
+      const columnFilled = phase.suggestedSkills.some((s) => settledIds.has(s.id));
       if (columnFilled) return;
-      const firstUncollected = deck.skills.find(
-        (s) => slotColumnIndex(s.id) === columnIndex && !collected.has(s.id),
-      );
+      const firstUncollected = phase.suggestedSkills.find((s) => !collected.has(s.id));
       if (firstUncollected) wanted.add(firstUncollected.id);
     });
     return wanted;
-  }, [collected, deck.phases, deck.skills, settledIds, slotColumnIndex]);
+  }, [collected, deck.phases, settledIds]);
 
   // Report the flight runtime slice to the harness graph (enabled-gated so
   // debug-off stays zero-overhead, matching the bridge).
@@ -1053,18 +1052,18 @@ function BuilderPanel({
         animate={contentState}
         exit={contentExit}
       >
-        {deck.phases.map((phaseId, index) => {
+        {deck.phases.map((phase, index) => {
           const slotSkills = deck.skills.filter(
             (s) => settledIds.has(s.id) && slotColumnIndex(s.id) === index,
           );
           return (
             <div
               className="deck-slot-column"
-              key={phaseId}
-              data-phase-slot={phaseId}
-              data-testid={`deck-slot-${phaseId}`}
+              key={phase.key}
+              data-phase-slot={phase.key}
+              data-testid={`deck-slot-${phase.key}`}
             >
-              <p className="deck-slot-label">{phaseId}</p>
+              <p className="deck-slot-label">{phase.name}</p>
               {slotSkills.length === 0 ? (
                 <p className="deck-slot-empty">empty</p>
               ) : (

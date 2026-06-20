@@ -1,33 +1,45 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 
-// Two skills in one pack so the "market-intel" deck
-// (packs: business-discovery + customer-lifecycle) resolves to a non-empty
-// deck; every other set resolves empty and is filtered out by buildDecks.
-// Full skill shape — the fan now renders SkillCard (tags/description/platform/
-// scope/version), not a bare title button, so the fixtures carry those fields.
+// Two skills mapped one-per-phase into a single fixture deck so the "vard" deck
+// resolves to a non-empty, two-column builder. buildDecks now reads the
+// generated decks/phases directly (no pack round-robin), so the mock returns the
+// resolved decks/sets shapes alongside skills. Full skill shape — the fan
+// renders SkillCard (tags/description/platform/scope/version), not a bare title
+// button, so the fixtures carry those fields.
 const skills = [
   {
-    id: "skill-a", name: "skill-a", title: "Skill A", pack: "business-discovery",
-    description: "Skill A desc", platform: "claude", scope: "global", version: "v0.0", tags: ["x"],
+    id: "skill-a", name: "skill-a", title: "Skill A", pack: "vard",
+    description: "Skill A desc", platform: "claude", scope: "pack", version: "v0.0", tags: ["x"],
   },
   {
-    id: "skill-b", name: "skill-b", title: "Skill B", pack: "business-discovery",
-    description: "Skill B desc", platform: "claude", scope: "global", version: "v0.0", tags: ["y"],
+    id: "skill-b", name: "skill-b", title: "Skill B", pack: "vard",
+    description: "Skill B desc", platform: "claude", scope: "pack", version: "v0.0", tags: ["y"],
   },
 ];
 
+const SLUG = "vard";
+
+const decks = [
+  {
+    slug: SLUG,
+    name: "VARD",
+    domain: "business",
+    tempo: "rapid",
+    phases: [
+      { key: "scan", name: "Scan", suggestedCardIds: ["skill-a"] },
+      { key: "align", name: "Align", suggestedCardIds: ["skill-b"] },
+    ],
+  },
+];
+const sets = [{ domain: "business", decks: [SLUG], packs: ["vard"] }];
+
 vi.mock("@/hooks/useSkillsData", () => ({
-  useSkillsData: () => ({ skills, skillCount: skills.length }),
-  getGlobalSkills: () => [],
-  getPackSkills: (_all: unknown[], packName: string) =>
-    packName === "business-discovery" ? skills : [],
+  useSkillsData: () => ({ skills, skillCount: skills.length, decks, sets }),
 }));
 
 import DeckTableShell, { buildDeckProjectJson } from "./DeckTableShell";
 import type { Deck } from "./decks";
-
-const SLUG = "market-intel";
 const STORAGE_KEY = `deck:${SLUG}:collected`;
 
 // The test runner's localStorage is partial (no .clear); use a Map-backed stub.
@@ -484,21 +496,26 @@ describe("DeckTableShell blueprint-morph", () => {
 
   it("buildDeckProjectJson mirrors enabled_packs + deck metadata", () => {
     const deck: Deck = {
-      name: "Market Intel",
+      name: "VARD",
       slug: SLUG,
-      phases: ["LAB-01", "LAB-02"],
+      domain: "business",
+      tempo: "rapid",
+      phases: [
+        { key: "scan", name: "Scan", suggestedSkills: [skills[0]] as Deck["skills"] },
+        { key: "align", name: "Align", suggestedSkills: [skills[1]] as Deck["skills"] },
+      ],
       skills: skills as unknown as Deck["skills"],
     };
     const parsed = JSON.parse(buildDeckProjectJson(deck));
     expect(parsed).toEqual({
-      enabled_packs: ["business-discovery"],
+      enabled_packs: ["vard"],
       skill_pack_version: 1,
-      deck: { slug: SLUG, name: "Market Intel" },
+      deck: { slug: SLUG, name: "VARD" },
     });
   });
 
   it("wanted rims: first card of each empty phase glows; clears once its slot fills", () => {
-    // Market Intel has two phases (LAB-01, LAB-02); skill-a maps to column 0,
+    // VARD's fixture has two phases (scan, align); skill-a maps to column 0,
     // skill-b to column 1, so both columns start empty and both cards are wanted.
     render(<DeckTableShell hardLoad initialDeckSlug={SLUG} />);
     openPack();

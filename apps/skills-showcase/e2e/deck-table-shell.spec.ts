@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 const TABLE_PATH = "/prototype/deck-routing-spike";
-const SLUG = "market-intel";
+const SLUG = "vard";
 
 // The card-flight source is now the torn-pack fan. The adapted flight specs fan
 // the pack through the window bridge BuilderPackFlow exposes (the same hook the

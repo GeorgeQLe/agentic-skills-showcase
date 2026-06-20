@@ -39,11 +39,33 @@ export interface Skill {
   benchmarkEvidence: BenchmarkEvidence | null;
 }
 
+export interface GeneratedPhase {
+  key: string;
+  name: string;
+  suggestedCardIds: string[];
+}
+
+export interface GeneratedDeck {
+  slug: string;
+  name: string;
+  domain: string;
+  tempo: string;
+  phases: GeneratedPhase[];
+}
+
+export interface GeneratedSet {
+  domain: string;
+  decks: string[];
+  packs: string[];
+}
+
 interface SkillsData {
   generatedAt: string;
   skillCount: number;
   packCount: number;
   skills: Skill[];
+  decks: GeneratedDeck[];
+  sets: GeneratedSet[];
 }
 
 declare global {
@@ -75,12 +97,4 @@ export function useSkillsData() {
   }, []);
 
   return data;
-}
-
-export function getPackSkills(skills: Skill[], packName: string): Skill[] {
-  return skills.filter((s) => s.pack === packName);
-}
-
-export function getGlobalSkills(skills: Skill[]): Skill[] {
-  return skills.filter((s) => s.pack === null);
 }

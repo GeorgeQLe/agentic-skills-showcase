@@ -18,6 +18,7 @@ import {
 } from "../../../scripts/catalog/index.mjs";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
+const manifestRelativePath = "packages/skillpacks/dist/skillpacks-manifest.json";
 const outputPath = path.join(repoRoot, "docs/skills-showcase/assets/skills-data.js");
 const appOutputPath = path.join(repoRoot, "apps/skills-showcase/public/assets/skills-data.js");
 const matrixOutputPath = path.join(repoRoot, "docs/benchmark-results-matrix.md");
@@ -479,6 +480,66 @@ Both fixtures require explicit user permission before any live GitHub operation 
   console.log(`Wrote ${path.relative(repoRoot, matrixOutputPath)} with ${graded.length} graded and ${dedupedIncomplete.length} incomplete rows.`);
 }
 
+// Read the generated skillpacks manifest from the git index (the same
+// index-truth rule parseSkill/fingerprintFiles follow), so a concurrent
+// session's unstaged manifest edits never leak into committed showcase data.
+function readManifestFromIndex() {
+  const text = readTextFromIndex(repoRoot, manifestRelativePath);
+  return text ? JSON.parse(text) : null;
+}
+
+// Resolve the manifest's 5 canonical decks into showcase shapes. Each phase
+// card (an exact skill name) resolves to the mirrorKey-deduped showcase skill
+// id from the already-parsed `skills` list, scoped to the deck's packs so the
+// claude variant wins (skills are path-sorted, claude before codex).
+function buildDecksAndSets(manifest, skills) {
+  const manifestDecks = manifest?.decks ?? [];
+
+  const resolveCardId = (deck, card) => {
+    const match = skills.find(
+      (skill) =>
+        deck.full_packs.includes(skill.pack) &&
+        (skill.mirrorKey || skill.name) === card,
+    );
+    return match ? match.id : null;
+  };
+
+  const decks = manifestDecks.map((deck) => ({
+    slug: deck.name,
+    name: deck.title,
+    domain: deck.domain,
+    tempo: deck.tempo,
+    phases: (deck.phases ?? []).map((phase) => ({
+      key: phase.key,
+      name: phase.name,
+      suggestedCardIds: (phase.cards ?? [])
+        .map((card) => resolveCardId(deck, card))
+        .filter(Boolean),
+    })),
+  }));
+
+  // Group decks by domain into sets — the parent grouping the showcase renders
+  // as a domain shelf; packs are the deduped union of the grouped decks' packs.
+  const setsByDomain = new Map();
+  for (const deck of manifestDecks) {
+    const entry = setsByDomain.get(deck.domain) ?? {
+      domain: deck.domain,
+      decks: [],
+      packs: [],
+    };
+    entry.decks.push(deck.name);
+    entry.packs.push(...(deck.full_packs ?? []));
+    setsByDomain.set(deck.domain, entry);
+  }
+  const sets = Array.from(setsByDomain.values()).map((set) => ({
+    domain: set.domain,
+    decks: set.decks,
+    packs: Array.from(new Set(set.packs)),
+  }));
+
+  return { decks, sets };
+}
+
 function main() {
   const files = gitFiles(repoRoot);
   const benchmarkEvidence = benchmarkEvidenceBySkill(files);
@@ -488,7 +549,7 @@ function main() {
     .flatMap((evidence) => (evidence.demo ? [evidence.demo.runPath] : []))
     .filter((file) => files.includes(file));
   const packPaths = files.filter((file) => /^packs\/[^/]+\/PACK\.md$/.test(file));
-  const sourcePaths = [...skillPaths, ...packPaths, ...benchmarkPaths, ...benchmarkReviewPaths, ...benchmarkDemoPaths].sort();
+  const sourcePaths = [...skillPaths, ...packPaths, ...benchmarkPaths, ...benchmarkReviewPaths, ...benchmarkDemoPaths, manifestRelativePath].sort();
 
   const skills = skillPaths
     .map((skillPath) => parseSkill(repoRoot, skillPath, { source: "index" }))
@@ -498,6 +559,8 @@ function main() {
     })
     .sort((a, b) => a.path.localeCompare(b.path));
   const packs = listPacks(repoRoot, files, skills, { source: "index" });
+  const manifest = readManifestFromIndex();
+  const { decks, sets } = buildDecksAndSets(manifest, skills);
   const sourceFingerprint = fingerprintFiles(repoRoot, sourcePaths, { source: "index" });
 
   const data = {
@@ -508,7 +571,8 @@ function main() {
     packCount: packs.length,
     skills,
     packs,
-    workflows: [],
+    decks,
+    sets,
     workflowBenchmarks: buildWorkflowBenchmarks(benchmarkEvidence)
   };
 

@@ -41,11 +41,22 @@ vi.mock("@/hooks/useSkillsData", () => {
     },
   ];
 
+  // The prototype now renders one SealedPack per resolved deck (buildDecks reads
+  // the generated decks/phases, not pack round-robin), so the mock returns a
+  // single "market-intel" deck whose one phase suggests the lone skill.
+  const decks = [
+    {
+      slug: "market-intel",
+      name: "Market Intel",
+      domain: "business",
+      tempo: "rapid",
+      phases: [{ key: "scan", name: "Scan", suggestedCardIds: ["skill-0"] }],
+    },
+  ];
+  const sets = [{ domain: "business", decks: ["market-intel"], packs: ["business-discovery"] }];
+
   return {
-    useSkillsData: () => ({ skills, skillCount: 1 }),
-    getGlobalSkills: () => [],
-    getPackSkills: (_allSkills: unknown[], packName: string) =>
-      packName === "business-discovery" ? skills : [],
+    useSkillsData: () => ({ skills, skillCount: 1, decks, sets }),
   };
 });
 

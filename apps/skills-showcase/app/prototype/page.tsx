@@ -8,7 +8,7 @@
 import { useRef, useEffect } from "react";
 import { LayoutGroup } from "framer-motion";
 import { useSkillsData } from "@/hooks/useSkillsData";
-import { SETS, getSetSkills } from "@/deck-builder/decks";
+import { buildDecks } from "@/deck-builder/decks";
 import SealedPack, { type SealedPackHandle } from "@/components/SealedPack";
 import { usePackFlow, PackFlowSheet } from "@/components/PackRitual";
 import { DebugProvider, useDebug } from "@/components/debug/DebugController";
@@ -87,10 +87,7 @@ function PrototypeInner() {
     );
   }
 
-  const sets = SETS.map((set) => ({
-    ...set,
-    skills: getSetSkills(data.skills, set),
-  })).filter((s) => s.skills.length > 0);
+  const sets = buildDecks(data);
 
   const activeSetData = activePack
     ? sets.find((s) => s.slug === activePack.packName)
@@ -103,7 +100,7 @@ function PrototypeInner() {
           Skill Collection
         </h1>
         <p className="text-zinc-500 text-sm">
-          {data.skillCount} skills across {SETS.length} sets &mdash; tear along the line to open
+          {data.skillCount} skills across {sets.length} decks &mdash; tear along the line to open
         </p>
       </header>
 
