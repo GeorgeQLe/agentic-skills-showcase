@@ -220,7 +220,7 @@ UI labels lead with game terms — "Tear open" (install), "Collect" (add), "Deck
 
 ## Build phasing (after this doc is approved + written)
 
-1. **Engine extraction (`PackRitual`)** — pure refactor; existing suite stays green. Lowest risk, do first.
+1. **Engine extraction (`PackRitual`)** — pure refactor; existing suite stays green. Lowest risk, do first. _Shipped (2026-06-19):_ `src/components/PackRitual.tsx` exports `usePackFlow()` (the `PackFlowPhase` machine + derived sheet flags + 800 ms settle fallback, debug marks via a stable `dbgRef`) and `<PackFlowSheet>` (the `BottomSheet`→`PackOpener` composition). `PrototypeInner` and `BuilderPackFlow` both shrink to thin consumers, each keeping only its own topology (N-pack shelf + debug harness vs single deck-as-pack + `__deckPack` bridge + card-flight wiring). Zero behavior change — Vitest 171/171 and Playwright 18/18 (morph double-vision, slot-before-land, stable `deck-mount-id`, pack-ritual tear) all green.
 2. **Data model** — manifest `phases:` → generator `decks[]`/`sets[]` → `decks.ts` rewrite + test fixtures (rename `market-intel`→`vard`). Kills round-robin.
 3. **`/card/[id]`** — intercepting + standalone pair + `@modal/default.tsx`. Additive.
 4. **Promote Table to `/`** + new landing/CTA/domain-picker + Pack Receipt + Hand-off chooser; delete the routing spike. Structural pivot — land alone.

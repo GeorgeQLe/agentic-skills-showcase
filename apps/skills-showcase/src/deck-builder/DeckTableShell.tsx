@@ -52,8 +52,7 @@ import { usePathname } from "next/navigation";
 
 import { useDebug } from "@/components/debug/DebugController";
 import SealedPack, { type SealedPackHandle } from "@/components/SealedPack";
-import BottomSheet from "@/components/BottomSheet";
-import PackOpener from "@/components/PackOpener";
+import { usePackFlow, PackFlowSheet } from "@/components/PackRitual";
 import { buildDecks, getDeckBySlug, type Deck } from "@/deck-builder/decks";
 import { useSkillsData, type Skill } from "@/hooks/useSkillsData";
 
@@ -72,23 +71,6 @@ export type DeckFlowPhase =
   | "builder-open"
   | "builder-dismissing"
   | "table-restored";
-
-/**
- * PackFlowPhase — the tear-open booster-pack ritual machine, copied verbatim
- * from PrototypeInner (app/prototype/page.tsx, animation plan §C). One
- * SealedPack represents the whole deck (deck-as-pack); tearing it fans all
- * deck.skills into the BottomSheet. `sealed` is the resting state; the chain
- * `opening-apex -> drawer-open` opens the fan and `closing-collapse ->
- * closing-apex -> sheet-exiting -> card-settling` collapses it back.
- */
-type PackFlowPhase =
-  | "sealed"
-  | "opening-apex"
-  | "drawer-open"
-  | "closing-collapse"
-  | "closing-apex"
-  | "sheet-exiting"
-  | "card-settling";
 
 declare global {
   interface Window {
@@ -1399,10 +1381,10 @@ function DeckCompletionPanel({
 
 /**
  * BuilderPackFlow — the tear-open booster-pack ritual wired into the builder.
- * Owns the PackFlowPhase machine (copied verbatim from PrototypeInner, §C) and
- * composes the proven primitives: one SealedPack (deck-as-pack) tears to fan
- * deck.skills into a BottomSheet via PackOpener. The fan's cards are the
- * card-flight source — PackOpener's onCollect feeds the builder's flyCard.
+ * Drives the shared PackFlowPhase machine via usePackFlow() (src/components/
+ * PackRitual.tsx, §C) and renders the deck-as-pack SealedPack plus the shared
+ * PackFlowSheet (BottomSheet → PackOpener). The fan's cards are the card-flight
+ * source — PackOpener's onCollect feeds the builder's flyCard.
  *
  * Structure note: the SealedPack tear affordance lives inside the staggered
  * content wrapper (custom={2}, contentVariants — matching the old .deck-shelf),
@@ -1428,75 +1410,21 @@ function BuilderPackFlow({
   onCollect: (skill: Skill, sourceEl: HTMLElement | null) => void;
   onCollectAll: (sources: Map<string, HTMLElement>) => void;
 }) {
-  const dbg = useDebug();
-  const [activePack, setActivePack] = useState<{ origin: { x: number; y: number } } | null>(null);
-  const [openedPacks, setOpenedPacks] = useState<Set<string>>(new Set());
-  const [phase, setPhase] = useState<PackFlowPhase>("sealed");
-  const [openMorphComplete, setOpenMorphComplete] = useState(true);
+  const flow = usePackFlow();
+  const {
+    phase,
+    phaseRef,
+    openedPacks,
+    isSheetOpen,
+    setPhase,
+    setActivePack,
+    setOpenMorphComplete,
+    handleOpen,
+    handleClose,
+  } = flow;
 
   const headerRef = useRef<HTMLDivElement>(null);
   const targetPackRef = useRef<SealedPackHandle>(null);
-
-  const isSheetOpen =
-    phase === "drawer-open" || phase === "closing-collapse" || phase === "closing-apex";
-  const drawerIsClosing = phase === "closing-collapse" || phase === "closing-apex";
-  const isRisingToApex = phase === "closing-apex";
-  const canDismiss = phase === "drawer-open";
-
-  const phaseRef = useRef(phase);
-  phaseRef.current = phase;
-
-  // --- PackFlowPhase handlers (verbatim from PrototypeInner / §C) ---
-  const handleOpeningApex = useCallback(() => {
-    setPhase((current) => (current === "sealed" ? "opening-apex" : current));
-  }, []);
-
-  const handleOpen = useCallback((origin: { x: number; y: number }) => {
-    setActivePack({ origin });
-    setPhase("drawer-open");
-    setOpenMorphComplete(false);
-    setOpenedPacks((prev) => {
-      if (prev.has(deck.slug)) return prev;
-      const next = new Set(prev);
-      next.add(deck.slug);
-      return next;
-    });
-  }, [deck.slug]);
-
-  const handleTear = useCallback(() => {
-    setOpenedPacks((prev) => {
-      if (prev.has(deck.slug)) return prev;
-      const next = new Set(prev);
-      next.add(deck.slug);
-      return next;
-    });
-  }, [deck.slug]);
-
-  const handleClose = useCallback(() => {
-    if (phaseRef.current !== "drawer-open") return;
-    setPhase("closing-collapse");
-  }, []);
-
-  const handleCollapseComplete = useCallback(() => {
-    setPhase((current) => (current === "closing-collapse" ? "closing-apex" : current));
-  }, []);
-
-  const handleApexComplete = useCallback(() => {
-    setPhase((current) => (current === "closing-apex" ? "sheet-exiting" : current));
-  }, []);
-
-  const handleSheetExited = useCallback(() => {
-    setPhase((current) => (current === "sheet-exiting" ? "card-settling" : current));
-  }, []);
-
-  const handleCardSettleComplete = useCallback(() => {
-    setActivePack(null);
-    setPhase("sealed");
-  }, []);
-
-  const handleOpenMorphComplete = useCallback(() => {
-    setOpenMorphComplete(true);
-  }, []);
 
   // When the builder leaves builder-open (Back / dismiss), the content wrapper
   // hides — snap the ritual shut so an open sheet never dangles through the
@@ -1507,19 +1435,7 @@ function BuilderPackFlow({
       setPhase("sealed");
       setOpenMorphComplete(true);
     }
-  }, [contentState]);
-
-  // card-settling fallback: if the SealedPack's settle callback never fires
-  // (e.g. jsdom never animates), park back to sealed after a beat (§C).
-  useEffect(() => {
-    if (phase === "card-settling") {
-      const timeout = setTimeout(() => {
-        setActivePack(null);
-        setPhase((current) => (current === "card-settling" ? "sealed" : current));
-      }, 800);
-      return () => clearTimeout(timeout);
-    }
-  }, [phase]);
+  }, [contentState, phaseRef, setActivePack, setPhase, setOpenMorphComplete]);
 
   // Test bridge: jsdom can't perform the SealedPack tear gesture, so Vitest
   // drives the ritual through this hook (mirrors __deckFlight / __deckMorphComplete).
@@ -1528,14 +1444,14 @@ function BuilderPackFlow({
   useEffect(() => {
     window.__deckPack = {
       open: () =>
-        handleOpen({ x: window.innerWidth / 2, y: window.innerHeight / 2 }),
+        handleOpen(deck.slug, { x: window.innerWidth / 2, y: window.innerHeight / 2 }),
       close: () => handleClose(),
       phase: () => phaseRef.current,
     };
     return () => {
       delete window.__deckPack;
     };
-  }, [handleOpen, handleClose]);
+  }, [handleOpen, handleClose, phaseRef, deck.slug]);
 
   return (
     <LayoutGroup>
@@ -1556,10 +1472,10 @@ function BuilderPackFlow({
           name={deck.slug}
           skillCount={deck.skills.length}
           previewSkill={deck.skills[0] ?? null}
-          onOpeningApex={handleOpeningApex}
-          onOpen={handleOpen}
-          onTear={handleTear}
-          onCardSettleComplete={handleCardSettleComplete}
+          onOpeningApex={flow.handleOpeningApex}
+          onOpen={(origin) => handleOpen(deck.slug, origin)}
+          onTear={() => flow.handleTear(deck.slug)}
+          onCardSettleComplete={flow.handleCardSettleComplete}
           apexAlignRef={headerRef}
           autoOpenOnTear
           isOpened={openedPacks.has(deck.slug)}
@@ -1573,32 +1489,16 @@ function BuilderPackFlow({
         </div>
       </motion.div>
 
-      <BottomSheet
-        isOpen={isSheetOpen}
-        onClose={handleClose}
-        onExitComplete={handleSheetExited}
-        dismissable={canDismiss}
-        unclipContent={isRisingToApex || (phase === "drawer-open" && !openMorphComplete)}
-        fadeExit={phase === "sheet-exiting"}
-      >
-        {activePack && (
-          <PackOpener
-            packName={deck.name}
-            skills={deck.skills}
-            origin={activePack.origin}
-            isClosing={drawerIsClosing}
-            onCollapseComplete={handleCollapseComplete}
-            isRisingToApex={isRisingToApex}
-            onApexComplete={handleApexComplete}
-            onOpenMorphComplete={handleOpenMorphComplete}
-            onCollect={onCollect}
-            collectedIds={collected}
-            wantedIds={wantedIds}
-            onCollectAll={onCollectAll}
-            disableSharedMorph
-          />
-        )}
-      </BottomSheet>
+      <PackFlowSheet
+        flow={flow}
+        packName={deck.name}
+        skills={deck.skills}
+        onCollect={onCollect}
+        collectedIds={collected}
+        wantedIds={wantedIds}
+        onCollectAll={onCollectAll}
+        disableSharedMorph
+      />
     </LayoutGroup>
   );
 }

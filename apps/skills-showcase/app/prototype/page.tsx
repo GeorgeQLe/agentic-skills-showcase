@@ -5,29 +5,14 @@
  */
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useRef, useEffect } from "react";
 import { LayoutGroup } from "framer-motion";
 import { useSkillsData } from "@/hooks/useSkillsData";
 import { SETS, getSetSkills } from "@/deck-builder/decks";
 import SealedPack, { type SealedPackHandle } from "@/components/SealedPack";
-import PackOpener from "@/components/PackOpener";
-import BottomSheet from "@/components/BottomSheet";
+import { usePackFlow, PackFlowSheet } from "@/components/PackRitual";
 import { DebugProvider, useDebug } from "@/components/debug/DebugController";
 import DebugPanel from "@/components/debug/DebugPanel";
-
-interface OpenPackState {
-  packName: string;
-  origin: { x: number; y: number };
-}
-
-type PackFlowPhase =
-  | "sealed"
-  | "opening-apex"
-  | "drawer-open"
-  | "closing-collapse"
-  | "closing-apex"
-  | "sheet-exiting"
-  | "card-settling";
 
 export default function PrototypePage() {
   return (
@@ -42,84 +27,26 @@ function PrototypeInner() {
   const dbg = useDebug();
   const debugReport = dbg.report;
   const data = useSkillsData();
-  const [activePack, setActivePack] = useState<OpenPackState | null>(null);
-  const [openedPacks, setOpenedPacks] = useState<Set<string>>(new Set());
-  const [phase, setPhase] = useState<PackFlowPhase>("sealed");
-  const [openMorphComplete, setOpenMorphComplete] = useState(true);
+  const flow = usePackFlow();
+  const {
+    phase,
+    activePack,
+    openedPacks,
+    isSheetOpen,
+    drawerIsClosing,
+    canDismiss,
+    handleClose,
+    setPhase,
+    setActivePack,
+    setOpenedPacks,
+    setOpenMorphComplete,
+  } = flow;
 
   const headerRef = useRef<HTMLElement>(null);
-  const isSheetOpen = phase === "drawer-open" || phase === "closing-collapse" || phase === "closing-apex";
-  const drawerIsClosing = phase === "closing-collapse" || phase === "closing-apex";
-  const isRisingToApex = phase === "closing-apex";
-  const canDismiss = phase === "drawer-open";
 
   // Debug harness drives set index 0 ("Market Intel") through the exact
   // production callbacks via this imperative handle.
   const targetPackRef = useRef<SealedPackHandle>(null);
-
-  const handleOpeningApex = useCallback(() => {
-    setPhase((current) => (current === "sealed" ? "opening-apex" : current));
-  }, []);
-
-  const handleOpen = useCallback((packName: string, origin: { x: number; y: number }) => {
-    const nextActivePack = { packName, origin };
-    setActivePack(nextActivePack);
-    setPhase("drawer-open");
-    setOpenMorphComplete(false);
-    setOpenedPacks((prev) => {
-      if (prev.has(packName)) return prev;
-      const next = new Set(prev);
-      next.add(packName);
-      return next;
-    });
-  }, []);
-
-  const handleTear = useCallback((packName: string) => {
-    setOpenedPacks((prev) => {
-      if (prev.has(packName)) return prev;
-      const next = new Set(prev);
-      next.add(packName);
-      return next;
-    });
-  }, []);
-
-  const handleClose = useCallback(() => {
-    if (phase !== "drawer-open") return;
-    dbg.mark("close-trigger");
-    setPhase("closing-collapse");
-  }, [dbg, phase]);
-
-  const handleCollapseComplete = useCallback(() => {
-    dbg.mark("drawer-teardown");
-    setPhase(current => current === "closing-collapse" ? "closing-apex" : current);
-  }, [dbg]);
-
-  const handleApexComplete = useCallback(() => {
-    setPhase(current => current === "closing-apex" ? "sheet-exiting" : current);
-  }, []);
-
-  const handleSheetExited = useCallback(() => {
-    setPhase(current => current === "sheet-exiting" ? "card-settling" : current);
-  }, []);
-
-  const handleCardSettleComplete = useCallback(() => {
-    setActivePack(null);
-    setPhase("sealed");
-  }, []);
-
-  const handleOpenMorphComplete = useCallback(() => {
-    setOpenMorphComplete(true);
-  }, []);
-
-  useEffect(() => {
-    if (phase === "card-settling") {
-      const timeout = setTimeout(() => {
-        setActivePack(null);
-        setPhase(current => current === "card-settling" ? "sealed" : current);
-      }, 800);
-      return () => clearTimeout(timeout);
-    }
-  }, [phase]);
 
   // Register imperative drivers for the debug panel.
   useEffect(() => {
@@ -135,7 +62,7 @@ function PrototypeInner() {
         targetPackRef.current?.resetValues();
       },
     });
-  }, [dbg, handleClose]);
+  }, [dbg, handleClose, setPhase, setActivePack, setOpenedPacks, setOpenMorphComplete]);
 
   useEffect(() => {
     debugReport({
@@ -200,10 +127,10 @@ function PrototypeInner() {
                 name={set.slug}
                 skillCount={set.skills.length}
                 previewSkill={set.skills[0] ?? null}
-                onOpeningApex={handleOpeningApex}
-                onOpen={(origin) => handleOpen(set.slug, origin)}
-                onTear={() => handleTear(set.slug)}
-                onCardSettleComplete={handleCardSettleComplete}
+                onOpeningApex={flow.handleOpeningApex}
+                onOpen={(origin) => flow.handleOpen(set.slug, origin)}
+                onTear={() => flow.handleTear(set.slug)}
+                onCardSettleComplete={flow.handleCardSettleComplete}
                 apexAlignRef={isActiveSet ? headerRef : undefined}
                 autoOpenOnTear
                 isOpened={openedPacks.has(set.slug)}
@@ -214,27 +141,11 @@ function PrototypeInner() {
           })}
         </div>
 
-        <BottomSheet
-          isOpen={isSheetOpen}
-          onClose={handleClose}
-          onExitComplete={handleSheetExited}
-          dismissable={canDismiss}
-          unclipContent={isRisingToApex || (phase === "drawer-open" && !openMorphComplete)}
-          fadeExit={phase === "sheet-exiting"}
-        >
-          {activeSetData && (
-            <PackOpener
-              packName={activeSetData.name}
-              skills={activeSetData.skills}
-              origin={activePack!.origin}
-              isClosing={drawerIsClosing}
-              onCollapseComplete={handleCollapseComplete}
-              isRisingToApex={isRisingToApex}
-              onApexComplete={handleApexComplete}
-              onOpenMorphComplete={handleOpenMorphComplete}
-            />
-          )}
-        </BottomSheet>
+        <PackFlowSheet
+          flow={flow}
+          packName={activeSetData?.name ?? ""}
+          skills={activeSetData?.skills ?? []}
+        />
       </LayoutGroup>
     </div>
   );
