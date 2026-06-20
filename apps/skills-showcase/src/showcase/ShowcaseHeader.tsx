@@ -25,34 +25,10 @@ export default function ShowcaseHeader() {
         </Link>
         <nav className="main-nav" aria-label="Primary navigation">
           <Link
-            href="/workflows"
-            aria-current={currentPath === "/workflows" ? "page" : undefined}
+            href="/"
+            aria-current={currentPath === "/" ? "page" : undefined}
           >
-            Workflows
-          </Link>
-          <Link
-            href="/packs"
-            aria-current={currentPath === "/packs" ? "page" : undefined}
-          >
-            Packs
-          </Link>
-          <Link
-            href="/catalog"
-            aria-current={currentPath === "/catalog" ? "page" : undefined}
-          >
-            Catalog
-          </Link>
-          <Link
-            href="/benchmarks"
-            aria-current={currentPath === "/benchmarks" ? "page" : undefined}
-          >
-            Benchmarks
-          </Link>
-          <Link
-            href="/inspect"
-            aria-current={currentPath === "/inspect" ? "page" : undefined}
-          >
-            Inspect
+            Cards
           </Link>
         </nav>
         <div className="nav-actions">

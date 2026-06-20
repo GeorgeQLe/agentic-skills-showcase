@@ -20,8 +20,8 @@ export default function ShowcaseFooter() {
         </div>
         <div>
           <h3>G Skillpacks</h3>
-          <Link href="/catalog">Skills catalog</Link>
-          <Link href="/inspect">Inspect the system</Link>
+          <Link href="/">Browse the packs</Link>
+          <Link href="/follow">Follow the work</Link>
           <p>
             The AFPS pipeline and skill library for Claude Code and Codex.
           </p>

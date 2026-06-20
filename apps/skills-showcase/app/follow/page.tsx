@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import CatalogClient from "@/showcase/catalog";
+import FollowProofClient from "@/showcase/follow-proof";
 import NewsletterFormClient from "@/showcase/newsletter-form";
 
 export const metadata: Metadata = {
@@ -104,19 +104,19 @@ export default function FollowPage() {
           </p>
           <div className="link-row" aria-label="LexCorp links">
             <a href="https://leexperimental.com">Visit LexCorp</a>
-            <Link href="/inspect">Inspect proof</Link>
+            <Link href="/">Browse the packs</Link>
           </div>
         </article>
         <article className="follow-card span-4">
           <span className="coordinate">COMM</span>
           <h3>Join the community</h3>
           <p>
-            Use Discord for the community loop, then return to the catalog and
-            workflow lab for the source system.
+            Use Discord for the community loop, then return to the packs to
+            open the source system.
           </p>
           <div className="link-row" aria-label="Community links">
             <a href="https://discord.gg/TC6STUc5rT">Discord</a>
-            <Link href="/catalog">Browse skills</Link>
+            <Link href="/">Browse the packs</Link>
           </div>
         </article>
       </section>
@@ -137,8 +137,8 @@ export default function FollowPage() {
             private LexCorp performance, or live product metrics.
           </p>
           <div className="cta-row">
-            <Link className="button secondary" href="/inspect">
-              Inspect all receipts
+            <Link className="button secondary" href="/">
+              Browse all the packs
             </Link>
             <a
               className="button secondary"
@@ -160,7 +160,7 @@ export default function FollowPage() {
       >
         <NewsletterFormClient />
       </section>
-      <CatalogClient />
+      <FollowProofClient />
     </main>
   );
 }

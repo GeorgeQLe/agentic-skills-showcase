@@ -47,11 +47,10 @@ export function loadSkillsData(): SkillsData {
 }
 
 /**
- * The mirrorKey dedup the catalog/benchmarks views use: one logical card per
- * mirrorKey. Sorting by path first makes the choice deterministic and picks the
- * claude variant — `…/claude/…` sorts before `…/codex/…`, so it is seen first.
- * Falls back to `name` when a skill carries no mirrorKey (mirrors the inline
- * `text(s.mirrorKey, s.name)` dedup in showcase/benchmarks.tsx).
+ * The mirrorKey dedup the card surfaces use: one logical card per mirrorKey.
+ * Sorting by path first makes the choice deterministic and picks the claude
+ * variant — `…/claude/…` sorts before `…/codex/…`, so it is seen first.
+ * Falls back to `name` when a skill carries no mirrorKey.
  */
 export function dedupeCards(skills: Skill[]): Skill[] {
   const sorted = [...skills].sort((a, b) => a.path.localeCompare(b.path));

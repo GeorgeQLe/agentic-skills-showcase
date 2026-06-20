@@ -57,10 +57,10 @@ export default async function CardPage({
     <main className="card-detail-page min-h-screen bg-zinc-950 text-zinc-100 flex flex-col items-center px-4 py-10 sm:py-16">
       <div className="w-full max-w-3xl">
         <Link
-          href="/catalog"
+          href="/"
           className="inline-flex items-center text-xs text-zinc-500 hover:text-zinc-300 mb-8 transition-colors"
         >
-          ← Back to catalog
+          ← Back to cards
         </Link>
         <CardDetail skill={skill} decks={decks} />
       </div>

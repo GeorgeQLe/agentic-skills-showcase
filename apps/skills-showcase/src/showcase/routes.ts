@@ -4,36 +4,16 @@ export type ShowcaseRoute = {
   description: string;
 };
 
+// Unified-experience Phase 6: `/` is the only content front door (the pack-first
+// landing mounts the deck Table + card surfaces). The folded marketing routes
+// (workflows/packs/catalog/benchmarks/inspect) 308 → `/` via next.config, so the
+// nav surface is the game-metaphor set: Cards (browse), Follow, and Admin. The
+// external LexCorp link is not an app route and lives in the header/footer chrome.
 export const showcaseRoutes = [
   {
     href: "/",
-    label: "Overview",
-    description: "Showcase landing surface migrated from the static index page."
-  },
-  {
-    href: "/workflows",
-    label: "Workflows",
-    description: "Workflow-oriented browsing surface for available skills."
-  },
-  {
-    href: "/packs",
-    label: "Packs",
-    description: "Pack-level grouping and distribution surface."
-  },
-  {
-    href: "/catalog",
-    label: "Catalog",
-    description: "Searchable skill catalog backed by generated metadata."
-  },
-  {
-    href: "/benchmarks",
-    label: "Benchmarks",
-    description: "Aggregated benchmark results from persisted evaluated runs."
-  },
-  {
-    href: "/inspect",
-    label: "Inspect",
-    description: "Proof and metadata inspection surface."
+    label: "Cards",
+    description: "Browse the skill packs and build your workflow deck."
   },
   {
     href: "/follow",

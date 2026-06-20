@@ -5,8 +5,8 @@ import { showcaseRoutes } from "./routes";
 import type { ShowcaseRoute } from "./routes";
 
 describe("showcaseRoutes", () => {
-  it("exports exactly 8 public routes", () => {
-    expect(showcaseRoutes).toHaveLength(8);
+  it("exports exactly 3 public routes", () => {
+    expect(showcaseRoutes).toHaveLength(3);
   });
 
   it("every route has href, label, and description", () => {
@@ -36,23 +36,20 @@ describe("showcaseRoutes", () => {
   it("includes the expected route hrefs", () => {
     const hrefs = showcaseRoutes.map((r) => r.href);
     expect(hrefs).toContain("/");
-    expect(hrefs).toContain("/workflows");
-    expect(hrefs).toContain("/packs");
-    expect(hrefs).toContain("/catalog");
-    expect(hrefs).toContain("/benchmarks");
-    expect(hrefs).toContain("/inspect");
     expect(hrefs).toContain("/follow");
     expect(hrefs).toContain("/admin/newsletter");
   });
 
+  it("does not reference the folded legacy routes", () => {
+    const hrefs = showcaseRoutes.map((r) => r.href);
+    for (const legacy of ["/workflows", "/packs", "/catalog", "/benchmarks", "/inspect"]) {
+      expect(hrefs).not.toContain(legacy);
+    }
+  });
+
   it("includes the expected labels", () => {
     const labels = showcaseRoutes.map((r) => r.label);
-    expect(labels).toContain("Overview");
-    expect(labels).toContain("Workflows");
-    expect(labels).toContain("Packs");
-    expect(labels).toContain("Catalog");
-    expect(labels).toContain("Benchmarks");
-    expect(labels).toContain("Inspect");
+    expect(labels).toContain("Cards");
     expect(labels).toContain("Follow");
     expect(labels).toContain("Admin");
   });

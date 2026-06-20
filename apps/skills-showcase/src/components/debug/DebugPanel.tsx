@@ -43,6 +43,14 @@ export default function DebugPanel() {
       : !window.matchMedia("(max-width: 640px)").matches
   );
 
+  // Unified-experience Phase 6: the deck-debug harness now lives on the public
+  // `/` landing (and the /deck + /prototype surfaces). Hide its gear/panel from
+  // production users entirely. Dev (`pnpm dev`, NODE_ENV !== "production") keeps
+  // it — that is the mode the Playwright deck suite drives the gear in, so the
+  // e2e debug drivers stay intact. The window.__deck* bridges are registered in
+  // DeckTableShell independently of this component, so they are unaffected.
+  if (process.env.NODE_ENV === "production") return null;
+
   if (!dbg.enabled) {
     return (
       <button
