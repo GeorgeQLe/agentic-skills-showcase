@@ -639,6 +639,72 @@ test("completion gather: settled slot cards fly into the stack, then the stack f
   expect(result.revealedBeforeClone).toBe(0);
 });
 
+test("custom deck: ?c= share link round-trips the deck contents (hard-load + re-share)", async ({
+  page,
+}) => {
+  // Read the real card ids from a canonical deck's fan, then compose them into a
+  // custom-deck ?c= param (base64url(JSON), byte-compatible with the encoder).
+  await page.goto(`/deck/${SLUG}`);
+  await openPackViaBridge(page);
+  const ids = await page
+    .locator("[data-card-id]")
+    .evaluateAll((els) => els.map((e) => e.getAttribute("data-card-id")));
+  expect(ids.length).toBeGreaterThan(0);
+  const payload = { n: "My mix", p: [{ k: "scan", n: "Scan", c: ids }] };
+  const enc = Buffer.from(JSON.stringify(payload)).toString("base64url");
+
+  // Hard-load the share link: it decodes straight into the custom builder.
+  await page.goto(`/deck/custom?c=${enc}`);
+  await expect(page.getByTestId("deck-active-slug")).toHaveText("custom");
+  await expect(page.getByTestId("deck-phase")).toHaveText("builder-open");
+
+  // The CLI panel is the custom variant: always unlocked, explicit install list.
+  const cli = page.getByTestId("deck-cli-panel");
+  await expect(cli).toHaveAttribute("data-custom", "true");
+  await expect(cli).toHaveAttribute("data-unlocked", "true");
+  await expect(page.getByTestId("deck-cli-command")).toContainText("npx skillpacks install ");
+
+  // The decoded cards are the deck's contents — the fan shows exactly them.
+  await openPackViaBridge(page);
+  for (const id of ids) {
+    await expect(page.locator(`[data-card-id="${id}"]`)).toBeVisible();
+  }
+
+  // The Share affordance re-encodes a link that itself round-trips.
+  const shareUrl = await page.getByTestId("deck-share-url").textContent();
+  expect(shareUrl).toContain("/deck/custom?c=");
+  await page.goto(shareUrl!);
+  await expect(page.getByTestId("deck-active-slug")).toHaveText("custom");
+  await expect(page.getByTestId("deck-cli-command")).toContainText("npx skillpacks install ");
+});
+
+test("reduced motion: tearing the pack opens the fan and completes the ritual (no deadlock)", async ({
+  page,
+}) => {
+  // emulateMedia drives the CDP reduced-motion override (matchMedia reflects it).
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto(`/deck/${SLUG}`);
+  await expect(page.getByTestId("deck-phase")).toHaveText("builder-open");
+  await expect(page.getByTestId("deck-pack-phase")).toHaveText("sealed");
+
+  // A real tear under reduced motion runs the crossfade open branch (no clip /
+  // curl sweep / card-rise), but onTear/onOpeningApex/onOpen still fire so the
+  // fan opens and the PackFlow machine never deadlocks (§E callbacks).
+  await tearPack(page);
+  await expect(page.getByTestId("deck-pack-phase")).toHaveText("drawer-open");
+
+  const firstCard = page.locator('.deck-fan-card[data-collected="false"]').first();
+  await expect(firstCard).toBeVisible();
+  const id = await firstCard.getAttribute("data-card-id");
+  expect(id).toBeTruthy();
+
+  // The ritual completes: collecting fills the slot (reduced motion = no clone).
+  await firstCard.click();
+  await expect(page.getByTestId(`deck-slot-card-${id}`)).toBeVisible();
+  await expect(page.getByTestId("deck-collected-count")).toHaveText(/^1 \//);
+  await expect(page.locator(".deck-flight-clone")).toHaveCount(0);
+});
+
 test("Back during/after open returns to the table", async ({ page }) => {
   await page.goto(TABLE_PATH);
   await expect(page.getByTestId("deck-phase")).toHaveText("table");
