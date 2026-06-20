@@ -1,3 +1,21 @@
+/* Tailwind utilities (root, every route).
+ *
+ * Phase 5 of the unified-experience build moves the Tailwind import to the root
+ * so utilities resolve on every route — the pack primitives (SealedPack/
+ * BottomSheet/PackOpener/SkillCard), the deck builder, the card surfaces, and
+ * the landing all need them, and they're mounted across `/`, `/deck`, `/card`.
+ * Before Phase 5 each of those routes carried its own scoped `@import
+ * "tailwindcss"` (app/landing.css, app/deck/deck.css, app/card/card.css,
+ * app/prototype/prototype.css) purely because the root had none; those scoped
+ * imports are now retired and this is the single source. The pack-primitive
+ * keyframes they carried are absorbed below (§Pack primitives).
+ *
+ * Preflight (Tailwind's base reset) now applies to the plain-CSS marketing/
+ * newsletter routes for the first time. The reset rules below this import — the
+ * `:root` tokens, the element resets, and the per-component rules — load after
+ * preflight and therefore win, so the marketing pages stay pixel-stable. */
+@import "tailwindcss";
+
 /* === Root Tokens / CSS Variables === */
 
 :root {
@@ -254,6 +272,20 @@ h2,
 h3,
 p {
   margin-top: 0;
+}
+
+/* Preflight compensation (Phase 5): the plain-CSS marketing routes (every
+   `<main class="page">` — /catalog, /packs, /workflows, /benchmarks, /inspect,
+   /follow, /admin/newsletter) were authored against the browser default
+   `p { margin-block: 1em }`. Tailwind's preflight now zeroes that, collapsing the
+   vertical rhythm between prose paragraphs and the controls/CTAs beneath them.
+   Restore the bottom margin scoped to `.page` so the marketing pages stay
+   pixel-stable; component rules that set their own paragraph margin (e.g.
+   `.stage-node p`, `.benchmark-panel p`) come later and still win. The
+   Tailwind-designed surfaces (`.landing`, `.deck-table-shell`, `.card-detail-page`)
+   are outside `.page`, so their gap-based prose layout is untouched. */
+.page p {
+  margin-bottom: 1em;
 }
 
 h1 {
@@ -1504,6 +1536,53 @@ a.tag-link:hover {
   .workflow-lab__header {
     gap: 16px;
   }
+}
+
+/* === Pack primitives (shared keyframes) ===
+ *
+ * Used by the booster-pack primitives (SealedPack/BottomSheet/PackOpener/
+ * SkillCard) on `/`, `/deck`, `/card`, and the `/prototype` debug harness.
+ * Absorbed here in Phase 5 from the retired scoped CSS files (deck.css /
+ * landing.css / prototype.css) so they live in a single source.
+ * --debug-speed is set on :root only while the debug harness is enabled; the
+ * `,1` fallback keeps the production timing when off. */
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes arrow-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+.tear-hint-arrow {
+  animation: arrow-pulse calc(2s / var(--debug-speed, 1)) ease-in-out infinite;
+}
+
+@keyframes scrim-pulse {
+  0%, 100% { opacity: 0.6; }
+  50%      { opacity: 0.8; }
+}
+
+.scrim-pulse { animation: scrim-pulse 0.2s ease-in-out 3; }
+
+.shimmer-foil {
+  background-image: linear-gradient(
+    110deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.08) 30%,
+    rgba(255, 255, 255, 0.15) 38%,
+    rgba(255, 255, 255, 0.08) 46%,
+    transparent 55%
+  );
+  background-size: 200% 100%;
+  animation: shimmer calc(3s / var(--debug-speed, 1)) ease-in-out infinite;
 }
 
 /* === Deck builder (motion-free skeleton) === */

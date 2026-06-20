@@ -1,5 +1,3 @@
-import "./prototype.css";
-
 export const metadata = {
   title: "Card Pack Prototype",
 };
