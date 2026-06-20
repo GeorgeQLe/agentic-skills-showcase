@@ -54,7 +54,18 @@ import { usePathname, useRouter } from "next/navigation";
 import { useDebug } from "@/components/debug/DebugController";
 import SealedPack, { type SealedPackHandle } from "@/components/SealedPack";
 import { usePackFlow, PackFlowSheet } from "@/components/PackRitual";
-import { buildDecks, getDeckBySlug, type Deck } from "@/deck-builder/decks";
+import {
+  buildDecks,
+  deckPacks,
+  getDeckBySlug,
+  CUSTOM_SLUG,
+  type Deck,
+} from "@/deck-builder/decks";
+import {
+  buildCustomDeck,
+  customInstallLines,
+  encodeDeckParam,
+} from "@/deck-builder/shareDeck";
 import { useSkillsData, type Skill } from "@/hooks/useSkillsData";
 
 /** Table route — the `/` landing that hosts the deck blueprint table (Phase 4
@@ -205,19 +216,6 @@ function writeCollected(slug: string, ids: string[]): void {
   }
 }
 
-/** Unique packs feeding a deck, in stable card order — the `enabled_packs` set. */
-function deckPacks(deck: Deck): string[] {
-  const seen = new Set<string>();
-  const packs: string[] = [];
-  for (const skill of deck.skills) {
-    if (skill.pack && !seen.has(skill.pack)) {
-      seen.add(skill.pack);
-      packs.push(skill.pack);
-    }
-  }
-  return packs;
-}
-
 /**
  * buildDeckProjectJson — the deck's `.agents/project.json` payload (§6 output).
  * Mirrors the project designation shape (`enabled_packs` + `skill_pack_version`)
@@ -227,7 +225,7 @@ function deckPacks(deck: Deck): string[] {
 export function buildDeckProjectJson(deck: Deck): string {
   return JSON.stringify(
     {
-      enabled_packs: deckPacks(deck),
+      enabled_packs: deckPacks(deck.skills),
       skill_pack_version: 1,
       deck: { slug: deck.slug, name: deck.name },
     },
@@ -239,11 +237,14 @@ export function buildDeckProjectJson(deck: Deck): string {
 interface DeckTableShellProps {
   hardLoad?: boolean;
   initialDeckSlug?: string | null;
+  /** Raw `?c=` share param when hard-loading `/deck/custom?c=…` (§8). */
+  customDeckParam?: string | null;
 }
 
 export default function DeckTableShell({
   hardLoad = false,
   initialDeckSlug = null,
+  customDeckParam = null,
 }: DeckTableShellProps) {
   const pathname = usePathname();
   const data = useSkillsData();
@@ -455,7 +456,18 @@ export default function DeckTableShell({
     () => (data ? buildDecks(data) : []),
     [data],
   );
-  const activeDeck = getDeckBySlug(decks, activeDeckSlug);
+  // Synthetic custom deck decoded from the `?c=` share param (§8). Backend-free
+  // — the deck's whole content round-trips through the URL. Null when absent or
+  // malformed, so the lookup falls back to the canonical table.
+  const customDeck = useMemo<Deck | null>(
+    () => (data && customDeckParam ? buildCustomDeck(customDeckParam, data) : null),
+    [data, customDeckParam],
+  );
+  const activeDeck =
+    activeDeckSlug === CUSTOM_SLUG
+      ? customDeck
+      : getDeckBySlug(decks, activeDeckSlug);
+  const isCustomActive = activeDeckSlug === CUSTOM_SLUG;
   const collectedCardIds = activeDeckSlug
     ? collectedBySlug[activeDeckSlug] ?? []
     : [];
@@ -515,6 +527,7 @@ export default function DeckTableShell({
               deck={activeDeck}
               phase={phase}
               reducedMotion={reducedMotion}
+              morphless={isCustomActive}
               collectedCardIds={collectedCardIds}
               onCollect={(cardId) => collectCard(activeDeck.slug, cardId)}
               onClose={closeDeck}
@@ -616,6 +629,7 @@ function BuilderPanel({
   deck,
   phase,
   reducedMotion,
+  morphless = false,
   collectedCardIds,
   onCollect,
   onClose,
@@ -625,6 +639,11 @@ function BuilderPanel({
   deck: Deck;
   phase: DeckFlowPhase;
   reducedMotion: boolean;
+  // A custom deck (decoded from `?c=`) has no blueprint tile on the table to
+  // share the morph `layoutId` with, so it opens/closes via the same crossfade
+  // the reduced-motion path uses — no layout morph, AnimatePresence still drives
+  // the close completion. Card-flight/gather motion is unaffected.
+  morphless?: boolean;
   collectedCardIds: string[];
   onCollect: (cardId: string) => void;
   onClose: () => void;
@@ -927,7 +946,10 @@ function BuilderPanel({
   // Reduced motion omits the layoutId and crossfades the panel over 120 ms,
   // firing the same completion callback order (§E) — the open/close handlers
   // fire those synchronously, so no layout callback is wired in that mode.
-  const layoutId = reducedMotion ? undefined : `deck-blueprint-${deck.slug}`;
+  // Crossfade (no layout morph) under reduced motion OR for a morphless custom
+  // deck — both lack a co-mounted blueprint owner to morph against.
+  const crossfade = reducedMotion || morphless;
+  const layoutId = crossfade ? undefined : `deck-blueprint-${deck.slug}`;
   const contentState = phase === "builder-open" ? "visible" : "hidden";
   const settledCount = settledIds.size;
   // Deck completion (§6): every card has settled into its slot. The celebratory
@@ -999,21 +1021,21 @@ function BuilderPanel({
       aria-label={`${deck.name} builder`}
       layoutId={layoutId}
       transition={dbg.scaleT(
-        reducedMotion ? { duration: 0.12 } : MORPH_LAYOUT_TRANSITION,
+        crossfade ? { duration: 0.12 } : MORPH_LAYOUT_TRANSITION,
       )}
       // Open morph land (§D open step 3 / §F): gate the boundary so stepped mode
       // can freeze it; in auto/disabled mode gate() resolves immediately. The
       // Vitest bridge calls onOpenMorphComplete directly, bypassing the gate.
       onLayoutAnimationComplete={
-        reducedMotion
+        crossfade
           ? undefined
           : () => {
               void dbg.gate("blueprint-morph-in").then(onOpenMorphComplete);
             }
       }
-      initial={reducedMotion ? { opacity: 0 } : false}
-      animate={reducedMotion ? { opacity: 1 } : undefined}
-      exit={reducedMotion ? { opacity: 0 } : undefined}
+      initial={crossfade ? { opacity: 0 } : false}
+      animate={crossfade ? { opacity: 1 } : undefined}
+      exit={crossfade ? { opacity: 0 } : undefined}
     >
       <motion.header
         className="deck-builder-head"
@@ -1202,10 +1224,17 @@ function BuilderCliPanel({
   settledCount: number;
   contentState: "visible" | "hidden";
 }) {
+  // A custom/modified deck (the `custom` slug) emits the explicit per-pack
+  // install list + overlay lines and is always "unlocked" — it arrives already
+  // composed via its `?c=` share link, so there is nothing to collect first.
+  // A canonical starter keeps the locked/unlocked one-line `install-deck`.
+  const isCustom = deck.slug === CUSTOM_SLUG;
   const required = deck.skills.length;
   const remaining = Math.max(0, required - settledCount);
-  const unlocked = required > 0 && remaining === 0;
-  const command = `npx skillpacks install-deck ${deck.slug}`;
+  const unlocked = isCustom || (required > 0 && remaining === 0);
+  const command = isCustom
+    ? customInstallLines(deck).join("\n")
+    : `npx skillpacks install-deck ${deck.slug}`;
 
   // Transient "Copied" affordance feedback. Cleared on a timer so a second copy
   // re-flashes it; best-effort because clipboard access can reject (no HTTPS /
@@ -1236,13 +1265,18 @@ function BuilderCliPanel({
       className="deck-cli-panel"
       data-testid="deck-cli-panel"
       data-unlocked={String(unlocked)}
+      data-custom={String(isCustom)}
       custom={4}
       variants={contentVariants}
       initial="hidden"
       animate={contentState}
       exit={contentExit}
     >
-      <code className="deck-cli-command" data-testid="deck-cli-command">
+      <code
+        className="deck-cli-command"
+        data-testid="deck-cli-command"
+        data-multiline={String(isCustom)}
+      >
         {command}
       </code>
       {unlocked ? (
@@ -1259,7 +1293,62 @@ function BuilderCliPanel({
           🔒 {remaining} more to unlock
         </span>
       )}
+      {isCustom ? <ShareDeckControl deck={deck} /> : null}
     </motion.div>
+  );
+}
+
+/**
+ * ShareDeckControl — the custom-deck "Share deck" affordance (§8). Encodes the
+ * deck's contents into a `/deck/custom?c=…` link (backend-free), copies it to
+ * the clipboard (best-effort), and renders the link into a selectable readout so
+ * the share URL is reachable without clipboard access. A canonical starter deck
+ * shares by slug from the completion panel instead, so this only mounts for the
+ * custom deck.
+ */
+function ShareDeckControl({ deck }: { deck: Deck }) {
+  const shareUrl = useMemo(() => {
+    const path = `/deck/${CUSTOM_SLUG}?c=${encodeDeckParam(deck)}`;
+    return typeof window !== "undefined"
+      ? `${window.location.origin}${path}`
+      : path;
+  }, [deck]);
+
+  const [shared, setShared] = useState(false);
+  const timerRef = useRef<number | null>(null);
+  useEffect(
+    () => () => {
+      if (timerRef.current !== null) window.clearTimeout(timerRef.current);
+    },
+    [],
+  );
+  const handleShare = useCallback(() => {
+    void navigator.clipboard?.writeText(shareUrl).then(
+      () => {
+        setShared(true);
+        if (timerRef.current !== null) window.clearTimeout(timerRef.current);
+        timerRef.current = window.setTimeout(() => setShared(false), 1500);
+      },
+      () => {
+        /* clipboard unavailable; the readout link stays selectable. */
+      },
+    );
+  }, [shareUrl]);
+
+  return (
+    <>
+      <button
+        type="button"
+        className="deck-cli-copy"
+        data-testid="deck-cli-share"
+        onClick={handleShare}
+      >
+        {shared ? "Link copied ✓" : "Share deck"}
+      </button>
+      <code className="deck-share-url" data-testid="deck-share-url">
+        {shareUrl}
+      </code>
+    </>
   );
 }
 
@@ -1287,7 +1376,10 @@ function DeckCompletionPanel({
   onKeepEditing: () => void;
 }) {
   const dbg = useDebug();
-  const command = `npx skillpacks install-deck ${deck.slug}`;
+  const isCustom = deck.slug === CUSTOM_SLUG;
+  const command = isCustom
+    ? customInstallLines(deck).join("\n")
+    : `npx skillpacks install-deck ${deck.slug}`;
 
   // Transient affordance feedback for share (link copied) and download, mirroring
   // the CLI panel's best-effort clipboard pattern. Cleared on a timer.
@@ -1301,10 +1393,15 @@ function DeckCompletionPanel({
   );
 
   const handleShare = useCallback(() => {
+    // Canonical decks share by slug; a custom deck encodes its contents into a
+    // backend-free `?c=` link so the customized config round-trips (§8).
+    const path = isCustom
+      ? `/deck/${CUSTOM_SLUG}?c=${encodeDeckParam(deck)}`
+      : `/deck/${deck.slug}`;
     const url =
       typeof window !== "undefined"
-        ? `${window.location.origin}/deck/${deck.slug}`
-        : `/deck/${deck.slug}`;
+        ? `${window.location.origin}${path}`
+        : path;
     void navigator.clipboard?.writeText(url).then(
       () => {
         setShared(true);
@@ -1315,7 +1412,7 @@ function DeckCompletionPanel({
         /* clipboard unavailable; the deck URL is still the slug route. */
       },
     );
-  }, [deck.slug]);
+  }, [deck, isCustom]);
 
   const handleDownload = useCallback(() => {
     const json = buildDeckProjectJson(deck);

@@ -1921,6 +1921,25 @@ a.tag-link:hover {
   border-color: rgba(94, 234, 212, 0.7);
 }
 
+/* Custom-deck output (§8): the explicit per-pack install list wraps across
+   lines instead of the single-line `install-deck` command, and the share link
+   gets its own selectable, full-width readout below the controls. */
+.deck-cli-command[data-multiline="true"] {
+  white-space: pre-line;
+  word-break: break-word;
+  color: #f0fdfa;
+}
+
+.deck-share-url {
+  flex: 1 1 100%;
+  min-width: 0;
+  color: rgba(148, 163, 184, 0.85);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.74rem;
+  word-break: break-all;
+  user-select: all;
+}
+
 /* Deck-complete output panel (§6): when every card settles the deck "completes"
    — the panel gathers in (scale) and flips (the SkillCard card-flip idiom,
    rotateY + backface-visibility, scaled up) to reveal its back, the output

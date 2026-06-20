@@ -36,6 +36,31 @@ export interface Deck {
   tempo: string;
   phases: Phase[];
   skills: Skill[];
+  /**
+   * Overlay packs/cards layered onto a *custom* deck (cards composed beyond a
+   * canonical blueprint, e.g. decoded from a `?c=` share link). Empty/undefined
+   * for canonical decks. `overlayPacks` drives the custom-deck install output's
+   * overlay `install <pack>` lines; `overlaySkills` round-trips through `?c=`.
+   */
+  overlayPacks?: string[];
+  overlaySkills?: Skill[];
+}
+
+/** Slug of the synthetic, share-encoded custom deck (`/deck/custom?c=…`). */
+export const CUSTOM_SLUG = "custom";
+
+/** Unique packs feeding a card list, in stable card order — the `enabled_packs`
+ *  set. Shared by the project.json builder and the custom-deck install output. */
+export function deckPacks(skills: Skill[]): string[] {
+  const seen = new Set<string>();
+  const packs: string[] = [];
+  for (const skill of skills) {
+    if (skill.pack && !seen.has(skill.pack)) {
+      seen.add(skill.pack);
+      packs.push(skill.pack);
+    }
+  }
+  return packs;
 }
 
 /**

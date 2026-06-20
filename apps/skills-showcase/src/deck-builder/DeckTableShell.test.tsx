@@ -514,6 +514,37 @@ describe("DeckTableShell blueprint-morph", () => {
     });
   });
 
+  it("custom deck: ?c= hard-load decodes contents and emits the explicit install list + share link", () => {
+    // A custom deck (skill-a + skill-b, both pack vard) encoded into ?c=.
+    const param = Buffer.from(
+      JSON.stringify({ n: "My mix", p: [{ k: "scan", n: "Scan", c: ["skill-a", "skill-b"] }] }),
+    ).toString("base64url");
+
+    render(<DeckTableShell hardLoad initialDeckSlug="custom" customDeckParam={param} />);
+
+    // Decodes straight into builder-open as the synthetic custom deck.
+    expect(screen.getByTestId("deck-active-slug").textContent).toBe("custom");
+    expect(phase()).toBe("builder-open");
+
+    // The CLI panel is custom: always unlocked, multi-line explicit install list
+    // (one per distinct pack), not the one-line install-deck.
+    const cli = screen.getByTestId("deck-cli-panel");
+    expect(cli).toHaveAttribute("data-unlocked", "true");
+    expect(cli).toHaveAttribute("data-custom", "true");
+    expect(screen.getByTestId("deck-cli-command").textContent).toBe(
+      "npx skillpacks install vard",
+    );
+
+    // The share affordance produces a backend-free /deck/custom?c= round-trip link.
+    expect(screen.getByTestId("deck-cli-share")).toBeInTheDocument();
+    expect(screen.getByTestId("deck-share-url").textContent).toContain("/deck/custom?c=");
+
+    // The decoded cards are the deck's contents — the fan shows exactly them.
+    openPack();
+    expect(screen.getByTestId("deck-card-skill-a")).toBeInTheDocument();
+    expect(screen.getByTestId("deck-card-skill-b")).toBeInTheDocument();
+  });
+
   it("wanted rims: first card of each empty phase glows; clears once its slot fills", () => {
     // VARD's fixture has two phases (scan, align); skill-a maps to column 0,
     // skill-b to column 1, so both columns start empty and both cards are wanted.

@@ -29,6 +29,7 @@ import DebugPanel from "@/components/debug/DebugPanel";
 interface DeckDebugHarnessProps {
   hardLoad?: boolean;
   initialDeckSlug?: string | null;
+  customDeckParam?: string | null;
 }
 
 export default function DeckDebugHarness(props: DeckDebugHarnessProps) {

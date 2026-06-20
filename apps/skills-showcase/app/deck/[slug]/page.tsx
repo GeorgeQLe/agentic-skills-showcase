@@ -8,9 +8,21 @@ export const metadata: Metadata = {
 
 export default async function DeckPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { slug } = await params;
-  return <DeckDebugHarness hardLoad initialDeckSlug={slug} />;
+  const sp = await searchParams;
+  // `/deck/custom?c=…` carries the share-encoded custom deck (§8). Non-custom
+  // routes ignore it.
+  const customDeckParam = typeof sp.c === "string" ? sp.c : null;
+  return (
+    <DeckDebugHarness
+      hardLoad
+      initialDeckSlug={slug}
+      customDeckParam={customDeckParam}
+    />
+  );
 }
