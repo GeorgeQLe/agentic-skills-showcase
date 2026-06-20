@@ -1,6 +1,9 @@
 # Deck-Builder Experience Design
 
-**Status:** Decided with user (2026-06-10)
+> **⚠️ SUPERSEDED (2026-06-19) by [`unified-experience.md`](./unified-experience.md).**
+> The "Entry flow = Deck-first" decision below is reversed in favor of **pack-opening-first** (`/` is a CTA landing + domain picker, not the blueprint grid). The builder mechanics that ship today — phase slots, tap-to-add flight, completion output — survive and are folded into the unified spec. Read this doc only for the implementation-phasing history of the builder; treat the unified spec as authoritative for the journey.
+
+**Status:** Superseded — was Decided with user (2026-06-10)
 **Upstream brief:** `alignment/idea-scope-brief-skills-showcase.html` (amended confirmed, five-deck model)
 **Scope:** UX design for the gskillpacks.com deck-builder rebuild. Implementation phasing at the end. Visual styling stays in the established dark prototype theme (`app/prototype/prototype.css`).
 
