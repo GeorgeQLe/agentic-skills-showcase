@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useLayoutEffect, useState, useMemo, useCallback } from "react";
+import { useRef, useLayoutEffect, useEffect, useState, useMemo, useCallback } from "react";
 import { motion, useMotionValue, animate } from "framer-motion";
 import { Maximize2 } from "lucide-react";
 import SkillCard from "./SkillCard";
@@ -75,6 +75,17 @@ export default function PackOpener({ skills, packName, isClosing, onCollapseComp
   const [collapseState, setCollapseState] = useState<CollapseState | null>(null);
   const card0X = useMotionValue(0);
   const card0Y = useMotionValue(0);
+
+  // prefers-reduced-motion: under reduce the fan entrance drops the staggered
+  // spring for a flat 120 ms crossfade with no per-card delay and no transform
+  // (§E pack-primitive reduced-motion branch). Read on mount (matchMedia mirrors
+  // Playwright's emulateMedia / the OS setting); default full-motion on SSR.
+  const [reducedMotion, setReducedMotion] = useState(false);
+  useEffect(() => {
+    setReducedMotion(
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false,
+    );
+  }, []);
 
   const collapseCompleteFiredRef = useRef(false);
   const onCollapseCompleteRef = useRef(onCollapseComplete);
@@ -455,26 +466,38 @@ export default function PackOpener({ skills, packName, isClosing, onCollapseComp
           return (
             <motion.div
               key={skill.id}
-              initial={{
-                x: offset.x,
-                y: offset.y,
-                opacity: 0,
-                scale: 0.8,
-                rotateZ: rotations[i],
-              }}
-              animate={{
-                x: 0,
-                y: 0,
-                opacity: 1,
-                scale: 1,
-                rotateZ: 0,
-              }}
-              transition={dbg.scaleT({
-                type: "spring",
-                stiffness: 200,
-                damping: 25,
-                delay: staggerDelay,
-              })}
+              initial={
+                reducedMotion
+                  ? { opacity: 0 }
+                  : {
+                      x: offset.x,
+                      y: offset.y,
+                      opacity: 0,
+                      scale: 0.8,
+                      rotateZ: rotations[i],
+                    }
+              }
+              animate={
+                reducedMotion
+                  ? { opacity: 1 }
+                  : {
+                      x: 0,
+                      y: 0,
+                      opacity: 1,
+                      scale: 1,
+                      rotateZ: 0,
+                    }
+              }
+              transition={
+                reducedMotion
+                  ? dbg.scaleT({ duration: 0.12 })
+                  : dbg.scaleT({
+                      type: "spring",
+                      stiffness: 200,
+                      damping: 25,
+                      delay: staggerDelay,
+                    })
+              }
               onAnimationComplete={
                 isLastFan
                   ? () => {

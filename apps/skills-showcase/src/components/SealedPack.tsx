@@ -71,6 +71,18 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
   const debugEnabled = dbg.enabled;
   const debugReport = dbg.report;
 
+  // prefers-reduced-motion: under reduce the open sequence (flap clip + curl
+  // sweep + card-rise) collapses to an instant reveal that requests the open
+  // straight away — no transform animation (§E pack-primitive reduced-motion
+  // branch). The onOpeningApex/onOpen callbacks STILL fire so the PackFlow
+  // machine advances and the ritual never deadlocks. Read via a ref so the
+  // synchronous open paths see it without waiting on a re-render.
+  const reducedMotionRef = useRef(false);
+  useEffect(() => {
+    reducedMotionRef.current =
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+  }, []);
+
   const dragX = useMotionValue(0);
   const curlOpacity = useMotionValue(1);
 
@@ -123,7 +135,7 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
     onOpeningApex?.();
     await dbg.gate("elevate-card");
     await dbg.gate("request-open");
-    if (dbg.isStepping()) {
+    if (dbg.isStepping() || reducedMotionRef.current) {
       onOpen(getOrigin());
     } else {
       setTimeout(() => onOpen(getOrigin()), 200);
@@ -132,6 +144,21 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
 
   function completeTear() {
     hasTriggered.current = true;
+    // Reduced motion: reveal the torn pack instantly (no clip/curl sweep), fire
+    // onTear, and — when auto-opening — go straight to the open request, skipping
+    // the card-rise. Callbacks still fire so the flow machine advances (§E).
+    if (reducedMotionRef.current) {
+      pendingOpen.current = false;
+      debugReport({ machine: { pack: { pendingOpen: false } } });
+      dragX.set(PACK_WIDTH);
+      curlOpacity.set(0);
+      void (async () => {
+        await dbg.gate("tear");
+        onTear?.();
+        if (autoOpenOnTear) await proceedToOpen();
+      })();
+      return;
+    }
     // Tearing only unseals the pack. Auto-open is a one-time onboarding
     // affordance reserved for the very first tear on the page.
     pendingOpen.current = !!autoOpenOnTear;
@@ -312,6 +339,12 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
 
     if (current >= DRAG_UP_THRESHOLD) {
       hasCardTriggered.current = true;
+      // Reduced motion: skip the card-rise, request the open directly (§E).
+      if (reducedMotionRef.current) {
+        cardDragY.set(0);
+        void proceedToOpen();
+        return;
+      }
       animate(cardDragY, 0, dbg.scaleT({
         type: "tween", ease: [0.34, 1.56, 0.64, 1], duration: 0.4,
       }));
@@ -340,6 +373,11 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
   function handlePackClick() {
     if (hasCardTriggered.current) return;
     hasCardTriggered.current = true;
+    // Reduced motion: skip the card-rise, request the open directly (§E).
+    if (reducedMotionRef.current) {
+      void proceedToOpen();
+      return;
+    }
     animate(cardSlideY, -24, dbg.scaleT({ duration: 0.2 })).then(() => {
       animate(cardSlideY, -180, dbg.scaleT({
         type: "tween", ease: [0.34, 1.56, 0.64, 1], duration: 0.4,
