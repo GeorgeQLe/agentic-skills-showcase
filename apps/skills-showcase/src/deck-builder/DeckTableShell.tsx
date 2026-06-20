@@ -57,8 +57,9 @@ import { usePackFlow, PackFlowSheet } from "@/components/PackRitual";
 import { buildDecks, getDeckBySlug, type Deck } from "@/deck-builder/decks";
 import { useSkillsData, type Skill } from "@/hooks/useSkillsData";
 
-/** Table route — the entry point that lists deck blueprints. */
-const TABLE_PATH = "/prototype/deck-routing-spike";
+/** Table route — the `/` landing that hosts the deck blueprint table (Phase 4
+ * promoted the Table to the front door; closing a deck returns here). */
+const TABLE_PATH = "/";
 
 /**
  * DeckFlowPhase — the full lifecycle from the plan. In this skeleton slice

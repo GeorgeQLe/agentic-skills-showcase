@@ -24,11 +24,18 @@ describe("smoke rendering", () => {
     cleanup();
   });
 
-  it("HomePage renders hero and navigation links", () => {
+  // Phase 4: HomePage is now the pack-first landing. Without the injected
+  // window.SKILLS_SHOWCASE_DATA it renders the loading surface; the footer (and
+  // its preserved links) renders below regardless. The full picker/journey is
+  // covered with mocked data in landing/LandingExperience.test.tsx.
+  it("HomePage renders the landing surface and preserved footer", () => {
     render(<HomePage />);
-    expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
-    expect(screen.getByText("See the Pipeline")).toBeInTheDocument();
-    expect(screen.getByText("Follow G’s Work")).toBeInTheDocument();
+    expect(screen.getByTestId("landing-loading")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "The AFPS pipeline and skill library for Claude Code and Codex.",
+      ),
+    ).toBeInTheDocument();
   });
 
   it("ShowcaseHeader renders the G Skillpacks icon", () => {
@@ -36,13 +43,6 @@ describe("smoke rendering", () => {
     const icon = document.querySelector(".brand-mark") as HTMLImageElement;
     expect(icon).toBeInTheDocument();
     expect(icon.getAttribute("src")).toBe("/icon.png");
-  });
-
-  it("HomePage renders route cards", () => {
-    render(<HomePage />);
-    expect(screen.getByText("Workflow Lab")).toBeInTheDocument();
-    expect(screen.getByText("Pack Map")).toBeInTheDocument();
-    expect(screen.getByText("Skill Catalog")).toBeInTheDocument();
   });
 
   it("WorkflowsPage renders title and controls", () => {

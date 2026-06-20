@@ -1,0 +1,53 @@
+/* Tailwind utilities + pack-primitive keyframes for the `/` landing route.
+ *
+ * Phase 4 of the unified-experience build promotes the deck Table to the front
+ * door: `/` now mounts the pack-opening ritual (SealedPack/BottomSheet/
+ * PackOpener/SkillCard) plus the deck blueprint table (DeckTableShell). Those
+ * primitives are authored entirely with Tailwind utility classes, but the root
+ * globals.css carries no Tailwind import — so without this the sheet loses its
+ * `fixed` overlay and the cards lose their sizing. This scoped import enables
+ * Tailwind for the landing only (mirroring app/deck/deck.css), leaving the other
+ * non-Tailwind marketing/catalog routes untouched. The deck-builder's own chrome
+ * styles + the landing chrome below live in globals.css (loaded from the root
+ * layout). Phase 5 unifies Tailwind to the root and retires these scoped imports. */
+@import "tailwindcss";
+
+/* === Keyframes used by the pack primitives (copied from deck.css) === */
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes arrow-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+.tear-hint-arrow {
+  animation: arrow-pulse calc(2s / var(--debug-speed, 1)) ease-in-out infinite;
+}
+
+@keyframes scrim-pulse {
+  0%, 100% { opacity: 0.6; }
+  50%      { opacity: 0.8; }
+}
+
+.scrim-pulse { animation: scrim-pulse 0.2s ease-in-out 3; }
+
+.shimmer-foil {
+  background-image: linear-gradient(
+    110deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.08) 30%,
+    rgba(255, 255, 255, 0.15) 38%,
+    rgba(255, 255, 255, 0.08) 46%,
+    transparent 55%
+  );
+  background-size: 200% 100%;
+  animation: shimmer calc(3s / var(--debug-speed, 1)) ease-in-out infinite;
+}

@@ -1,6 +1,10 @@
 import { expect, test } from "@playwright/test";
 
-const TABLE_PATH = "/prototype/deck-routing-spike";
+// Phase 4 promoted the deck Table to the `/` landing (the routing spike is
+// gone). The Table is mounted below the landing's pack-opening hero from first
+// paint, so the deck-routing contract (mount-id stability, blueprint↔builder
+// morph, debug drivers) is reached at `/` exactly as it was at the spike path.
+const TABLE_PATH = "/";
 const SLUG = "vard";
 
 // The card-flight source is now the torn-pack fan. The adapted flight specs fan

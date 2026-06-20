@@ -126,7 +126,7 @@ function mockReducedMotion(matches: boolean) {
 describe("DeckTableShell blueprint-morph", () => {
   beforeEach(() => {
     installLocalStorage();
-    window.history.pushState({}, "", "/prototype/deck-routing-spike");
+    window.history.pushState({}, "", "/");
   });
 
   afterEach(() => {
