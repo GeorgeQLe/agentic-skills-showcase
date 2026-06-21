@@ -59,6 +59,11 @@ test("selecting a project advances to Stage 2 OPEN with its pack allotment", asy
   await expect(page.getByTestId("landing-counter")).toContainText("Pack 0 of");
   await expect(page.getByTestId("landing-pack-vard")).toBeVisible();
 
+  // The workflow ribbon shows the VARD deck's phases (scan · align · ship).
+  await expect(page.getByTestId("landing-phase-ribbon")).toBeVisible();
+  await expect(page.getByTestId("landing-phase-scan")).toBeVisible();
+  await expect(page.getByTestId("landing-phase-ship")).toBeVisible();
+
   // Tear the VARD pack — autoOpenOnTear fans it into the bottom sheet in inspect
   // mode: bare flip cards, NO collect affordance (those exist only in builder).
   await tearPack(page, "vard");

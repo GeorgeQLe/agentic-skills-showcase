@@ -21,24 +21,18 @@
  * flips it. Collection is a builder-only behavior reached at Stage 3.
  */
 
-import { useCallback, useEffect, useMemo, useRef } from "react";
-import {
-  AnimatePresence,
-  LayoutGroup,
-  motion,
-  useReducedMotion,
-} from "framer-motion";
-import Link from "next/link";
+import { useEffect, useMemo, useRef } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 import { useSkillsData, type GeneratedDeck, type Skill } from "@/hooks/useSkillsData";
-import SealedPack from "@/components/SealedPack";
-import { usePackFlow, PackFlowSheet } from "@/components/PackRitual";
+import { usePackFlow } from "@/components/PackRitual";
 
 import type { DomainOption, PackCard } from "./types";
-import { useStageMachine, type StageMachine } from "./useStageMachine";
+import { useStageMachine } from "./useStageMachine";
 import { DOMAIN_META, DOMAIN_ORDER } from "./projectMeta";
 import StageProgress from "./StageProgress";
 import SelectStage from "./SelectStage";
+import OpenStage from "./OpenStage";
 import BuildStage from "./BuildStage";
 
 function prettyPackName(name: string): string {
@@ -253,154 +247,5 @@ function StageController({
       {/* Stage 3: always mounted, visibility-toggled (see BuildStage contract). */}
       <BuildStage active={stage === 3} />
     </>
-  );
-}
-
-/* --- Stage 2: OPEN (Phase 3 plain form; Phase 5 adds the workflow ribbon) --- */
-
-function OpenStage({
-  machine,
-  flow,
-  headerRef,
-  openedInAllotment,
-  allOpened,
-}: {
-  machine: StageMachine;
-  flow: ReturnType<typeof usePackFlow>;
-  headerRef: React.RefObject<HTMLElement | null>;
-  openedInAllotment: number;
-  allOpened: boolean;
-}) {
-  const { allotment, selectedDeck, domain } = machine;
-  const { openedPacks, activePack } = flow;
-
-  return (
-    <section className="open-stage" aria-labelledby="open-stage-title" ref={headerRef}>
-      <div className="landing-opening-head">
-        <h2 id="open-stage-title" className="landing-section-title">
-          {selectedDeck?.name} starter packs
-        </h2>
-        <p className="landing-counter" data-testid="landing-counter">
-          Pack {openedInAllotment} of {allotment.length} opened
-        </p>
-      </div>
-
-      <LayoutGroup>
-        <div className="landing-pack-shelf" data-testid="landing-pack-shelf">
-          {allotment.map((pack, index) => {
-            const isActive = activePack?.packName === pack.slug;
-            const isDrawerResident =
-              isActive &&
-              (flow.phase === "drawer-open" ||
-                flow.phase === "closing-collapse" ||
-                flow.phase === "closing-apex");
-            return (
-              <motion.div
-                key={pack.slug}
-                className="landing-pack-cell"
-                data-testid={`landing-pack-${pack.slug}`}
-                initial={{ opacity: 0, scale: 0.8, rotateZ: -4 }}
-                animate={{ opacity: 1, scale: 1, rotateZ: 0 }}
-                transition={{
-                  type: "spring",
-                  stiffness: 260,
-                  damping: 24,
-                  delay: Math.min(index, 8) * 0.06,
-                }}
-              >
-                <SealedPack
-                  name={pack.slug}
-                  skillCount={pack.skills.length}
-                  previewSkill={pack.skills[0] ?? null}
-                  onOpeningApex={flow.handleOpeningApex}
-                  onOpen={(origin) => flow.handleOpen(pack.slug, origin)}
-                  onTear={() => flow.handleTear(pack.slug)}
-                  onCardSettleComplete={flow.handleCardSettleComplete}
-                  apexAlignRef={isActive ? headerRef : undefined}
-                  autoOpenOnTear
-                  isOpened={openedPacks.has(pack.slug)}
-                  isDrawerOpen={isDrawerResident}
-                  flowPhase={isActive ? flow.phase : "sealed"}
-                />
-              </motion.div>
-            );
-          })}
-        </div>
-
-        {/* Inspect mode: no onCollect / onCollectAll, so a fanned card flips on
-            tap and there is no slot to fly to. */}
-        <PackFlowSheet
-          flow={flow}
-          packName={
-            activePack
-              ? allotment.find((p) => p.slug === activePack.packName)?.name ?? ""
-              : ""
-          }
-          skills={
-            activePack
-              ? allotment.find((p) => p.slug === activePack.packName)?.skills ?? []
-              : []
-          }
-        />
-      </LayoutGroup>
-
-      {allOpened && domain ? (
-        <HandoffChooser
-          domain={domain}
-          starterSlug={selectedDeck?.slug ?? domain.starter?.slug ?? null}
-          onBuild={machine.goToBuild}
-        />
-      ) : (
-        <p className="landing-opening-hint" data-testid="landing-opening-hint">
-          Tear a pack along the dotted line to fan its cards. Open all{" "}
-          {allotment.length} to choose your deck.
-        </p>
-      )}
-    </section>
-  );
-}
-
-function HandoffChooser({
-  domain,
-  starterSlug,
-  onBuild,
-}: {
-  domain: DomainOption;
-  starterSlug: string | null;
-  onBuild: () => void;
-}) {
-  const starter =
-    domain.decks.find((d) => d.slug === starterSlug) ?? domain.starter ?? null;
-  return (
-    <div className="landing-handoff" data-testid="landing-handoff">
-      <h3 className="landing-handoff-title">Your packs are open — now build.</h3>
-      <div className="landing-handoff-choices">
-        {starter ? (
-          <Link
-            className="landing-handoff-primary"
-            data-testid="landing-handoff-starter"
-            href={`/deck/${encodeURIComponent(starter.slug)}`}
-          >
-            <span className="landing-handoff-kicker">Load the starter</span>
-            <span className="landing-handoff-name">{starter.name}</span>
-            <span className="landing-handoff-meta">
-              The curated {domain.label} deck, ready to fill.
-            </span>
-          </Link>
-        ) : null}
-        <button
-          type="button"
-          className="landing-handoff-secondary"
-          data-testid="landing-handoff-build"
-          onClick={onBuild}
-        >
-          <span className="landing-handoff-kicker">Build in place</span>
-          <span className="landing-handoff-name">Open the deck table</span>
-          <span className="landing-handoff-meta">
-            Stay here and build on the blueprint table.
-          </span>
-        </button>
-      </div>
-    </div>
   );
 }

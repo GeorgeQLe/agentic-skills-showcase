@@ -106,6 +106,9 @@ describe("LandingExperience (staged journey)", () => {
     expect(screen.getByTestId("landing-pack-business-research")).toBeInTheDocument();
     expect(screen.getByTestId("landing-counter")).toHaveTextContent("Pack 0 of 2 opened");
     expect(screen.queryByTestId("landing-handoff")).not.toBeInTheDocument();
+    // The workflow ribbon hints where the cards will land — the deck's phases.
+    expect(screen.getByTestId("landing-phase-ribbon")).toBeInTheDocument();
+    expect(screen.getByTestId("landing-phase-scan")).toHaveTextContent("Scan");
   });
 
   it("openAll surfaces the hand-off chooser → /deck/<selected>", () => {

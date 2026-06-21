@@ -2739,6 +2739,52 @@ a.tag-link:hover {
   font-size: 0.95rem;
 }
 
+/* --- Workflow / phase ribbon (where the cards will go) --- */
+
+.landing-phase-ribbon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0 28px;
+  padding: 16px;
+  border: 1px dashed color-mix(in srgb, var(--accent) 35%, transparent);
+  border-radius: 12px;
+  background: var(--surface-bg);
+}
+
+.landing-phase-ribbon-label {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.landing-phase-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.landing-phase-chip {
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.landing-phase-sep {
+  color: var(--surface-muted);
+  font-weight: 700;
+}
+
 /* --- Hand-off chooser --- */
 
 .landing-handoff {
