@@ -2379,6 +2379,163 @@ a.tag-link:hover {
   color: var(--ink);
 }
 
+/* --- Staged journey (Select · Open · Build) --- */
+
+.stage-screen {
+  min-height: 60vh;
+}
+
+.stage-progress {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 28px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.stage-back {
+  flex: 0 0 auto;
+  padding: 6px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--panel-soft);
+  color: var(--muted);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.stage-back:hover {
+  border-color: var(--teal);
+  color: var(--teal-strong);
+}
+
+.stage-steps {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stage-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.stage-step:not(:last-child)::after {
+  content: "";
+  width: 22px;
+  height: 1px;
+  margin-left: 4px;
+  background: var(--line);
+}
+
+.stage-step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--line);
+  background: var(--panel-soft);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.stage-step[data-current="true"] {
+  color: var(--ink);
+}
+
+.stage-step[data-current="true"] .stage-step-num {
+  border-color: var(--teal);
+  background: color-mix(in srgb, var(--teal) 16%, transparent);
+  color: var(--teal-strong);
+}
+
+.stage-step[data-complete="true"] .stage-step-num {
+  border-color: var(--teal);
+  background: var(--teal);
+  color: #06241d;
+}
+
+.stage-context {
+  margin-left: auto;
+  color: var(--accent);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+/* --- Stage 1: SELECT --- */
+
+.select-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.select-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 22px;
+  text-align: left;
+  border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
+  border-radius: 12px;
+  background: var(--surface-panel);
+  color: var(--surface-ink);
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.select-card:hover {
+  border-color: color-mix(in srgb, var(--accent) 95%, transparent);
+  transform: translateY(-2px);
+}
+
+.select-card[data-selected="true"] {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 1px var(--teal), 0 14px 40px rgba(0, 212, 170, 0.18);
+}
+
+.select-card-name {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.select-card-domain {
+  color: var(--surface-muted);
+  font-size: 0.88rem;
+}
+
+.select-card-meta {
+  margin-top: 4px;
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* --- Stage 3: BUILD (always mounted; visibility-toggled) ---
+ * Inactive uses visibility:hidden (NOT display:none) so the deck blueprint keeps
+ * a measurable box for the layoutId morph origin and the shell never remounts. */
+.build-stage {
+  width: min(100% - 40px, 1180px);
+  margin: 0 auto;
+}
+
+.build-stage[data-stage-active="false"] {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
 /* --- Domain picker --- */
 
 .landing-domain-row {

@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, render, screen } from "@testing-library/react";
 
-// Two domains so the picker → CTA reactivity (and domain switch) is exercised.
-// Each pack carries at least one skill so the allotment shelf is non-empty, and
-// each deck resolves to a non-empty builder so the mounted hand-off table is real.
+// Staged journey: Select (project/goal) → Open (pack allotment) → Build (table).
+// jsdom can't tear packs or run framer transitions, so the stage flow is driven
+// through the window.__landing bridge (select/build/openAll/back).
 const skills = [
   {
     id: "skill-a", name: "skill-a", title: "Skill A", pack: "vard",
@@ -45,7 +45,16 @@ vi.mock("@/hooks/useSkillsData", () => ({
 
 import LandingExperience from "./LandingExperience";
 
-describe("LandingExperience", () => {
+type Bridge = {
+  stage: () => number;
+  select: (slug: string) => void;
+  build: () => void;
+  back: () => void;
+  openAll: () => void;
+};
+const bridge = () => (window as unknown as { __landing: Bridge }).__landing;
+
+describe("LandingExperience (staged journey)", () => {
   beforeEach(() => {
     // The mounted deck table reads localStorage; give it a working stub.
     const store = new Map<string, string>();
@@ -67,68 +76,65 @@ describe("LandingExperience", () => {
     delete (window as { __landing?: unknown }).__landing;
   });
 
-  it("renders the picker with a tile per domain, business picked by default", () => {
+  it("opens on Stage 1 SELECT with a project per starter deck", () => {
     render(<LandingExperience />);
-    expect(screen.getByTestId("landing-domain-business")).toHaveAttribute("data-picked", "true");
-    expect(screen.getByTestId("landing-domain-game")).toHaveAttribute("data-picked", "false");
-    // Default CTA sub-label reflects the business allotment (2 packs, 2 skills).
-    expect(screen.getByTestId("landing-cta-sub")).toHaveTextContent("2 packs · 2 skills");
-    expect(screen.getByTestId("landing-cta")).toHaveTextContent("Open your Business starter packs");
+    expect(screen.getByTestId("landing")).toHaveAttribute("data-stage", "1");
+    expect(screen.getByTestId("landing-project-vard")).toBeInTheDocument();
+    expect(screen.getByTestId("landing-project-business-afps")).toBeInTheDocument();
+    expect(screen.getByTestId("landing-project-game-afps")).toBeInTheDocument();
   });
 
-  it("picking a domain updates the CTA sub-label and label", () => {
+  it("select(slug) advances to Stage 2 OPEN with the deck's pack allotment", () => {
     render(<LandingExperience />);
-    fireEvent.click(screen.getByTestId("landing-domain-game"));
-    expect(screen.getByTestId("landing-domain-game")).toHaveAttribute("data-picked", "true");
-    expect(screen.getByTestId("landing-cta-sub")).toHaveTextContent("1 packs · 1 skills");
-    expect(screen.getByTestId("landing-cta")).toHaveTextContent("Open your Game starter packs");
-  });
-
-  it("the CTA deals the picked domain's pack allotment", () => {
-    render(<LandingExperience />);
-    fireEvent.click(screen.getByTestId("landing-cta"));
-    // The journey starts: a sealed pack per allotment pack, counter at 0 of N.
+    act(() => bridge().select("vard"));
+    expect(screen.getByTestId("landing")).toHaveAttribute("data-stage", "2");
     expect(screen.getByTestId("landing-pack-shelf")).toBeInTheDocument();
     expect(screen.getByTestId("landing-pack-vard")).toBeInTheDocument();
     expect(screen.getByTestId("landing-pack-business-research")).toBeInTheDocument();
     expect(screen.getByTestId("landing-counter")).toHaveTextContent("Pack 0 of 2 opened");
-    // No hand-off yet — packs are still sealed.
     expect(screen.queryByTestId("landing-handoff")).not.toBeInTheDocument();
   });
 
-  it("surfaces the hand-off chooser once every allotment pack is opened", () => {
+  it("openAll surfaces the hand-off chooser → /deck/<selected>", () => {
     render(<LandingExperience />);
-    fireEvent.click(screen.getByTestId("landing-cta"));
-    // Drive the opened-pack set through the test bridge (jsdom can't tear packs).
-    act(() => {
-      (window as unknown as { __landing: { openAll: () => void } }).__landing.openAll();
-    });
+    act(() => bridge().select("vard"));
+    act(() => bridge().openAll());
     expect(screen.getByTestId("landing-counter")).toHaveTextContent("Pack 2 of 2 opened");
-    const handoff = screen.getByTestId("landing-handoff");
-    expect(handoff).toBeInTheDocument();
-    // Starter = the curated non-AFPS business deck (VARD) → /deck/vard.
+    expect(screen.getByTestId("landing-handoff")).toBeInTheDocument();
     expect(screen.getByTestId("landing-handoff-starter")).toHaveAttribute("href", "/deck/vard");
-    // The other domain deck appears in the blueprint strip.
-    expect(
-      screen.getByTestId("landing-handoff-blueprint-business-afps"),
-    ).toHaveAttribute("href", "/deck/business-afps");
   });
 
-  it("the hand-off starter falls back to the AFPS deck for single-deck domains", () => {
+  it("build() advances to Stage 3 with the deck table present", () => {
     render(<LandingExperience />);
-    fireEvent.click(screen.getByTestId("landing-domain-game"));
-    fireEvent.click(screen.getByTestId("landing-cta"));
-    act(() => {
-      (window as unknown as { __landing: { openAll: () => void } }).__landing.openAll();
-    });
-    expect(screen.getByTestId("landing-handoff-starter")).toHaveAttribute("href", "/deck/game-afps");
-  });
-
-  it("mounts the deck blueprint table below the journey (hand-off destination)", () => {
-    render(<LandingExperience />);
-    // The table is present from first paint in `table` phase, with its blueprints.
-    expect(screen.getByTestId("landing-table")).toBeInTheDocument();
-    expect(screen.getByTestId("deck-table-surface")).toBeInTheDocument();
+    act(() => bridge().select("vard"));
+    act(() => bridge().build());
+    expect(screen.getByTestId("landing")).toHaveAttribute("data-stage", "3");
+    expect(screen.getByTestId("landing-build-stage")).toHaveAttribute("data-stage-active", "true");
     expect(screen.getByTestId("deck-blueprint-vard")).toBeInTheDocument();
+  });
+
+  it("back() steps Stage 3 → 2 → 1", () => {
+    render(<LandingExperience />);
+    act(() => bridge().select("vard"));
+    act(() => bridge().build());
+    expect(bridge().stage()).toBe(3);
+    act(() => bridge().back());
+    expect(screen.getByTestId("landing")).toHaveAttribute("data-stage", "2");
+    act(() => bridge().back());
+    expect(screen.getByTestId("landing")).toHaveAttribute("data-stage", "1");
+  });
+
+  it("keeps the deck table mounted across every stage (mount stability)", () => {
+    render(<LandingExperience />);
+    // Stage 1: the build stage + its harness are already mounted (hidden).
+    expect(screen.getByTestId("landing-build-stage")).toBeInTheDocument();
+    expect(screen.getByTestId("deck-table-surface")).toBeInTheDocument();
+    const surface = screen.getByTestId("deck-table-surface");
+
+    act(() => bridge().select("vard"));
+    expect(screen.getByTestId("deck-table-surface")).toBe(surface); // same node, not remounted
+
+    act(() => bridge().build());
+    expect(screen.getByTestId("deck-table-surface")).toBe(surface);
   });
 });

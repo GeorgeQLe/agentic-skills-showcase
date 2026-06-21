@@ -1,12 +1,13 @@
 import { expect, test } from "@playwright/test";
 
-// Phase 4: `/` is the pack-first landing — domain picker + CTA that deals the
-// picked domain's sealed-pack allotment, runs each through the PackFlow ritual in
-// inspect mode (tap = flip, no collect), then surfaces the hand-off chooser. The
-// deck blueprint table is mounted below as the hand-off destination (its routing
-// contract is covered by deck-table-shell.spec.ts, which now starts here).
+// The landing is a guided three-stage journey:
+//   Stage 1 SELECT  pick a project/goal → its starter deck
+//   Stage 2 OPEN    tear that deck's domain pack allotment (inspect mode)
+//   Stage 3 BUILD   the deck blueprint table (DeckDebugHarness → DeckTableShell)
+// Stages 1/2 mount-and-animate; Stage 3 is the always-mounted, visibility-
+// toggled table (its routing/morph contract is covered by deck-table-shell.spec).
 
-// Real tear gesture on a landing-shelf SealedPack's drag zone (top third).
+// Real tear gesture on a Stage-2 shelf SealedPack's drag zone (top third).
 async function tearPack(
   page: import("@playwright/test").Page,
   slug: string,
@@ -24,89 +25,110 @@ async function tearPack(
   await page.mouse.up();
 }
 
-test("picker defaults to business and the CTA reflects the picked allotment", async ({
-  page,
-}) => {
+// Drive Select → Build through the bridge to reveal the always-mounted table.
+async function revealTable(page: import("@playwright/test").Page, slug: string) {
+  await page.waitForFunction(() =>
+    Boolean((window as unknown as { __landing?: unknown }).__landing),
+  );
+  await page.evaluate((s) => {
+    const bridge = (window as unknown as {
+      __landing?: { select: (x: string) => void; build: () => void };
+    }).__landing;
+    bridge?.select(s);
+    bridge?.build();
+  }, slug);
+}
+
+test("Stage 1 SELECT shows a project per starter deck", async ({ page }) => {
   await page.goto("/");
 
-  await expect(page.getByTestId("landing-domain-business")).toHaveAttribute(
-    "data-picked",
-    "true",
-  );
-  await expect(page.getByTestId("landing-cta")).toContainText(
-    "Open your Business starter packs",
-  );
-
-  // Picking another domain updates the CTA label + sub-label live.
-  await page.getByTestId("landing-domain-game").click();
-  await expect(page.getByTestId("landing-domain-game")).toHaveAttribute(
-    "data-picked",
-    "true",
-  );
-  await expect(page.getByTestId("landing-cta")).toContainText("Open your Game starter packs");
-  await expect(page.getByTestId("landing-cta-sub")).toContainText("1 packs");
+  await expect(page.getByTestId("landing")).toHaveAttribute("data-stage", "1");
+  await expect(page.getByTestId("landing-project-vard")).toBeVisible();
+  await expect(page.getByTestId("landing-project-ord")).toBeVisible();
+  await expect(page.getByTestId("landing-project-game-afps")).toBeVisible();
 });
 
-test("CTA deals the allotment, a pack tears open in inspect mode (no collect)", async ({
+test("selecting a project advances to Stage 2 OPEN with its pack allotment", async ({
   page,
 }) => {
   await page.goto("/");
-  await page.getByTestId("landing-cta").click();
+  await page.getByTestId("landing-project-vard").click();
 
-  // The business allotment is dealt as a shelf of sealed packs; counter at 0/N.
+  await expect(page.getByTestId("landing")).toHaveAttribute("data-stage", "2");
   await expect(page.getByTestId("landing-pack-shelf")).toBeVisible();
   await expect(page.getByTestId("landing-counter")).toContainText("Pack 0 of");
   await expect(page.getByTestId("landing-pack-vard")).toBeVisible();
 
-  // Tear the VARD pack — autoOpenOnTear fans it into the bottom sheet.
+  // Tear the VARD pack — autoOpenOnTear fans it into the bottom sheet in inspect
+  // mode: bare flip cards, NO collect affordance (those exist only in builder).
   await tearPack(page, "vard");
-
-  // Inspect mode: the fan renders bare flip cards. Crucially there is NO collect
-  // affordance — `[data-card-id]` / `.deck-fan-card` only exist in builder mode.
   await expect(page.locator(".max-w-4xl .perspective-\\[800px\\]").first()).toBeVisible();
   await expect(page.locator("[data-card-id]")).toHaveCount(0);
   await expect(page.locator(".deck-fan-card")).toHaveCount(0);
-
-  // The torn pack counts as opened.
   await expect(page.getByTestId("landing-counter")).toContainText("Pack 1 of");
 });
 
-test("opening the whole allotment surfaces the hand-off chooser → /deck/<slug>", async ({
+test("back nav steps Stage 2 → Stage 1", async ({ page }) => {
+  await page.goto("/");
+  await page.getByTestId("landing-project-vard").click();
+  await expect(page.getByTestId("landing")).toHaveAttribute("data-stage", "2");
+
+  await page.getByTestId("landing-stage-back").click();
+  await expect(page.getByTestId("landing")).toHaveAttribute("data-stage", "1");
+  await expect(page.getByTestId("landing-project-vard")).toBeVisible();
+});
+
+test("opening the whole allotment surfaces the hand-off → /deck/<slug>", async ({
   page,
 }) => {
   await page.goto("/");
-  await page.getByTestId("landing-cta").click();
+  await page.getByTestId("landing-project-vard").click();
   await expect(page.getByTestId("landing-pack-shelf")).toBeVisible();
 
-  // Tearing every pack by hand is slow/flaky; drive the opened set via the same
-  // bridge the journey exposes for tests, then assert the real hand-off UI.
+  // Tearing every pack by hand is slow/flaky; drive the opened set via the bridge.
   await page.evaluate(() => {
     (window as unknown as { __landing?: { openAll: () => void } }).__landing?.openAll();
   });
 
-  const handoff = page.getByTestId("landing-handoff");
-  await expect(handoff).toBeVisible();
-  // Starter = the curated non-AFPS business deck (VARD).
+  await expect(page.getByTestId("landing-handoff")).toBeVisible();
   await expect(page.getByTestId("landing-handoff-starter")).toHaveAttribute(
     "href",
     "/deck/vard",
   );
 
-  // Following the starter lands the hard-loaded builder for that deck.
+  // Following the starter hard-loads the builder for that deck.
   await page.getByTestId("landing-handoff-starter").click();
   await expect(page).toHaveURL(/\/deck\/vard$/);
   await expect(page.getByTestId("deck-phase")).toHaveText("builder-open");
   await expect(page.getByTestId("deck-entry-mode")).toHaveText("hard-load");
 });
 
-test("the hand-off 'build a deck' table is the same surface the deck morph uses", async ({
+test("'build in place' goes to Stage 3 BUILD without leaving the page", async ({
   page,
 }) => {
   await page.goto("/");
-  // The blueprint table is mounted below the journey from first paint, so a deck
-  // blueprint is reachable and its in-place pushState morph works at `/` (the
-  // full morph contract is asserted in deck-table-shell.spec.ts).
-  await expect(page.getByTestId("landing-table")).toBeVisible();
+  await page.getByTestId("landing-project-vard").click();
+  await page.evaluate(() => {
+    (window as unknown as { __landing?: { openAll: () => void } }).__landing?.openAll();
+  });
+
+  await page.getByTestId("landing-handoff-build").click();
+  await expect(page.getByTestId("landing")).toHaveAttribute("data-stage", "3");
+  await expect(page.getByTestId("landing-build-stage")).toHaveAttribute(
+    "data-stage-active",
+    "true",
+  );
+  await expect(page.getByTestId("deck-blueprint-vard")).toBeVisible();
+});
+
+test("the Stage 3 table is the same surface the deck morph uses", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await revealTable(page, "vard");
+  await expect(page.getByTestId("deck-blueprint-vard")).toBeVisible();
+
+  // The in-place pushState morph works at `/` (full contract in deck-table-shell).
   await page.getByTestId("deck-blueprint-vard").click();
   await expect(page).toHaveURL(/\/deck\/vard$/);
   await expect(page.getByTestId("deck-phase")).toHaveText("builder-open");

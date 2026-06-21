@@ -7,6 +7,25 @@ import { expect, test } from "@playwright/test";
 const TABLE_PATH = "/";
 const SLUG = "vard";
 
+// The deck Table now lives in Stage 3 (BUILD) of the staged landing journey and
+// is hidden (visibility-toggled, never unmounted) until reached. Drive the
+// journey to BUILD via the window bridge so the blueprint table is visible and
+// interactive, exactly as a user would arrive after Select → Open → Build. The
+// shell stays mounted the whole time, so the routing/morph contract is intact.
+async function revealTable(page: import("@playwright/test").Page) {
+  await page.waitForFunction(() =>
+    Boolean((window as unknown as { __landing?: unknown }).__landing),
+  );
+  await page.evaluate((slug) => {
+    const bridge = (window as unknown as {
+      __landing?: { select: (s: string) => void; build: () => void };
+    }).__landing;
+    bridge?.select(slug);
+    bridge?.build();
+  }, SLUG);
+  await expect(page.getByTestId(`deck-blueprint-${SLUG}`)).toBeVisible();
+}
+
 // The card-flight source is now the torn-pack fan. The adapted flight specs fan
 // the pack through the window bridge BuilderPackFlow exposes (the same hook the
 // Vitest suite uses), then wait for the fanned cards to mount.
@@ -40,6 +59,7 @@ test("pushState routing opens/closes the builder and keeps the shell mounted", a
   page,
 }) => {
   await page.goto(TABLE_PATH);
+  await revealTable(page);
 
   await expect(page.getByTestId("deck-pathname")).toHaveText(TABLE_PATH);
   await expect(page.getByTestId("deck-phase")).toHaveText("table");
@@ -138,6 +158,7 @@ test("blueprint-morph open/close never double-visions and gates content on build
   page,
 }) => {
   await page.goto(TABLE_PATH);
+  await revealTable(page);
   await expect(page.getByTestId("deck-phase")).toHaveText("table");
 
   await installMorphSampler(page);
@@ -177,6 +198,7 @@ test("blueprint-morph restores focus to the originating blueprint on close", asy
   // post-commit focus restoration and masks it. The double-vision contract is
   // covered by the sampling test above; this isolates the §A focus guarantee.
   await page.goto(TABLE_PATH);
+  await revealTable(page);
   await expect(page.getByTestId("deck-phase")).toHaveText("table");
 
   await page.getByTestId(`deck-blueprint-${SLUG}`).click();
@@ -192,6 +214,7 @@ test("debug harness drives the deck open/close morph via registered drivers (§F
   page,
 }) => {
   await page.goto(TABLE_PATH);
+  await revealTable(page);
   await expect(page.getByTestId("deck-phase")).toHaveText("table");
 
   // The harness is mounted on the deck route (DebugProvider + DebugPanel).
@@ -707,6 +730,7 @@ test("reduced motion: tearing the pack opens the fan and completes the ritual (n
 
 test("Back during/after open returns to the table", async ({ page }) => {
   await page.goto(TABLE_PATH);
+  await revealTable(page);
   await expect(page.getByTestId("deck-phase")).toHaveText("table");
 
   await page.getByTestId(`deck-blueprint-${SLUG}`).click();
