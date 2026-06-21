@@ -10,6 +10,7 @@ import Script from "next/script";
 import ShowcaseHeader from "@/showcase/ShowcaseHeader";
 import MobilePanel from "@/showcase/MobilePanel";
 import ShowcaseShell from "@/showcase/ShowcaseShell";
+import { NO_FLASH_SCRIPT } from "@/showcase/theme";
 import { TRPCProvider } from "@/trpc/provider";
 
 import "./globals.css";
@@ -46,8 +47,10 @@ export default function RootLayout({
   modal: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Set data-theme before paint so the surface theme never flashes. */}
+        <script dangerouslySetInnerHTML={{ __html: NO_FLASH_SCRIPT }} />
         <Script src="/assets/skills-data.js" strategy="beforeInteractive" />
         <Script
           src="/assets/github-proof-data.js"

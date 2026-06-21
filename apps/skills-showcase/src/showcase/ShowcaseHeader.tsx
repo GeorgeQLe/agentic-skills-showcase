@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import ThemeToggle from "@/showcase/ThemeToggle";
+
 export default function ShowcaseHeader() {
   const currentPath = usePathname();
 
@@ -40,6 +42,7 @@ export default function ShowcaseHeader() {
           >
             Follow
           </Link>
+          <ThemeToggle />
         </div>
         <button
           className="menu-button"
