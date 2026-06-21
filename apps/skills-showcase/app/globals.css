@@ -2552,53 +2552,229 @@ a.tag-link:hover {
   font-weight: 600;
 }
 
-/* Secondary deck-centric list */
+/* === Secondary browse affordance (Stage 1) + shared deck cards === */
 
-.select-secondary {
+.browse-section {
   margin-top: 44px;
   padding-top: 28px;
   border-top: 1px solid var(--line);
 }
 
-.select-domain-groups {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 20px;
+.browse-section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
 }
 
-.select-domain-label {
-  margin: 0 0 10px;
-  color: var(--muted);
-  font-size: 0.78rem;
+.browse-section-title {
+  margin: 0;
+  color: var(--surface-muted);
+  font-size: 0.95rem;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
-.select-deck-list {
+.browse-library-link {
+  color: var(--accent);
+  font-size: 0.92rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.browse-library-link:hover {
+  text-decoration: underline;
+}
+
+.browse-deck-grid,
+.deck-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+/* DeckCard — shared by the `/` BrowseSection and the /library Decks tab. */
+.deck-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-panel);
+  color: var(--surface-ink);
+  text-decoration: none;
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.deck-card:hover {
+  border-color: color-mix(in srgb, var(--accent) 70%, transparent);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.deck-card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.deck-card-name {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.deck-card-domain {
+  color: var(--surface-muted);
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.deck-card-tempo {
+  color: var(--accent);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.deck-card-phases {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
+}
+
+.deck-card-meta {
+  margin-top: auto;
+  color: var(--surface-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+/* === /library === */
+
+.library {
+  width: min(100% - 40px, 1180px);
+  margin: 0 auto;
+  padding: 32px 0 64px;
+}
+
+.library-header {
+  margin-bottom: 24px;
+}
+
+.library-title {
+  margin: 0 0 6px;
+  font-size: 1.9rem;
+  font-weight: 800;
+  color: var(--surface-ink);
+}
+
+.library-lede {
   margin: 0;
-  padding: 0;
-  list-style: none;
+  color: var(--surface-muted);
+  font-size: 1rem;
 }
 
-.select-deck-pick {
-  padding: 8px 16px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-pill);
-  background: var(--panel-soft);
-  color: var(--ink);
-  font-size: 0.9rem;
+.library-tablist {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.library-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--surface-muted);
+  font-size: 0.95rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: border-color 0.15s, color 0.15s;
+  transition: color 0.15s ease, border-color 0.15s ease;
 }
 
-.select-deck-pick:hover,
-.select-deck-pick[data-selected="true"] {
-  border-color: var(--teal);
-  color: var(--teal-strong);
+.library-tab[data-active="true"] {
+  color: var(--surface-ink);
+  border-bottom-color: var(--accent);
+}
+
+.library-tab-count {
+  padding: 1px 8px;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  color: var(--accent);
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.library-filter-bar {
+  margin-bottom: 16px;
+}
+
+.library-filter-meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--surface-muted);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.library-clear {
+  border: none;
+  background: none;
+  color: var(--accent);
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.library-clear:hover {
+  text-decoration: underline;
+}
+
+.library-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.library-tile {
+  display: block;
+  min-height: 180px;
+  border-radius: 14px;
+  text-decoration: none;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.library-tile:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.library-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 56px 20px;
+  border: 1px dashed var(--line);
+  border-radius: 14px;
+  color: var(--surface-muted);
+  text-align: center;
 }
 
 /* --- Stage 3: BUILD (always mounted; visibility-toggled) ---

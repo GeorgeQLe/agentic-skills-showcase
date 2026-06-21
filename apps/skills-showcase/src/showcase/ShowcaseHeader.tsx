@@ -32,6 +32,12 @@ export default function ShowcaseHeader() {
           >
             Cards
           </Link>
+          <Link
+            href="/library"
+            aria-current={currentPath === "/library" ? "page" : undefined}
+          >
+            Library
+          </Link>
         </nav>
         <div className="nav-actions">
           <a href="https://leexperimental.com">LexCorp</a>

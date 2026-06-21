@@ -85,14 +85,21 @@ describe("LandingExperience (staged journey)", () => {
     expect(vard).toHaveTextContent("Validate a business idea");
     expect(screen.getByTestId("landing-project-business-afps")).toBeInTheDocument();
     expect(screen.getByTestId("landing-project-game-afps")).toBeInTheDocument();
-    // Secondary deck-centric list groups the same decks by domain.
-    expect(screen.getByTestId("landing-deck-pick-vard")).toBeInTheDocument();
-    expect(screen.getByTestId("landing-deck-pick-game-afps")).toBeInTheDocument();
   });
 
-  it("the secondary deck list also advances to Stage 2", () => {
+  it("the secondary BrowseSection links decks straight to the builder", () => {
     render(<LandingExperience />);
-    act(() => screen.getByTestId("landing-deck-pick-game-afps").click());
+    // BrowseSection deck cards are <Link>s to the builder (returning-user path),
+    // NOT onSelect buttons — they hard-load /deck/<slug>, skipping the journey.
+    expect(screen.getByTestId("deck-card-vard")).toHaveAttribute("href", "/deck/vard");
+    expect(screen.getByTestId("deck-card-game-afps")).toHaveAttribute("href", "/deck/game-afps");
+    // …and a prominent link routes to the full /library catalog.
+    expect(screen.getByTestId("landing-browse-library")).toHaveAttribute("href", "/library");
+  });
+
+  it("the primary goal cards still drive the bridge into Stage 2 (new-user path)", () => {
+    render(<LandingExperience />);
+    act(() => screen.getByTestId("landing-project-game-afps").click());
     expect(screen.getByTestId("landing")).toHaveAttribute("data-stage", "2");
     expect(screen.getByTestId("landing-pack-game")).toBeInTheDocument();
   });

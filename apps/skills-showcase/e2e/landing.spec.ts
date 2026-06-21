@@ -138,3 +138,25 @@ test("the Stage 3 table is the same surface the deck morph uses", async ({
   await expect(page).toHaveURL(/\/deck\/vard$/);
   await expect(page.getByTestId("deck-phase")).toHaveText("builder-open");
 });
+
+test("the BrowseSection deck card hard-loads the builder (returning-user path)", async ({
+  page,
+}) => {
+  await page.goto("/");
+  // The secondary browse grid sits below the primary goal cards; its deck cards
+  // link straight to the builder, skipping the staged journey.
+  const browseDeck = page.getByTestId("landing-browse-grid").locator("a").first();
+  const href = await browseDeck.getAttribute("href");
+  expect(href).toMatch(/^\/deck\//);
+  await browseDeck.click();
+  await expect(page).toHaveURL(new RegExp(`${href}$`));
+  await expect(page.getByTestId("deck-entry-mode")).toHaveText("hard-load");
+  await expect(page.getByTestId("deck-phase")).toHaveText("builder-open");
+});
+
+test("'Browse the full library' routes to /library", async ({ page }) => {
+  await page.goto("/");
+  await page.getByTestId("landing-browse-library").click();
+  await expect(page).toHaveURL(/\/library$/);
+  await expect(page.getByTestId("library")).toBeVisible();
+});

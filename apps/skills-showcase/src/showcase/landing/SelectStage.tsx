@@ -13,12 +13,8 @@ import { useMemo } from "react";
 
 import type { GeneratedDeck } from "@/hooks/useSkillsData";
 import type { DomainOption } from "./types";
-import {
-  DOMAIN_META,
-  DOMAIN_ORDER,
-  PROJECT_ORDER,
-  getProjectMeta,
-} from "./projectMeta";
+import { PROJECT_ORDER, getProjectMeta } from "./projectMeta";
+import BrowseSection from "@/showcase/library/BrowseSection";
 
 export default function SelectStage({
   domains,
@@ -54,17 +50,6 @@ export default function SelectStage({
       return i === -1 ? PROJECT_ORDER.length : i;
     };
     return [...decks].sort((a, b) => rank(a.slug) - rank(b.slug));
-  }, [decks]);
-
-  // Secondary list: decks grouped by domain.
-  const decksByDomain = useMemo(() => {
-    const map = new Map<string, GeneratedDeck[]>();
-    for (const deck of decks) {
-      const list = map.get(deck.domain);
-      if (list) list.push(deck);
-      else map.set(deck.domain, [deck]);
-    }
-    return map;
   }, [decks]);
 
   return (
@@ -117,37 +102,7 @@ export default function SelectStage({
         })}
       </div>
 
-      <section className="select-secondary" aria-labelledby="select-secondary-title">
-        <h2 id="select-secondary-title" className="landing-section-title">
-          …or pick the deck that fits your goals
-        </h2>
-        <div className="select-domain-groups">
-          {DOMAIN_ORDER.filter((d) => decksByDomain.has(d)).map((domainKey) => {
-            const groupDecks = decksByDomain.get(domainKey) ?? [];
-            const label = DOMAIN_META[domainKey]?.label ?? domainKey;
-            return (
-              <div className="select-domain-group" key={domainKey}>
-                <p className="select-domain-label">{label}</p>
-                <ul className="select-deck-list">
-                  {groupDecks.map((deck) => (
-                    <li key={deck.slug}>
-                      <button
-                        type="button"
-                        className="select-deck-pick"
-                        data-testid={`landing-deck-pick-${deck.slug}`}
-                        data-selected={String(deck.slug === selectedSlug)}
-                        onClick={() => onSelect(deck.slug)}
-                      >
-                        {deck.name}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            );
-          })}
-        </div>
-      </section>
+      <BrowseSection decks={orderedDecks} countsByDomain={countsByDomain} />
     </section>
   );
 }
