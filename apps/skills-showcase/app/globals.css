@@ -1676,7 +1676,7 @@ a.tag-link:hover {
 
 .deck-eyebrow {
   margin: 0 0 6px;
-  color: #5eead4;
+  color: var(--accent);
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -1709,16 +1709,16 @@ a.tag-link:hover {
   min-height: 120px;
   padding: 18px;
   text-align: left;
-  border: 1px solid rgba(94, 234, 212, 0.5);
+  border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
   border-radius: 10px;
-  background: linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(17, 24, 39, 0.92));
-  color: #f8fafc;
+  background: var(--surface-panel);
+  color: var(--surface-ink);
   cursor: pointer;
   transition: border-color 0.15s ease, transform 0.15s ease;
 }
 
 .deck-blueprint:hover:not(:disabled) {
-  border-color: rgba(94, 234, 212, 0.95);
+  border-color: color-mix(in srgb, var(--accent) 95%, transparent);
   transform: translateY(-2px);
 }
 
@@ -1748,9 +1748,9 @@ a.tag-link:hover {
 .deck-builder {
   margin-top: 28px;
   padding: 22px;
-  border: 1px solid rgba(148, 163, 184, 0.28);
+  border: 1px solid var(--surface-line);
   border-radius: 12px;
-  background: linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(17, 24, 39, 0.92));
+  background: var(--surface-panel);
   /* Morph target: match the source blueprint's transform-origin so the chrome
      rectangle morphs continuously from the same corner. */
   transform-origin: top left;
@@ -1767,7 +1767,7 @@ a.tag-link:hover {
 
 .deck-builder-head h2 {
   margin: 0 0 6px;
-  color: #f8fafc;
+  color: var(--surface-ink);
 }
 
 .deck-builder-head small {
@@ -1776,15 +1776,15 @@ a.tag-link:hover {
 
 .deck-back {
   padding: 10px 14px;
-  border: 1px solid rgba(148, 163, 184, 0.4);
+  border: 1px solid var(--surface-line);
   border-radius: 8px;
-  background: rgba(2, 6, 23, 0.5);
-  color: #e2e8f0;
+  background: var(--surface-bg);
+  color: var(--surface-ink);
   cursor: pointer;
 }
 
 .deck-back:hover {
-  border-color: rgba(148, 163, 184, 0.7);
+  border-color: var(--surface-muted);
 }
 
 .deck-slot-columns {
@@ -1797,9 +1797,9 @@ a.tag-link:hover {
 .deck-slot-column {
   min-height: 120px;
   padding: 12px;
-  border: 1px dashed rgba(148, 163, 184, 0.32);
+  border: 1px dashed var(--surface-line);
   border-radius: 8px;
-  background: rgba(2, 6, 23, 0.4);
+  background: var(--surface-bg);
   /* When a card-flight scrolls a slot into view (block: "start"), leave room at
      the top so the slot lands above the fixed pack sheet, not flush at y=0. */
   scroll-margin-top: 72px;
@@ -1807,14 +1807,14 @@ a.tag-link:hover {
 
 .deck-slot-label {
   margin: 0 0 10px;
-  color: #5eead4;
+  color: var(--accent);
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 0.82rem;
 }
 
 .deck-slot-empty {
   margin: 0;
-  color: rgba(148, 163, 184, 0.55);
+  color: var(--surface-muted);
   font-size: 0.82rem;
 }
 
@@ -1830,8 +1830,8 @@ a.tag-link:hover {
 .deck-slot-card {
   padding: 6px 8px;
   border-radius: 6px;
-  background: rgba(94, 234, 212, 0.12);
-  color: #f8fafc;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--surface-ink);
   font-size: 0.82rem;
   display: flex;
   align-items: center;
@@ -1855,15 +1855,15 @@ a.tag-link:hover {
   width: 20px;
   height: 20px;
   border-radius: 5px;
-  border: 1px solid rgba(148, 163, 184, 0.3);
-  background: rgba(15, 23, 42, 0.5);
-  color: #cbd5e1;
+  border: 1px solid var(--surface-line);
+  background: var(--surface-bg);
+  color: var(--surface-ink);
   cursor: pointer;
 }
 
 .deck-slot-card-expand:hover {
   color: #fff;
-  background: rgba(15, 23, 42, 0.8);
+  background: var(--surface-bg);
 }
 
 .deck-shelf {
@@ -1883,14 +1883,14 @@ a.tag-link:hover {
   gap: 10px 14px;
   margin-bottom: 24px;
   padding: 12px 14px;
-  border: 1px solid rgba(94, 234, 212, 0.22);
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
   border-radius: 10px;
-  background: rgba(2, 6, 23, 0.4);
+  background: var(--surface-bg);
 }
 
 .deck-overlay-label {
   margin: 0;
-  color: #5eead4;
+  color: var(--accent);
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 0.78rem;
   text-transform: uppercase;
@@ -1899,7 +1899,7 @@ a.tag-link:hover {
 
 .deck-overlay-empty {
   margin: 0;
-  color: rgba(148, 163, 184, 0.6);
+  color: var(--surface-muted);
   font-size: 0.82rem;
 }
 
@@ -1915,9 +1915,9 @@ a.tag-link:hover {
 .deck-overlay-chip {
   padding: 5px 10px;
   border-radius: 999px;
-  border: 1px solid rgba(94, 234, 212, 0.35);
-  background: rgba(94, 234, 212, 0.12);
-  color: #f0fdfa;
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--surface-ink);
   font-size: 0.8rem;
   white-space: nowrap;
   animation: deckSlotIn 0.12s ease-out;
@@ -1946,20 +1946,20 @@ a.tag-link:hover {
   gap: 12px 16px;
   margin-top: 24px;
   padding: 14px 16px;
-  border: 1px solid rgba(94, 234, 212, 0.22);
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
   border-radius: 10px;
-  background: rgba(2, 6, 23, 0.4);
+  background: var(--surface-bg);
 }
 
 .deck-cli-panel[data-unlocked="true"] {
-  border-color: rgba(94, 234, 212, 0.5);
-  background: rgba(94, 234, 212, 0.08);
+  border-color: color-mix(in srgb, var(--accent) 50%, transparent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
 }
 
 .deck-cli-command {
   flex: 1 1 auto;
   min-width: 0;
-  color: rgba(148, 163, 184, 0.7);
+  color: var(--surface-muted);
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 0.85rem;
   white-space: nowrap;
@@ -1967,11 +1967,11 @@ a.tag-link:hover {
 }
 
 .deck-cli-panel[data-unlocked="true"] .deck-cli-command {
-  color: #f0fdfa;
+  color: var(--surface-ink);
 }
 
 .deck-cli-lock {
-  color: rgba(148, 163, 184, 0.85);
+  color: var(--surface-muted);
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 0.8rem;
   white-space: nowrap;
@@ -1980,9 +1980,9 @@ a.tag-link:hover {
 .deck-cli-copy {
   padding: 7px 14px;
   border-radius: 8px;
-  border: 1px solid rgba(94, 234, 212, 0.5);
-  background: rgba(94, 234, 212, 0.14);
-  color: #f0fdfa;
+  border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--surface-ink);
   font-size: 0.82rem;
   cursor: pointer;
   white-space: nowrap;
@@ -1990,8 +1990,8 @@ a.tag-link:hover {
 }
 
 .deck-cli-copy:hover {
-  background: rgba(94, 234, 212, 0.24);
-  border-color: rgba(94, 234, 212, 0.7);
+  background: color-mix(in srgb, var(--accent) 24%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 70%, transparent);
 }
 
 /* Custom-deck output (§8): the explicit per-pack install list wraps across
@@ -2000,13 +2000,13 @@ a.tag-link:hover {
 .deck-cli-command[data-multiline="true"] {
   white-space: pre-line;
   word-break: break-word;
-  color: #f0fdfa;
+  color: var(--surface-ink);
 }
 
 .deck-share-url {
   flex: 1 1 100%;
   min-width: 0;
-  color: rgba(148, 163, 184, 0.85);
+  color: var(--surface-muted);
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 0.74rem;
   word-break: break-all;
@@ -2031,9 +2031,9 @@ a.tag-link:hover {
 
 .deck-completion-front,
 .deck-completion-back {
-  border: 1px solid rgba(94, 234, 212, 0.5);
+  border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
   border-radius: 12px;
-  background: linear-gradient(145deg, rgba(8, 47, 41, 0.92), rgba(2, 6, 23, 0.94));
+  background: var(--surface-panel);
   padding: 22px;
   backface-visibility: hidden;
 }
@@ -2059,7 +2059,7 @@ a.tag-link:hover {
 
 .deck-completion-eyebrow {
   margin: 0;
-  color: #5eead4;
+  color: var(--accent);
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 0.76rem;
   text-transform: uppercase;
@@ -2068,14 +2068,14 @@ a.tag-link:hover {
 
 .deck-completion-title {
   margin: 0;
-  color: #f0fdfa;
+  color: var(--surface-ink);
   font-size: 1.2rem;
   font-weight: 600;
 }
 
 .deck-completion-sub {
   margin: 0;
-  color: rgba(148, 163, 184, 0.75);
+  color: var(--surface-muted);
   font-size: 0.82rem;
 }
 
@@ -2083,9 +2083,9 @@ a.tag-link:hover {
   display: block;
   padding: 10px 12px;
   border-radius: 8px;
-  border: 1px solid rgba(94, 234, 212, 0.32);
-  background: rgba(2, 6, 23, 0.55);
-  color: #f0fdfa;
+  border: 1px solid color-mix(in srgb, var(--accent) 32%, transparent);
+  background: var(--surface-bg);
+  color: var(--surface-ink);
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 0.85rem;
   white-space: nowrap;
@@ -2102,28 +2102,28 @@ a.tag-link:hover {
 .deck-completion-btn {
   padding: 9px 14px;
   border-radius: 8px;
-  border: 1px solid rgba(94, 234, 212, 0.5);
-  background: rgba(94, 234, 212, 0.14);
-  color: #f0fdfa;
+  border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--surface-ink);
   font-size: 0.82rem;
   cursor: pointer;
   transition: background 0.12s ease-out, border-color 0.12s ease-out;
 }
 
 .deck-completion-btn:hover {
-  background: rgba(94, 234, 212, 0.24);
-  border-color: rgba(94, 234, 212, 0.7);
+  background: color-mix(in srgb, var(--accent) 24%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 70%, transparent);
 }
 
 .deck-completion-btn.is-ghost {
-  border-color: rgba(148, 163, 184, 0.4);
-  background: rgba(2, 6, 23, 0.5);
-  color: #e2e8f0;
+  border-color: var(--surface-line);
+  background: var(--surface-bg);
+  color: var(--surface-ink);
 }
 
 .deck-completion-btn.is-ghost:hover {
-  border-color: rgba(148, 163, 184, 0.7);
-  background: rgba(2, 6, 23, 0.7);
+  border-color: var(--surface-muted);
+  background: var(--surface-bg);
 }
 
 /* Pack-flow region — the in-builder tear affordance (one SealedPack,
@@ -2206,7 +2206,7 @@ a.tag-link:hover {
   top: 8px;
   right: 8px;
   z-index: 2;
-  box-shadow: 0 2px 8px rgba(2, 6, 23, 0.6);
+  box-shadow: 0 2px 8px var(--surface-bg);
 }
 
 .deck-card {
@@ -2214,37 +2214,37 @@ a.tag-link:hover {
   align-items: center;
   gap: 8px;
   padding: 10px 14px;
-  border: 1px solid rgba(148, 163, 184, 0.32);
+  border: 1px solid var(--surface-line);
   border-radius: 8px;
-  background: rgba(2, 6, 23, 0.5);
-  color: #e2e8f0;
+  background: var(--surface-bg);
+  color: var(--surface-ink);
   cursor: pointer;
   transition: border-color 0.15s ease, opacity 0.15s ease;
 }
 
 .deck-card:hover {
-  border-color: rgba(94, 234, 212, 0.7);
+  border-color: color-mix(in srgb, var(--accent) 70%, transparent);
 }
 
 .deck-card[data-collected="true"] {
   opacity: 0.55;
-  border-color: rgba(94, 234, 212, 0.6);
+  border-color: color-mix(in srgb, var(--accent) 60%, transparent);
 }
 
 /* "Collect all N" — triggers the staggered add-all flight batch (§D). */
 .deck-collect-all {
   padding: 10px 14px;
-  border: 1px solid rgba(94, 234, 212, 0.5);
+  border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
   border-radius: 8px;
-  background: rgba(94, 234, 212, 0.12);
-  color: #f0fdfa;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--surface-ink);
   font-weight: 600;
   cursor: pointer;
   transition: border-color 0.15s ease, opacity 0.15s ease;
 }
 
 .deck-collect-all:hover:not(:disabled) {
-  border-color: rgba(94, 234, 212, 0.95);
+  border-color: color-mix(in srgb, var(--accent) 95%, transparent);
 }
 
 .deck-collect-all:disabled {
@@ -2267,12 +2267,12 @@ a.tag-link:hover {
   align-items: center;
   gap: 8px;
   padding: 10px 14px;
-  border: 1px solid rgba(94, 234, 212, 0.85);
+  border: 1px solid color-mix(in srgb, var(--accent) 85%, transparent);
   border-radius: 8px;
-  background: linear-gradient(145deg, rgba(15, 23, 42, 0.98), rgba(17, 24, 39, 0.96));
-  color: #f0fdfa;
+  background: var(--surface-panel);
+  color: var(--surface-ink);
   font-size: 0.82rem;
-  box-shadow: 0 10px 30px rgba(2, 6, 23, 0.55);
+  box-shadow: 0 10px 30px var(--surface-bg);
   overflow: hidden;
   white-space: nowrap;
 }
@@ -2317,8 +2317,8 @@ a.tag-link:hover {
 .deck-card-badge {
   padding: 2px 8px;
   border-radius: 999px;
-  background: rgba(94, 234, 212, 0.2);
-  color: #5eead4;
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+  color: var(--accent);
   font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -2394,16 +2394,16 @@ a.tag-link:hover {
   gap: 8px;
   padding: 20px;
   text-align: left;
-  border: 1px solid rgba(94, 234, 212, 0.5);
+  border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
   border-radius: 12px;
-  background: linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(17, 24, 39, 0.92));
-  color: #f8fafc;
+  background: var(--surface-panel);
+  color: var(--surface-ink);
   cursor: pointer;
   transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .landing-domain-tile:hover {
-  border-color: rgba(94, 234, 212, 0.95);
+  border-color: color-mix(in srgb, var(--accent) 95%, transparent);
   transform: translateY(-2px);
 }
 
@@ -2418,13 +2418,13 @@ a.tag-link:hover {
 }
 
 .landing-domain-blurb {
-  color: #94a3b8;
+  color: var(--surface-muted);
   font-size: 0.92rem;
 }
 
 .landing-domain-meta {
   margin-top: 4px;
-  color: #5eead4;
+  color: var(--accent);
   font-size: 0.8rem;
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -2510,7 +2510,7 @@ a.tag-link:hover {
   padding: 28px;
   border: 1px solid rgba(0, 212, 170, 0.35);
   border-radius: 16px;
-  background: linear-gradient(145deg, rgba(0, 212, 170, 0.06), rgba(255, 255, 255, 0.6));
+  background: linear-gradient(145deg, color-mix(in srgb, var(--accent) 8%, transparent), var(--panel-soft));
 }
 
 .landing-handoff-title {
@@ -2540,8 +2540,8 @@ a.tag-link:hover {
 
 .landing-handoff-primary {
   border: 1px solid var(--teal);
-  background: linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(17, 24, 39, 0.92));
-  color: #f8fafc;
+  background: var(--surface-panel);
+  color: var(--surface-ink);
 }
 
 .landing-handoff-secondary {
@@ -2557,7 +2557,7 @@ a.tag-link:hover {
 }
 
 .landing-handoff-kicker {
-  color: #5eead4;
+  color: var(--accent);
   font-size: 0.74rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -2574,7 +2574,7 @@ a.tag-link:hover {
 }
 
 .landing-handoff-meta {
-  color: #94a3b8;
+  color: var(--surface-muted);
   font-size: 0.9rem;
 }
 

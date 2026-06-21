@@ -63,7 +63,7 @@ export default function CardDetailModal({
       onClick={dismiss}
     >
       <motion.div
-        className="card-modal-dialog relative w-full h-full sm:h-auto sm:max-w-3xl sm:rounded-2xl border border-zinc-700/50 bg-zinc-950/95 shadow-2xl shadow-black/50 overflow-y-auto p-6 sm:p-8"
+        className="card-modal-dialog relative w-full h-full sm:h-auto sm:max-w-3xl sm:rounded-2xl border border-zinc-300 dark:border-zinc-700/50 bg-white/95 dark:bg-zinc-950/95 shadow-2xl shadow-black/50 overflow-y-auto p-6 sm:p-8"
         data-testid="card-modal-dialog"
         initial={reduceMotion ? false : { opacity: 0, scale: 0.96, y: 12 }}
         animate={leaving ? { opacity: 0, scale: 0.96, y: 12 } : { opacity: 1, scale: 1, y: 0 }}
@@ -79,12 +79,12 @@ export default function CardDetailModal({
       >
         {/* Mobile grab affordance. */}
         <div className="sm:hidden flex justify-center pt-1 pb-3">
-          <span className="w-10 h-1 rounded-full bg-zinc-700" />
+          <span className="w-10 h-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
         </div>
 
         <button
           type="button"
-          className="absolute top-3 right-3 z-10 inline-flex items-center justify-center w-8 h-8 rounded-full text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors"
+          className="absolute top-3 right-3 z-10 inline-flex items-center justify-center w-8 h-8 rounded-full text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
           aria-label="Close"
           data-testid="card-modal-close"
           onClick={dismiss}

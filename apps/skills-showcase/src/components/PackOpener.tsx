@@ -338,7 +338,7 @@ export default function PackOpener({ skills, packName, isClosing, onCollapseComp
         {onExpand ? (
           <button
             type="button"
-            className="deck-card-expand absolute top-1 left-1 z-20 inline-flex items-center justify-center w-6 h-6 rounded-md bg-zinc-900/80 text-zinc-300 hover:text-white hover:bg-zinc-800 border border-zinc-700/60"
+            className="deck-card-expand absolute top-1 left-1 z-20 inline-flex items-center justify-center w-6 h-6 rounded-md bg-white/80 dark:bg-zinc-900/80 text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-300 dark:border-zinc-700/60"
             data-testid={`deck-card-expand-${skill.id}`}
             aria-label={`Expand ${skill.title || skill.name}`}
             onClick={(e) => {
@@ -362,7 +362,7 @@ export default function PackOpener({ skills, packName, isClosing, onCollapseComp
   return (
     <div className="relative pt-4 pb-4">
       <motion.h2
-        className="text-center text-lg font-bold text-zinc-300 mb-6"
+        className="text-center text-lg font-bold text-zinc-700 dark:text-zinc-300 mb-6"
         initial={{ opacity: 0, y: -10 }}
         animate={isClosing ? { opacity: 0, y: -10 } : { opacity: 1, y: 0 }}
         transition={isClosing ? { duration: 0.15 } : { delay: 0.15 }}

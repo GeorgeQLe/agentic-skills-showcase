@@ -153,7 +153,7 @@ export default function BottomSheet({
           />
           <motion.div
             key="sheet"
-            className="fixed bottom-0 inset-x-0 z-50 max-h-[70vh] rounded-t-2xl bg-zinc-900 flex flex-col"
+            className="fixed bottom-0 inset-x-0 z-50 max-h-[70vh] rounded-t-2xl bg-white dark:bg-zinc-900 flex flex-col"
             drag={dismissable ? "y" : false}
             dragControls={dragControls}
             dragListener={false}
@@ -186,7 +186,7 @@ export default function BottomSheet({
               style={{ touchAction: "none" }}
               onPointerDown={(e) => dragControls.start(e)}
             >
-              <div className="w-10 h-1 rounded-full bg-zinc-600" />
+              <div className="w-10 h-1 rounded-full bg-zinc-300 dark:bg-zinc-600" />
             </div>
             <div className={`flex-1 pb-8 ${unclipContent ? 'overflow-visible' : 'overflow-y-auto'}`} style={{ overscrollBehavior: "contain" }}>
               {children}

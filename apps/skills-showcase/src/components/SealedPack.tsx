@@ -578,13 +578,13 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
 
           {/* Bottom half — paints on top of the card to hide its lower portion */}
           <div className="absolute top-[33%] left-0 right-0 bottom-0 rounded-b-2xl overflow-hidden z-[1]">
-            <div className="absolute inset-0 bg-gradient-to-br from-zinc-700 via-zinc-600 to-zinc-800" />
-            <div className="absolute inset-x-2 top-0 bottom-2 rounded-b-xl border-b border-x border-zinc-500/30 bg-gradient-to-b from-zinc-800/80 to-zinc-900/90 flex flex-col items-center justify-center p-4">
-              <span className="text-xs text-zinc-500">
+            <div className="absolute inset-0 bg-gradient-to-br from-zinc-300 via-zinc-200 to-zinc-400 dark:from-zinc-700 dark:via-zinc-600 dark:to-zinc-800" />
+            <div className="absolute inset-x-2 top-0 bottom-2 rounded-b-xl border-b border-x border-zinc-400/30 dark:border-zinc-500/30 bg-gradient-to-b from-zinc-100/80 to-zinc-200/90 dark:from-zinc-800/80 dark:to-zinc-900/90 flex flex-col items-center justify-center p-4">
+              <span className="text-xs text-zinc-500 dark:text-zinc-500">
                 {skillCount} {skillCount === 1 ? "skill" : "skills"}
               </span>
             </div>
-            <div className="absolute top-0 left-2 right-2 border-t border-dashed border-zinc-500/40" />
+            <div className="absolute top-0 left-2 right-2 border-t border-dashed border-zinc-400/40 dark:border-zinc-500/40" />
           </div>
         </div>
       </div>
@@ -649,14 +649,14 @@ const SealedPack = forwardRef<SealedPackHandle, SealedPackProps>(function Sealed
           className="absolute top-0 left-0 right-0 h-[calc(33%+1px)] rounded-t-2xl overflow-hidden"
           style={{ clipPath: flapClip }}
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-zinc-700 via-zinc-600 to-zinc-800" />
-          <div className="absolute inset-x-2 top-2 bottom-0 rounded-t-xl border-t border-x border-zinc-500/30 bg-gradient-to-b from-zinc-800/80 to-zinc-900/90 flex flex-col items-center justify-end pb-2">
-            <Package size={28} className="text-zinc-400 mb-2" />
-            <h3 className="text-sm font-bold text-zinc-200 text-center leading-tight">
+          <div className="absolute inset-0 bg-gradient-to-br from-zinc-300 via-zinc-200 to-zinc-400 dark:from-zinc-700 dark:via-zinc-600 dark:to-zinc-800" />
+          <div className="absolute inset-x-2 top-2 bottom-0 rounded-t-xl border-t border-x border-zinc-400/30 dark:border-zinc-500/30 bg-gradient-to-b from-zinc-100/80 to-zinc-200/90 dark:from-zinc-800/80 dark:to-zinc-900/90 flex flex-col items-center justify-end pb-2">
+            <Package size={28} className="text-zinc-500 dark:text-zinc-400 mb-2" />
+            <h3 className="text-sm font-bold text-zinc-700 dark:text-zinc-200 text-center leading-tight">
               {formatPackName(name)}
             </h3>
           </div>
-          <div className="absolute bottom-0 left-2 right-2 border-b border-dashed border-zinc-500/40" />
+          <div className="absolute bottom-0 left-2 right-2 border-b border-dashed border-zinc-400/40 dark:border-zinc-500/40" />
         </motion.div>
 
         {/* Curl roll — cylindrical element at tear edge */}

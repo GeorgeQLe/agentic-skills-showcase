@@ -65,36 +65,36 @@ export default function CardDetail({
           </div>
 
           <div
-            className="absolute inset-0 rounded-2xl border border-zinc-700/50 bg-gradient-to-br from-zinc-900 to-zinc-800 p-4 flex flex-col shadow-xl shadow-black/40"
+            className="absolute inset-0 rounded-2xl border border-zinc-300 dark:border-zinc-700/50 bg-gradient-to-br from-white to-zinc-50 dark:from-zinc-900 dark:to-zinc-800 p-4 flex flex-col shadow-xl shadow-black/40"
             style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
           >
-            <h3 className="text-base font-semibold text-zinc-100 mb-2">{skill.title}</h3>
-            <p className="text-xs text-zinc-400 leading-snug mb-3 flex-1">{skill.description}</p>
+            <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100 mb-2">{skill.title}</h3>
+            <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-snug mb-3 flex-1">{skill.description}</p>
             <div className="space-y-1.5 text-[11px]">
-              <div className="flex justify-between text-zinc-500">
+              <div className="flex justify-between text-zinc-500 dark:text-zinc-500">
                 <span>Platform</span>
-                <span className="text-zinc-300">{skill.platform}</span>
+                <span className="text-zinc-700 dark:text-zinc-300">{skill.platform}</span>
               </div>
-              <div className="flex justify-between text-zinc-500">
+              <div className="flex justify-between text-zinc-500 dark:text-zinc-500">
                 <span>Scope</span>
-                <span className="text-zinc-300">{skill.scope}</span>
+                <span className="text-zinc-700 dark:text-zinc-300">{skill.scope}</span>
               </div>
               {skill.pack && (
-                <div className="flex justify-between text-zinc-500">
+                <div className="flex justify-between text-zinc-500 dark:text-zinc-500">
                   <span>Pack</span>
-                  <span className="text-zinc-300">{skill.pack}</span>
+                  <span className="text-zinc-700 dark:text-zinc-300">{skill.pack}</span>
                 </div>
               )}
-              <div className="flex justify-between text-zinc-500">
+              <div className="flex justify-between text-zinc-500 dark:text-zinc-500">
                 <span>Version</span>
-                <span className="text-zinc-300 font-mono">{skill.version}</span>
+                <span className="text-zinc-700 dark:text-zinc-300 font-mono">{skill.version}</span>
               </div>
             </div>
-            <div className="mt-auto pt-2 border-t border-zinc-700/30 flex flex-wrap gap-1">
+            <div className="mt-auto pt-2 border-t border-zinc-200 dark:border-zinc-700/30 flex flex-wrap gap-1">
               {skill.tags.slice(0, 6).map((tag) => (
                 <span
                   key={tag}
-                  className="inline-flex items-center gap-0.5 text-[10px] text-zinc-500 bg-zinc-800 px-1 py-0.5 rounded"
+                  className="inline-flex items-center gap-0.5 text-[10px] text-zinc-600 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded"
                 >
                   <Tag size={8} />
                   {tag}
@@ -106,9 +106,9 @@ export default function CardDetail({
       </div>
 
       {/* Stats panel — always in the DOM (indexable), independent of flip. */}
-      <div className="card-detail-stats w-full max-w-md text-zinc-300">
+      <div className="card-detail-stats w-full max-w-md text-zinc-700 dark:text-zinc-300">
         <div className="flex items-start justify-between gap-3 mb-1">
-          <h1 className="text-xl font-semibold text-zinc-100 leading-tight">{skill.title}</h1>
+          <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 leading-tight">{skill.title}</h1>
           {badge && (
             <span
               className={`text-lg font-bold ${badge.color}`}
@@ -120,12 +120,12 @@ export default function CardDetail({
           )}
         </div>
 
-        <div className="flex items-center gap-1.5 text-xs text-zinc-500 mb-3">
+        <div className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-500 mb-3">
           <Terminal size={12} />
           <span className="font-mono">{skill.command}</span>
         </div>
 
-        <p className="text-sm text-zinc-400 leading-relaxed mb-4">{skill.description}</p>
+        <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed mb-4">{skill.description}</p>
 
         <dl className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs mb-4">
           <Fact label="Type" value={skill.type} />
@@ -140,7 +140,7 @@ export default function CardDetail({
             {skill.tags.map((tag) => (
               <span
                 key={tag}
-                className="inline-flex items-center gap-0.5 text-[11px] text-zinc-400 bg-zinc-800 px-1.5 py-0.5 rounded"
+                className="inline-flex items-center gap-0.5 text-[11px] text-zinc-600 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded"
               >
                 <Tag size={9} />
                 {tag}
@@ -150,13 +150,13 @@ export default function CardDetail({
         )}
 
         <section className="mb-4" data-testid="card-detail-benchmark">
-          <h2 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-zinc-500 mb-2">
+          <h2 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-500 mb-2">
             <FlaskConical size={12} /> Benchmark
           </h2>
           {agents.length > 0 ? (
             <table className="w-full text-xs">
               <thead>
-                <tr className="text-zinc-500 text-left">
+                <tr className="text-zinc-500 dark:text-zinc-500 text-left">
                   <th className="font-medium pb-1">Agent</th>
                   <th className="font-medium pb-1">Pass rate</th>
                   <th className="font-medium pb-1">Cost / run</th>
@@ -164,7 +164,7 @@ export default function CardDetail({
               </thead>
               <tbody>
                 {agents.map((agent) => (
-                  <tr key={agent.agent} className="text-zinc-300">
+                  <tr key={agent.agent} className="text-zinc-700 dark:text-zinc-300">
                     <td className="py-0.5 font-mono">{agent.agent}</td>
                     <td className="py-0.5">{agent.passRate}</td>
                     <td className="py-0.5">{agent.costPerRun}</td>
@@ -173,12 +173,12 @@ export default function CardDetail({
               </tbody>
             </table>
           ) : (
-            <p className="text-xs text-zinc-500">No benchmark evidence yet.</p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-500">No benchmark evidence yet.</p>
           )}
         </section>
 
         <section data-testid="card-detail-decks">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500 mb-2">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-500 mb-2">
             Part of decks
           </h2>
           {decks.length > 0 ? (
@@ -187,7 +187,7 @@ export default function CardDetail({
                 <Link
                   key={deck.slug}
                   href={`/deck/${deck.slug}`}
-                  className="inline-flex items-center text-xs text-zinc-200 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700/50 px-2 py-1 rounded transition-colors"
+                  className="inline-flex items-center text-xs text-zinc-700 dark:text-zinc-200 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 border border-zinc-300 dark:border-zinc-700/50 px-2 py-1 rounded transition-colors"
                   data-testid={`card-detail-deck-${deck.slug}`}
                 >
                   {deck.name}
@@ -195,7 +195,7 @@ export default function CardDetail({
               ))}
             </div>
           ) : (
-            <p className="text-xs text-zinc-500">Not part of any deck.</p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-500">Not part of any deck.</p>
           )}
         </section>
       </div>
@@ -205,9 +205,9 @@ export default function CardDetail({
 
 function Fact({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
-    <div className="flex justify-between border-b border-zinc-800 pb-1">
-      <dt className="text-zinc-500">{label}</dt>
-      <dd className={`text-zinc-300 ${mono ? "font-mono" : ""}`}>{value}</dd>
+    <div className="flex justify-between border-b border-zinc-200 dark:border-zinc-800 pb-1">
+      <dt className="text-zinc-500 dark:text-zinc-500">{label}</dt>
+      <dd className={`text-zinc-700 dark:text-zinc-300 ${mono ? "font-mono" : ""}`}>{value}</dd>
     </div>
   );
 }
