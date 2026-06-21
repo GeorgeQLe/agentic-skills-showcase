@@ -60,6 +60,15 @@ export interface GeneratedSet {
   packs: string[];
 }
 
+export interface Pack {
+  name: string;
+  title: string;
+  description: string | null;
+  platforms: string[];
+  skillCount: number;
+  path: string;
+}
+
 interface SkillsData {
   generatedAt: string;
   skillCount: number;
@@ -67,6 +76,7 @@ interface SkillsData {
   skills: Skill[];
   decks: GeneratedDeck[];
   sets: GeneratedSet[];
+  packs: Pack[];
 }
 
 declare global {

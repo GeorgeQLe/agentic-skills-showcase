@@ -12,7 +12,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
-import type { Skill, GeneratedDeck, GeneratedSet } from "@/hooks/useSkillsData";
+import type { Skill, GeneratedDeck, GeneratedSet, Pack } from "@/hooks/useSkillsData";
 
 export interface SkillsData {
   generatedAt: string;
@@ -21,6 +21,7 @@ export interface SkillsData {
   skills: Skill[];
   decks: GeneratedDeck[];
   sets: GeneratedSet[];
+  packs: Pack[];
 }
 
 export interface CardDeckRef {
