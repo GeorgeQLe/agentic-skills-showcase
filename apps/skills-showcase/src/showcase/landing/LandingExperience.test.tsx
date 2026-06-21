@@ -76,12 +76,25 @@ describe("LandingExperience (staged journey)", () => {
     delete (window as { __landing?: unknown }).__landing;
   });
 
-  it("opens on Stage 1 SELECT with a project per starter deck", () => {
+  it("opens on Stage 1 SELECT with a goal-framed project per starter deck", () => {
     render(<LandingExperience />);
     expect(screen.getByTestId("landing")).toHaveAttribute("data-stage", "1");
-    expect(screen.getByTestId("landing-project-vard")).toBeInTheDocument();
+    const vard = screen.getByTestId("landing-project-vard");
+    expect(vard).toBeInTheDocument();
+    // Goal framing (projectMeta), not the bare deck name.
+    expect(vard).toHaveTextContent("Validate a business idea");
     expect(screen.getByTestId("landing-project-business-afps")).toBeInTheDocument();
     expect(screen.getByTestId("landing-project-game-afps")).toBeInTheDocument();
+    // Secondary deck-centric list groups the same decks by domain.
+    expect(screen.getByTestId("landing-deck-pick-vard")).toBeInTheDocument();
+    expect(screen.getByTestId("landing-deck-pick-game-afps")).toBeInTheDocument();
+  });
+
+  it("the secondary deck list also advances to Stage 2", () => {
+    render(<LandingExperience />);
+    act(() => screen.getByTestId("landing-deck-pick-game-afps").click());
+    expect(screen.getByTestId("landing")).toHaveAttribute("data-stage", "2");
+    expect(screen.getByTestId("landing-pack-game")).toBeInTheDocument();
   });
 
   it("select(slug) advances to Stage 2 OPEN with the deck's pack allotment", () => {

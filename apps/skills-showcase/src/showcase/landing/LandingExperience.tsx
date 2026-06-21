@@ -36,25 +36,10 @@ import { usePackFlow, PackFlowSheet } from "@/components/PackRitual";
 
 import type { DomainOption, PackCard } from "./types";
 import { useStageMachine, type StageMachine } from "./useStageMachine";
+import { DOMAIN_META, DOMAIN_ORDER } from "./projectMeta";
 import StageProgress from "./StageProgress";
+import SelectStage from "./SelectStage";
 import BuildStage from "./BuildStage";
-
-const DOMAIN_META: Record<string, { label: string; blurb: string }> = {
-  business: {
-    label: "Business",
-    blurb: "Validate, align, research, decide — the market-facing decks.",
-  },
-  devtool: {
-    label: "Devtool",
-    blurb: "Operate, refactor, and ship developer tooling with proof gates.",
-  },
-  game: {
-    label: "Game",
-    blurb: "Concept, design, and prototype game systems end to end.",
-  },
-};
-
-const DOMAIN_ORDER = ["business", "devtool", "game"];
 
 function prettyPackName(name: string): string {
   return name
@@ -268,68 +253,6 @@ function StageController({
       {/* Stage 3: always mounted, visibility-toggled (see BuildStage contract). */}
       <BuildStage active={stage === 3} />
     </>
-  );
-}
-
-/* --- Stage 1: SELECT (Phase 3 plain form; Phase 4 elevates to project framing) --- */
-
-function SelectStage({
-  domains,
-  decks,
-  onSelect,
-  selectedSlug,
-}: {
-  domains: DomainOption[];
-  decks: GeneratedDeck[];
-  onSelect: (slug: string) => void;
-  selectedSlug: string | null;
-}) {
-  const countsByDomain = useMemo(() => {
-    const map = new Map<string, { packs: number; skills: number; label: string }>();
-    for (const d of domains) {
-      map.set(d.domain, { packs: d.packs.length, skills: d.skillCount, label: d.label });
-    }
-    return map;
-  }, [domains]);
-
-  return (
-    <section className="select-stage" aria-labelledby="select-stage-title">
-      <header className="landing-hero">
-        <p className="landing-eyebrow">G Skillpacks</p>
-        <h1 id="select-stage-title" className="landing-title">
-          What are you building?
-        </h1>
-        <p className="landing-lede">
-          Pick a goal. We&apos;ll deal you the starter packs for it, then help you
-          build the deck.
-        </p>
-      </header>
-
-      <div className="select-grid" data-testid="landing-project-grid">
-        {decks.map((deck) => {
-          const counts = countsByDomain.get(deck.domain);
-          const isSelected = deck.slug === selectedSlug;
-          return (
-            <button
-              key={deck.slug}
-              type="button"
-              className="select-card"
-              data-testid={`landing-project-${deck.slug}`}
-              data-selected={String(isSelected)}
-              onClick={() => onSelect(deck.slug)}
-            >
-              <span className="select-card-name">{deck.name}</span>
-              <span className="select-card-domain">{counts?.label ?? deck.domain}</span>
-              {counts ? (
-                <span className="select-card-meta">
-                  {counts.packs} packs · {counts.skills} skills
-                </span>
-              ) : null}
-            </button>
-          );
-        })}
-      </div>
-    </section>
   );
 }
 

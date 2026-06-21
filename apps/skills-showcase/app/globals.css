@@ -2476,7 +2476,7 @@ a.tag-link:hover {
 
 .select-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 16px;
   margin-top: 8px;
 }
@@ -2484,20 +2484,23 @@ a.tag-link:hover {
 .select-card {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 22px;
+  gap: 8px;
+  min-height: 200px;
+  padding: 24px;
   text-align: left;
   border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
-  border-radius: 12px;
+  border-radius: 14px;
   background: var(--surface-panel);
   color: var(--surface-ink);
   cursor: pointer;
+  box-shadow: var(--shadow-card);
   transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .select-card:hover {
   border-color: color-mix(in srgb, var(--accent) 95%, transparent);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow);
 }
 
 .select-card[data-selected="true"] {
@@ -2505,21 +2508,97 @@ a.tag-link:hover {
   box-shadow: 0 0 0 1px var(--teal), 0 14px 40px rgba(0, 212, 170, 0.18);
 }
 
-.select-card-name {
-  font-size: 1.15rem;
+.select-card-goal {
+  font-size: 1.2rem;
   font-weight: 700;
+  line-height: 1.2;
+}
+
+.select-card-deck {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  color: var(--accent);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .select-card-domain {
   color: var(--surface-muted);
-  font-size: 0.88rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.select-card-blurb {
+  color: var(--surface-muted);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.select-card-outcome {
+  margin-top: auto;
+  color: var(--surface-ink);
+  font-size: 0.85rem;
+  font-weight: 600;
 }
 
 .select-card-meta {
-  margin-top: 4px;
   color: var(--accent);
   font-size: 0.8rem;
   font-weight: 600;
+}
+
+/* Secondary deck-centric list */
+
+.select-secondary {
+  margin-top: 44px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+}
+
+.select-domain-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.select-domain-label {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.select-deck-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.select-deck-pick {
+  padding: 8px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--panel-soft);
+  color: var(--ink);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.select-deck-pick:hover,
+.select-deck-pick[data-selected="true"] {
+  border-color: var(--teal);
+  color: var(--teal-strong);
 }
 
 /* --- Stage 3: BUILD (always mounted; visibility-toggled) ---
