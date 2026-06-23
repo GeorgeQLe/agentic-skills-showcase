@@ -2555,7 +2555,7 @@ a.tag-link:hover {
 /* === Secondary browse affordance (Stage 1) + shared deck cards === */
 
 .browse-section {
-  margin-top: 44px;
+  margin-top: 64px;
   padding-top: 28px;
   border-top: 1px solid var(--line);
 }
