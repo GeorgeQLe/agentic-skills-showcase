@@ -2360,10 +2360,12 @@ a.tag-link:hover {
 }
 
 .landing-title {
+  max-width: none;
   margin: 0 0 14px;
   font-size: clamp(2rem, 4vw, 3rem);
   line-height: 1.08;
   color: var(--ink);
+  white-space: nowrap;
 }
 
 .landing-lede {
@@ -2951,6 +2953,9 @@ a.tag-link:hover {
   .landing {
     width: min(100% - 24px, 1180px);
     padding-top: 36px;
+  }
+  .landing-title {
+    font-size: clamp(1.55rem, 7vw, 2rem);
   }
   .stage-progress {
     flex-wrap: wrap;
