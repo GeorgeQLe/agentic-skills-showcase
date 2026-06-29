@@ -6,10 +6,9 @@
  * (`Phase[]`) whose `suggestedSkills` seed the builder's slot columns; a card
  * lands in the phase whose suggestion list contains it (no round-robin).
  *
- * `data.decks` / `data.sets` are emitted by
- * apps/skills-showcase/scripts/generate-skills-showcase-data.mjs from the
- * manifest. `buildDecks` resolves the generated card ids back to `Skill`
- * objects from the loaded catalog.
+ * `data.decks` / `data.sets` are imported from the public
+ * `agentic-skills` skills-catalog export. `buildDecks` resolves the generated
+ * card ids back to `Skill` objects from the loaded catalog.
  */
 import {
   type GeneratedDeck,

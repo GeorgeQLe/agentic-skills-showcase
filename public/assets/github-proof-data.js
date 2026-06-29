@@ -1,0 +1,110 @@
+window.SKILLS_SHOWCASE_GITHUB_PROOF_DATA = {
+  "schemaVersion": "skills-catalog.v1",
+  "generatedAt": "2026-06-29T17:15:46.761Z",
+  "sourceCommit": "b7c0775bc8b3b87e53942e589ede3eb428065b47",
+  "sourceFingerprint": "057a4d184b9970a70e4f898941971c2ea2d23354aa4e253cfa3786f5c60714e1",
+  "sourceCount": 453,
+  "repository": {
+    "remote_url": "https://github.com/GeorgeQLe/agentic-skills.git",
+    "url": "https://github.com/GeorgeQLe/agentic-skills",
+    "branch": "master",
+    "ref_policy": "Consumers should pin SKILLS_REPO_REF to a tag or commit SHA for releases and deployments."
+  },
+  "proofArtifacts": [
+    {
+      "id": "catalog-export",
+      "title": "Skills catalog export",
+      "path": "exports/skills-catalog/v1/catalog.json",
+      "kind": "export",
+      "tracked": true,
+      "exists": true
+    },
+    {
+      "id": "package-manifest",
+      "title": "Skillpacks package manifest",
+      "path": "packages/skillpacks/dist/skillpacks-manifest.json",
+      "kind": "package",
+      "tracked": true,
+      "exists": true
+    },
+    {
+      "id": "skills-reference",
+      "title": "Skills reference",
+      "path": "docs/skills-reference.md",
+      "kind": "reference",
+      "tracked": true,
+      "exists": true
+    },
+    {
+      "id": "quality-gate",
+      "title": "Quality gate contract",
+      "path": "docs/quality-gate-contract.md",
+      "kind": "quality",
+      "tracked": true,
+      "exists": true
+    },
+    {
+      "id": "dogfood-history",
+      "title": "Dogfood changelog",
+      "path": "tasks/history.md",
+      "kind": "history",
+      "tracked": true,
+      "exists": true
+    }
+  ],
+  "validationScripts": [
+    {
+      "id": "skills-catalog-export",
+      "title": "Skills catalog export freshness",
+      "command": "scripts/validate-skills-catalog-export.sh",
+      "path": "scripts/validate-skills-catalog-export.sh",
+      "tracked": true,
+      "exists": true
+    },
+    {
+      "id": "package-build-check",
+      "title": "Skillpacks package build boundary",
+      "command": "npm --workspace skillpacks run build:check",
+      "path": "packages/skillpacks/scripts/build-package.mjs",
+      "tracked": true,
+      "exists": true
+    },
+    {
+      "id": "skill-versions",
+      "title": "Skill version metadata",
+      "command": "./scripts/skill-versions.sh --missing",
+      "path": "scripts/skill-versions.sh",
+      "tracked": true,
+      "exists": true
+    },
+    {
+      "id": "skill-mirror-parity",
+      "title": "Claude/Codex mirror parity",
+      "command": "./scripts/skill-mirror-parity-audit.sh",
+      "path": "scripts/skill-mirror-parity-audit.sh",
+      "tracked": true,
+      "exists": true
+    }
+  ],
+  "recentHistoryEntries": [
+    "2026-06-29 - Simplify BIP platform setup and exhaustive phase drafts",
+    "2026-06-29 - Publish current source release from 0.1.16 metadata",
+    "2026-06-29 — Add publish dirty-tree override",
+    "2026-06-29 — Fix ship-end BIP post suggestions",
+    "2026-06-28 — Ship-end 0.1.15 release closeout",
+    "2026-06-28 — Tighten BIP agent compliance",
+    "2026-06-28 — YouTube prelaunch A/B test and URL ledger",
+    "2026-06-28 — Publish retry after web auth failure"
+  ],
+  "boundaries": [
+    "agentic-skills owns canonical skills/package source and versioned export artifacts.",
+    "Skills Showcase website assets are generated and deployed from the agentic-skills-showcase repository.",
+    "Benchmark runs, reports, matrices, and summary exports are generated from the agentic-skills-benchmarks repository.",
+    "GitHub Actions are not part of the default validation or deploy contract."
+  ],
+  "publicGithub": {
+    "status": "source-export",
+    "reason": "Public Showcase proof is imported from the pinned agentic-skills skills-catalog export.",
+    "url": "https://github.com/GeorgeQLe/agentic-skills"
+  }
+};

@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "generate:data": "node scripts/generate-skills-showcase-data.mjs && node scripts/generate-skills-showcase-github-data.mjs",
+    "generate:data": "node scripts/import-skills-catalog.mjs",
     "validate:data": "scripts/validate-skills-showcase-data.sh"
   },
   "dependencies": {

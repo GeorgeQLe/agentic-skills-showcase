@@ -29,8 +29,8 @@ export interface CardDeckRef {
   name: string;
 }
 
-// process.cwd() is the app root (apps/skills-showcase) during next build/dev
-// and Vitest, which is where the generated asset lives.
+// process.cwd() is the app root during next build/dev and Vitest, which is
+// where the imported asset lives.
 const DATA_PATH = path.join(process.cwd(), "public", "assets", "skills-data.js");
 
 let cached: SkillsData | null = null;

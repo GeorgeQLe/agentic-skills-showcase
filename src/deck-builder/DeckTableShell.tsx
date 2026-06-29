@@ -3,7 +3,7 @@
 /*
  * DeckTableShell — the single client owner of the deck-builder lifecycle, per
  * the approved animation plan's Lifecycle Ownership Map
- * (apps/skills-showcase/docs/animation-plan-deck-builder.md §C).
+ * (docs/animation-plan-deck-builder.md §C).
  *
  * This slice adds the first real motion: contract A `blueprint-morph` (§A, §D
  * open/close storyboards, §E guardrails). It reuses the routing primitives
