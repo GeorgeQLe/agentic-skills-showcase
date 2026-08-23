@@ -40,7 +40,7 @@ export default function ShowcaseHeader() {
           </Link>
         </nav>
         <div className="nav-actions">
-          <a href="https://leexperimental.com">LexCorp</a>
+          <a href="https://leexperimental.com">EXPLe Corp</a>
           <Link
             className="button secondary"
             href="/follow"

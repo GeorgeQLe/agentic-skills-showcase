@@ -4,7 +4,7 @@
 
 Build the `gskillpacks.com` website for **gSkillPacks**, the public brand for mapping the `agentic-skills` workflow library. The site promotes George "G" Le as an agentic engineering expert and makes the workflow library understandable through generated skill coverage, curated workflow walkthroughs, and browser-native animations.
 
-The site is both a marketing surface and a proof surface. It should show that G has built a repeatable agentic engineering operating system for Claude Code and Codex, and it should connect that system to the broader LexCorp build-in-public story. The primary CTA is to explore the skill packs, with follow/community links as secondary conversion paths to LexCorp, YouTube, X/Twitter, Discord, and G's ongoing work.
+The site is both a marketing surface and a proof surface. It should show that G has built a repeatable agentic engineering operating system for Claude Code and Codex, and it should connect that system to the broader EXPLe Corp build-in-public story. The primary CTA is to explore the skill packs, with follow/community links as secondary conversion paths to EXPLe Corp, YouTube, X/Twitter, Discord, and G's ongoing work.
 
 ## Brand And Domain
 
@@ -31,7 +31,7 @@ The site should be deployable on Vercel as static files and should work locally 
 ## Goals
 
 - Promote George "G" Le as an expert in agentic engineering, with `agentic-skills` as concrete proof.
-- Promote the LexCorp/War Room distribution story: the skills are the agentic engineering system behind a live multi-product portfolio.
+- Promote the EXPLe Corp/War Room distribution story: the skills are the agentic engineering system behind a live multi-product portfolio.
 - Provide a generated catalog entry for every source `SKILL.md` in `global/` and `packs/`.
 - Provide curated, animated walkthroughs for the most important workflows:
   - install + first successful cycle
@@ -54,7 +54,7 @@ The site should be deployable on Vercel as static files and should work locally 
 - Hosting or serving video content.
 - Using Remotion in V1.
 - Building a custom newsletter backend, auth, admin UI, comments, or community membership flows.
-- Embedding live LexCorp product metrics; LexCorp is a narrative/funnel destination in V1, not a runtime data source.
+- Embedding live EXPLe Corp product metrics; EXPLe Corp is a narrative/funnel destination in V1, not a runtime data source.
 - Adding visitor-tracking analytics by default.
 - Creating a hosted skill execution sandbox in the browser.
 - Running Claude Code, Codex, or local shell commands from the public website.
@@ -104,7 +104,7 @@ The first screen should feel like a working technical showcase, not a passive la
    - Headline: George "G" Le and agentic engineering.
    - Subhead: `agentic-skills` turns raw Claude Code and Codex sessions into repeatable plan -> run -> ship workflows.
    - Primary CTA: Explore the library.
-   - Secondary CTAs: Follow G's work, visit LexCorp.
+   - Secondary CTAs: Follow G's work, visit EXPLe Corp.
    - Animated blueprint panel showing a request moving through plan, run, validation, ship, and history.
 
 2. **Workflow Lab**
@@ -133,11 +133,11 @@ The first screen should feel like a working technical showcase, not a passive la
    - Link to validation scripts: `skill-deps.sh`, `skill-versions.sh`, `skill-next-step-routing.sh`, and future showcase validation.
    - Explain honest boundaries: metadata/reference validation exists; full behavioral CI is not claimed.
 
-6. **About G / LexCorp**
+6. **About G / EXPLe Corp**
    - Position G as a builder of agentic engineering systems.
-   - Connect the skills library to LexCorp's build-in-public War Room.
+   - Connect the skills library to EXPLe Corp's build-in-public War Room.
    - CTAs:
-     - LexCorp: `https://leexperimental.com`
+     - EXPLe Corp: `https://leexperimental.com`
      - YouTube: `https://www.youtube.com/@georgele`
      - X/Twitter: `https://x.com/gkingofboston`
      - Discord: `https://discord.gg/TC6STUc5rT`
@@ -314,7 +314,7 @@ If deploying from the repository root is preferable, implementation may add the 
 
 Initial link targets:
 
-- LexCorp: `https://leexperimental.com`
+- EXPLe Corp: `https://leexperimental.com`
 - YouTube: `https://www.youtube.com/@georgele`
 - X/Twitter: `https://x.com/gkingofboston`
 - Discord: `https://discord.gg/TC6STUc5rT`
@@ -420,7 +420,7 @@ Script contract:
 - Verify search and filters.
 - Verify every curated workflow can be selected and animated.
 - Verify reduced-motion mode is respected.
-- Verify links to LexCorp, YouTube, X/Twitter, and Discord.
+- Verify links to EXPLe Corp, YouTube, X/Twitter, and Discord.
 - Verify newsletter/email capture renders with clear provider-missing and success/error states.
 - Verify static routes reload directly: `/`, `/workflows/`, `/packs/`, `/catalog/`, `/inspect/`, and `/follow/`.
 - Verify no section has overlapping text or layout shifts that break controls.
@@ -438,7 +438,7 @@ Script contract:
 
 - `docs/skills-showcase/index.html`, route entrypoints, `styles.css`, `app.js`, `assets/skills-data.js`, and `assets/github-proof-data.js` exist.
 - The site presents George "G" Le as the builder/expert and positions `agentic-skills` as proof of agentic engineering expertise.
-- The primary CTA is "Explore the Library" or equivalent, with secondary links to follow G's work, LexCorp, YouTube, X/Twitter, Discord, and GitHub.
+- The primary CTA is "Explore the Library" or equivalent, with secondary links to follow G's work, EXPLe Corp, YouTube, X/Twitter, Discord, and GitHub.
 - The visual design uses a Swiss grid and blueprint motif without generic decorative gradients or blob backgrounds.
 - The site includes browser-native workflow animations for the V1 curated workflows.
 - The site uses multi-page static routing for the main product surfaces and supports direct reload on each route.
@@ -450,15 +450,15 @@ Script contract:
 - `scripts/generate-skills-showcase-data.mjs`, `scripts/generate-skills-showcase-github-data.mjs`, and `scripts/validate-skills-showcase-data.sh` exist and work without third-party dependencies.
 - Validation fails when generated site data is stale after a `SKILL.md` metadata/source change.
 - Skill-changing agent workflows are updated to regenerate site data and review curated site copy when relevant.
-- V1 does not require a database, video storage, auth, custom newsletter backend, visitor analytics, live LexCorp metrics, or runtime API.
+- V1 does not require a database, video storage, auth, custom newsletter backend, visitor analytics, live EXPLe Corp metrics, or runtime API.
 - Vercel deployment can serve the static site.
 
 ## Open Questions
 
 - Final domain is `gskillpacks.com`.
 - Which static newsletter/email provider should back the launch form?
-- Should the Discord invite be treated as permanent, or should the site link through a stable redirect controlled by LexCorp?
-- Should future versions add a separate LexCorp proof page, or keep LexCorp as a narrative/funnel destination?
+- Should the Discord invite be treated as permanent, or should the site link through a stable redirect controlled by EXPLe Corp?
+- Should future versions add a separate EXPLe Corp proof page, or keep EXPLe Corp as a narrative/funnel destination?
 
 ## Assumptions & Risks
 
@@ -470,11 +470,11 @@ Script contract:
 - Confirmed: `[from codebase]` There is no existing frontend scaffold in this repo. Risk if wrong: implementation may miss an external preferred site scaffold.
 - Confirmed: `[from codebase]` Source skill data lives in `SKILL.md` frontmatter and paths. Risk if wrong: generated catalog may miss behavior details that only appear deep in the body.
 - Confirmed: `[from codebase]` Existing validation scripts are the right pattern for stale-data checks. Risk if wrong: adding another validation script may be ignored unless workflow skills reference it.
-- Confirmed: `[from research]` LexCorp is a build-in-public War Room and portfolio brand. Risk if wrong: cross-linking the showcase to LexCorp may confuse users who only want the skill library.
+- Confirmed: `[from research]` EXPLe Corp is a build-in-public War Room and portfolio brand. Risk if wrong: cross-linking the showcase to EXPLe Corp may confuse users who only want the skill library.
 - Confirmed: `[from brand decision]` The public site brand is **gSkillPacks** at `gskillpacks.com`; `agentic-skills` remains the open-source library proof surface. Risk if wrong: public naming may feel less direct than the repository name, but it creates a more ownable G-branded product surface.
 - Corrected: `[from roadmap clarification]` The primary CTA is exploring the library, with follow/community conversion paths secondary. Risk if wrong: CTA placement may under-serve immediate audience growth, but proof-first visitors should be higher quality.
 - Corrected: `[from roadmap clarification]` MVP includes newsletter/email capture, GitHub/open-source proof telemetry, and multi-page routing. Risk if wrong: MVP scope is larger, but it matches the product seriousness expected for a top-of-funnel showcase.
-- Corrected: `[from roadmap clarification]` Live LexCorp metrics are not required for MVP. Risk if wrong later: LexCorp proof may need a separate data contract rather than being implied by this site.
-- Confirmed: `[from spec]` Use LexCorp, YouTube, X/Twitter, and Discord links. Risk if wrong: link rot, especially Discord invite expiry, can create a poor first impression.
+- Corrected: `[from roadmap clarification]` Live EXPLe Corp metrics are not required for MVP. Risk if wrong later: EXPLe Corp proof may need a separate data contract rather than being implied by this site.
+- Confirmed: `[from spec]` Use EXPLe Corp, YouTube, X/Twitter, and Discord links. Risk if wrong: link rot, especially Discord invite expiry, can create a poor first impression.
 - Confirmed: `[from spec]` Use Swiss grid and blueprint theming. Risk if wrong: visual system may feel too architectural and not enough like a live agent workflow.
 - Confirmed: `[inferred]` Hard gate only generated metadata staleness; curated workflow copy is a review gate. Risk if wrong: behavior-only skill changes can still leave curated examples stale if agents make a bad judgment call.

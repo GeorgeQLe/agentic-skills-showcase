@@ -6,7 +6,7 @@ import NewsletterFormClient from "@/showcase/newsletter-form";
 export const metadata: Metadata = {
   title: "Follow / agentic-skills",
   description:
-    "Track the operating system behind the builds. Follow G's open-source workflow library, LexCorp War Room direction, and community routes."
+    "Track the operating system behind the builds. Follow G's open-source workflow library, EXPLe Corp War Room direction, and community routes."
 };
 
 export default function FollowPage() {
@@ -23,7 +23,7 @@ export default function FollowPage() {
           </h1>
           <p className="lede">
             George &ldquo;G&rdquo; Le publishes the open-source workflow
-            library, LexCorp War Room direction, build notes, and community
+            library, EXPLe Corp War Room direction, build notes, and community
             routes from one static launch surface.
           </p>
           <div className="cta-row">
@@ -34,7 +34,7 @@ export default function FollowPage() {
               className="button secondary"
               href="https://leexperimental.com"
             >
-              Enter LexCorp
+              Enter EXPLe Corp
             </a>
             <a
               className="button secondary"
@@ -52,7 +52,7 @@ export default function FollowPage() {
           <h2>Proof before follow.</h2>
           <p>
             This route points to public repository evidence and generated
-            static receipts. LexCorp links are funnel destinations, not live
+            static receipts. EXPLe Corp links are funnel destinations, not live
             product metric claims.
           </p>
           <div className="follow-proof-stats" data-follow-proof-stats="">
@@ -66,7 +66,7 @@ export default function FollowPage() {
             </div>
             <div>
               <strong>no live</strong>
-              <span>LexCorp metrics</span>
+              <span>EXPLe Corp metrics</span>
             </div>
           </div>
         </aside>
@@ -97,13 +97,13 @@ export default function FollowPage() {
         </article>
         <article className="follow-card span-4">
           <span className="coordinate">LX</span>
-          <h3>Enter LexCorp</h3>
+          <h3>Enter EXPLe Corp</h3>
           <p>
             Connect the skills library to the broader War Room portfolio and
             product-building narrative.
           </p>
-          <div className="link-row" aria-label="LexCorp links">
-            <a href="https://leexperimental.com">Visit LexCorp</a>
+          <div className="link-row" aria-label="EXPLe Corp links">
+            <a href="https://leexperimental.com">Visit EXPLe Corp</a>
             <Link href="/">Browse the packs</Link>
           </div>
         </article>
@@ -134,7 +134,7 @@ export default function FollowPage() {
             Generated data can show repository artifacts, validation scripts,
             route freshness, GitHub fallback status, and recent shipped work.
             It does not report visitor analytics, newsletter performance,
-            private LexCorp performance, or live product metrics.
+            private EXPLe Corp performance, or live product metrics.
           </p>
           <div className="cta-row">
             <Link className="button secondary" href="/">

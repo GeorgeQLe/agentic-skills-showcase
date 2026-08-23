@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 // Unified-experience Phase 6: the five legacy marketing routes are folded into
 // `/` and 308-redirect there via next.config `redirects()`. The global nav is
 // rebuilt to the game-metaphor set (Cards → /, Follow → /follow, external
-// LexCorp). These specs lock both: the permanent redirects and that every nav
+// EXPLe Corp). These specs lock both: the permanent redirects and that every nav
 // link resolves to a surviving surface.
 
 const LEGACY_ROUTES = [
@@ -46,8 +46,8 @@ test("the global nav links resolve to surviving surfaces", async ({ page }) => {
     "href",
     "/follow",
   );
-  // LexCorp → external
-  await expect(header.getByRole("link", { name: "LexCorp" })).toHaveAttribute(
+  // EXPLe Corp → external
+  await expect(header.getByRole("link", { name: "EXPLe Corp" })).toHaveAttribute(
     "href",
     "https://leexperimental.com",
   );

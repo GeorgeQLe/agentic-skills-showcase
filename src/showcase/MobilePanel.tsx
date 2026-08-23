@@ -6,7 +6,7 @@ export default function MobilePanel() {
       <nav aria-label="Mobile navigation">
         <Link href="/">Cards</Link>
         <Link href="/library">Library</Link>
-        <a href="https://leexperimental.com">LexCorp</a>
+        <a href="https://leexperimental.com">EXPLe Corp</a>
         <Link href="/follow">Follow</Link>
       </nav>
     </div>

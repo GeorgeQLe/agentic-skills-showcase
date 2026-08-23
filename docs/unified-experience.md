@@ -178,7 +178,7 @@ New `src/components/PackRitual.tsx` owns the `PackFlowPhase` machine + the `Seal
 
 - `/catalog`, `/packs`, `/workflows`, `/benchmarks`, `/inspect` → **308 redirect to `/`** (their content folds into the Table, card backs, and `/card/[id]`). Retire their `page.tsx` + `src/showcase/{catalog,workflows,benchmarks}.tsx` + tests in the same commits.
 - **Keep untouched:** `/follow`, `/admin/newsletter`, `/api/trpc/*`, `TRPCProvider`.
-- Rebuild `src/showcase/routes.ts` + `ShowcaseHeader.tsx` + `MobilePanel` around the game (brand → `/`, Cards → `/card` browse, Follow, LexCorp). Grep every `href` to removed routes first.
+- Rebuild `src/showcase/routes.ts` + `ShowcaseHeader.tsx` + `MobilePanel` around the game (brand → `/`, Cards → `/card` browse, Follow, EXPLe Corp). Grep every `href` to removed routes first.
 - **Tailwind to root:** move `@import "tailwindcss"` into `app/globals.css`; collapse the duplicated `deck.css`/`prototype.css` keyframes into one shared sheet. **Highest-regression step** — verify `/follow` + `/admin/newsletter` render unchanged under Tailwind preflight; land isolated.
 
 ---

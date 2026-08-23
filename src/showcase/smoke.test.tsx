@@ -44,7 +44,7 @@ describe("smoke rendering", () => {
     render(<FollowPage />);
     expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Follow G" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Enter LexCorp" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Enter EXPLe Corp" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Join the community" })).toBeInTheDocument();
   });
 

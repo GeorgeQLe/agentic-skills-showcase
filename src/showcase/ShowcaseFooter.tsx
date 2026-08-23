@@ -12,7 +12,7 @@ export default function ShowcaseFooter() {
           <a href="https://discord.gg/TC6STUc5rT">Discord</a>
         </div>
         <div>
-          <h3>LexCorp</h3>
+          <h3>EXPLe Corp</h3>
           <a href="https://leexperimental.com">Enter the War Room</a>
           <p>
             Build-in-public operating system for agentic product work.

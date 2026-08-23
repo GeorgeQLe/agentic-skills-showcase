@@ -16,7 +16,7 @@ This UI specification defines the V1 interface for **gSkillPacks** at `gskillpac
 Source evidence:
 
 - `specs/skills-showcase-website.md` defines the product scope, static architecture, Swiss grid/blueprint motif, generated catalog, curated workflow set, CTA goals, and maintenance contract.
-- `specs/skills-showcase-website-interview.md` records the product decisions behind Vercel static deployment, no database/video/Remotion, browser-native animations, LexCorp/personal-brand positioning, and public link targets.
+- `specs/skills-showcase-website-interview.md` records the product decisions behind Vercel static deployment, no database/video/Remotion, browser-native animations, EXPLe Corp/personal-brand positioning, and public link targets.
 - `research/devtool-user-map.md`, `research/devtool-dx-journey.md`, `research/devtool-adoption.md`, `research/devtool-docs-audit.md`, and `research/devtool-positioning.md` show the adoption gap: examples and proof exist, but they are scattered.
 - GitHub repository visibility was verified and changed during this UI interview: `https://github.com/GeorgeQLe/agentic-skills` is public, so the UI can use open-source language and GitHub artifact links.
 
@@ -25,9 +25,9 @@ Source evidence:
 ### Product And User Context
 
 - Confirmed: `[from spec]` The site markets George "G" Le as an agentic engineering expert and uses `agentic-skills` as the proof surface.
-- Confirmed: `[from spec]` The audience is builders, AI-coding power users, small teams, DX leads, and people who may follow G/LexCorp.
+- Confirmed: `[from spec]` The audience is builders, AI-coding power users, small teams, DX leads, and people who may follow G/EXPLe Corp.
 - Confirmed: `[from research]` The adoption gap is not missing truth; it is scattered examples, weak first-success guidance, and buried proof artifacts.
-- Corrected: `[inferred]` The site should be a generic docs surface. It should instead be a top-of-funnel surface for the open-source library, G's personal brand, LexCorp, and the Discord community.
+- Corrected: `[inferred]` The site should be a generic docs surface. It should instead be a top-of-funnel surface for the open-source library, G's personal brand, EXPLe Corp, and the Discord community.
 
 ### Pages, Routes, And Entry Points
 
@@ -38,7 +38,7 @@ Source evidence:
 ### Primary Tasks Per Page
 
 - Corrected: `[from spec]` The original primary task was "Follow G's work." User decided the primary hero CTA should instead prove value first: "Explore the Library."
-- Confirmed: `[from spec]` Secondary tasks are following G, entering LexCorp, joining Discord, browsing skills, inspecting proof artifacts, and visiting GitHub.
+- Confirmed: `[from spec]` Secondary tasks are following G, entering EXPLe Corp, joining Discord, browsing skills, inspecting proof artifacts, and visiting GitHub.
 - Confirmed: `[inferred]` A first-time visitor should understand what this is within the first viewport, then see workflow proof before the dense catalog.
 
 ### Navigation Model
@@ -66,7 +66,7 @@ Source evidence:
 ### Button And Link Semantics
 
 - Corrected: `[from spec]` Primary hero CTA is `Explore the Library`, not `Follow G's Work`.
-- Confirmed: `[from spec]` Secondary funnel links include LexCorp, YouTube, X/Twitter, Discord, GitHub, and follow/social actions.
+- Confirmed: `[from spec]` Secondary funnel links include EXPLe Corp, YouTube, X/Twitter, Discord, GitHub, and follow/social actions.
 - Confirmed: `[inferred]` GitHub links are enabled because the repository is now public.
 
 ### Forms, Validation, And Error Display
@@ -101,7 +101,7 @@ Source evidence:
 ### Implementation Constraints
 
 - Confirmed: `[from codebase]` No existing frontend scaffold or package manager at the root.
-- Corrected: `[from roadmap clarification]` Static HTML/CSS/JS, generated `skills-data.js`, generated GitHub/open-source proof data, no first-party backend, no visitor-tracking analytics, and no live LexCorp metrics.
+- Corrected: `[from roadmap clarification]` Static HTML/CSS/JS, generated `skills-data.js`, generated GitHub/open-source proof data, no first-party backend, no visitor-tracking analytics, and no live EXPLe Corp metrics.
 - Confirmed: `[from spec]` Implementation must add generated-data validation and website-update prompts for skill changes.
 
 ## Page Inventory And Route Map
@@ -110,12 +110,12 @@ V1 is a multi-page static site. Each page should be directly reloadable on Verce
 
 | Route / Anchor | Purpose | Entry Points |
 | --- | --- | --- |
-| `/` or `/index.html` | Homepage with hero, product overview, top workflows, proof preview, and funnel preview | Direct Vercel root, GitHub README links, LexCorp links |
+| `/` or `/index.html` | Homepage with hero, product overview, top workflows, proof preview, and funnel preview | Direct Vercel root, GitHub README links, EXPLe Corp links |
 | `/workflows/` | Workflow Lab with selected animated walkthroughs | Hero primary CTA, header nav, homepage preview |
 | `/packs/` | Pack Map and project-type highlighter | Header nav, Workflow Lab cross-links |
 | `/catalog/` | Searchable generated skill catalog | Header nav, Pack Map selected pack, catalog CTA |
 | `/inspect/` | Receipts, validation, GitHub/open-source proof data, and honest boundaries | Header nav, proof links in hero and workflows |
-| `/follow/` | Three-lane funnel: G, LexCorp, Discord, newsletter/email capture | Header Follow CTA, hero secondary CTA, footer |
+| `/follow/` | Three-lane funnel: G, EXPLe Corp, Discord, newsletter/email capture | Header Follow CTA, hero secondary CTA, footer |
 
 No modals are required except the mobile nav drawer and optional desktop follow-link popover. No separate detail pages exist in V1.
 
@@ -136,7 +136,7 @@ Layout:
   - `Catalog` -> `/catalog/`
   - `Inspect` -> `/inspect/`
 - Right action links:
-  - `LexCorp` -> `https://leexperimental.com`
+  - `EXPLe Corp` -> `https://leexperimental.com`
   - `Follow` -> `/follow/` or opens compact follow popover with the same links
 
 Behavior:
@@ -174,7 +174,7 @@ Three columns on desktop, stacked on mobile:
    - X/Twitter
    - GitHub
    - Discord
-2. **LexCorp**
+2. **EXPLe Corp**
    - Enter the War Room
    - Build-in-public positioning line
 3. **Open Source**
@@ -207,7 +207,7 @@ Left content:
   - Secondary button/link: `Follow G's Work` -> `/follow/` or desktop follow popover
 - Secondary inline links:
   - `GitHub`
-  - `LexCorp`
+  - `EXPLe Corp`
   - `YouTube`
   - `Discord`
 
@@ -471,12 +471,12 @@ Layout:
 
 - Large section heading: `Track the operating system behind the builds.`
 - Short bio paragraph:
-  - G builds open-source workflow systems for AI coding agents and uses them to operate LexCorp's build-in-public product portfolio.
+  - G builds open-source workflow systems for AI coding agents and uses them to operate EXPLe Corp's build-in-public product portfolio.
 - Three-lane funnel:
   1. `Explore the open-source library`
      - GitHub link.
-  2. `Enter the LexCorp War Room`
-     - LexCorp link.
+  2. `Enter the EXPLe Corp War Room`
+     - EXPLe Corp link.
   3. `Join the community`
      - Discord link.
 - Social row:
@@ -524,7 +524,7 @@ Avoid nested cards. Section backgrounds should be unframed bands or blueprint re
 | Primary CTA | `Explore the Library` | Hero | Navigate to `/workflows/` | Never disabled | None |
 | Secondary CTA | `Follow G's Work` | Hero | Navigate to `/follow/` or open follow popover | Never disabled | None |
 | Header nav links | `Workflows`, `Packs`, `Catalog`, `Inspect` | Header | Navigate to static routes | Never disabled | None |
-| External link | `LexCorp` | Header/footer/follow | Open LexCorp URL | Never disabled | None |
+| External link | `EXPLe Corp` | Header/footer/follow | Open EXPLe Corp URL | Never disabled | None |
 | Menu icon button | `Open navigation` | Mobile header | Opens drawer | Disabled only when drawer is already open | None |
 | Drawer close icon | `Close navigation` | Mobile drawer | Closes drawer | Never disabled | None |
 | Workflow selector item | Workflow title | Workflow Lab | Selects workflow | Never disabled | None |
@@ -546,14 +546,14 @@ Avoid nested cards. Section backgrounds should be unframed bands or blueprint re
 | Receipt link | `Open receipt` | Inspect tiles | Opens GitHub artifact | Never disabled; if URL missing, render as path label | None |
 | Newsletter email | `Email` | Follow page | Captures email for configured provider only | Disabled when provider endpoint is missing | None |
 | Newsletter submit | `Join the list` | Follow page | Submits provider-backed form | Disabled while pending, invalid, or provider missing | None |
-| Funnel links | `Explore the open-source library`, `Enter the LexCorp War Room`, `Join the community` | Follow section | Open external destinations | Never disabled | None |
+| Funnel links | `Explore the open-source library`, `Enter the EXPLe Corp War Room`, `Join the community` | Follow section | Open external destinations | Never disabled | None |
 
 ## Link Inventory
 
 | Label | Destination | Type | Notes |
 | --- | --- | --- | --- |
 | GitHub / Repository | `https://github.com/GeorgeQLe/agentic-skills` | External | Primary open-source proof destination |
-| LexCorp | `https://leexperimental.com` | External | Top-of-funnel for LexCorp |
+| EXPLe Corp | `https://leexperimental.com` | External | Top-of-funnel for EXPLe Corp |
 | YouTube | `https://www.youtube.com/@georgele` | External | Personal distribution channel |
 | X/Twitter | `https://x.com/gkingofboston` | External | Personal distribution channel |
 | Discord | `https://discord.gg/TC6STUc5rT` | External | Single community CTA in V1 |
@@ -720,15 +720,15 @@ All workflow illustrations should be built with HTML/CSS/JS: panels, lines, node
 - If Clipboard API is unavailable, copy controls should degrade gracefully or not render.
 - Consider `localStorage` only for harmless UI preferences such as reduced motion override or last selected workflow; V1 does not require persistence.
 - Add newsletter/email capture as a static/provider-backed form with provider-missing, pending, success, and error states.
-- Do not add visitor-tracking analytics, auth, first-party API routes, or live LexCorp metrics.
+- Do not add visitor-tracking analytics, auth, first-party API routes, or live EXPLe Corp metrics.
 - Do not create or modify GitHub Actions workflows.
 
 ## Open Questions
 
 - Final production domain for the Vercel deployment is `gskillpacks.com`.
 - Newsletter/email provider and endpoint for the launch form.
-- Whether to route Discord through a durable LexCorp redirect later.
-- Whether future V2 should add a separate LexCorp proof surface or keep LexCorp as a narrative/funnel destination.
+- Whether to route Discord through a durable EXPLe Corp redirect later.
+- Whether future V2 should add a separate EXPLe Corp proof surface or keep EXPLe Corp as a narrative/funnel destination.
 
 ## Risks
 
@@ -744,7 +744,7 @@ All workflow illustrations should be built with HTML/CSS/JS: panels, lines, node
 
 - No database-backed UI.
 - No video or Remotion.
-- No auth, admin UI, custom newsletter backend, visitor-tracking analytics, or live LexCorp metrics.
+- No auth, admin UI, custom newsletter backend, visitor-tracking analytics, or live EXPLe Corp metrics.
 - No hosted skill execution.
 - No framework app router or runtime server; multi-page static routing is in scope.
 - No GitHub Actions.

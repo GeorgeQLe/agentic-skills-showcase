@@ -8,7 +8,7 @@ export type ShowcaseRoute = {
 // landing mounts the deck Table + card surfaces). The folded marketing routes
 // (workflows/packs/catalog/benchmarks/inspect) 308 → `/` via next.config, so the
 // nav surface is the game-metaphor set: Cards (browse), Library (the dedicated
-// catalog), Follow, and Admin. The external LexCorp link is not an app route and
+// catalog), Follow, and Admin. The external EXPLe Corp link is not an app route and
 // lives in the header/footer chrome.
 export const showcaseRoutes = [
   {
