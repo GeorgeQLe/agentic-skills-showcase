@@ -23,7 +23,7 @@ export default function ShowcaseFooter() {
           <Link href="/">Browse the packs</Link>
           <Link href="/follow">Follow the work</Link>
           <p>
-            The AFPS pipeline and skill library for Claude Code and Codex.
+            A free, open-source skill library for Claude Code and Codex.
           </p>
         </div>
       </div>

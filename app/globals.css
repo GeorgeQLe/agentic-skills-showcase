@@ -139,6 +139,28 @@ select {
 
 /* === Header / Navigation === */
 
+.site-status-banner {
+  border-bottom: 1px solid var(--line);
+  background: var(--accent-soft);
+  color: var(--ink);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.site-status-banner p {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 10px 16px;
+}
+
+.site-status-banner a {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  white-space: nowrap;
+}
+
 .site-header {
   position: sticky;
   top: 0;

@@ -28,7 +28,7 @@ describe("smoke rendering", () => {
     expect(screen.getByTestId("landing-loading")).toBeInTheDocument();
     expect(
       screen.getByText(
-        "The AFPS pipeline and skill library for Claude Code and Codex.",
+        "A free, open-source skill library for Claude Code and Codex.",
       ),
     ).toBeInTheDocument();
   });

@@ -6,7 +6,7 @@ import ShowcaseFooter from "@/showcase/ShowcaseFooter";
 export const metadata: Metadata = {
   title: "G Skillpacks",
   description:
-    "Open a pack, build your workflow deck. Sealed skill packs for Claude Code and Codex — alignment, prototype, specification, and shipping workflows."
+    "Browse the free, open-source skill library for Claude Code and Codex and install packs with the skillpacks npm package."
 };
 
 export default function HomePage() {

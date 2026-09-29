@@ -8,6 +8,7 @@ import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 
 import ShowcaseHeader from "@/showcase/ShowcaseHeader";
+import SiteStatusBanner from "@/showcase/SiteStatusBanner";
 import MobilePanel from "@/showcase/MobilePanel";
 import ShowcaseShell from "@/showcase/ShowcaseShell";
 import { NO_FLASH_SCRIPT } from "@/showcase/theme";
@@ -19,7 +20,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://gskillpacks.com"),
   title: "G Skillpacks",
   description:
-    "The AFPS pipeline and skill library for Claude Code and Codex — alignment, prototype, specification, and shipping workflows.",
+    "A free, open-source skill library for Claude Code and Codex, installable with the skillpacks npm package.",
   manifest: "/manifest.webmanifest",
   icons: {
     icon: [
@@ -59,6 +60,7 @@ export default function RootLayout({
       </head>
       <body>
         <TRPCProvider>
+          <SiteStatusBanner />
           <ShowcaseHeader />
           <MobilePanel />
           <ShowcaseShell />
